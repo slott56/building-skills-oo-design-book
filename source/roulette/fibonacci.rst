@@ -1,0 +1,154 @@
+
+..  _`roul.fib`:
+
+Fibonacci Player Class
+=======================
+
+This section will describe a player who has an internal state that can
+be modeled using methods and simple values instead of state objects.
+
+This is a variation on the Martingale System.  See :ref:`roul.player.martingale` for
+more  information.
+
+In `Fibonacci Player Analysis`_ we'll look at what this player does.
+
+We'll turn to how the player works in `PlayerFibonacci Design`_.
+
+In `Fibonacci Player Deliverables`_ we'll enumerate the deliverables for
+this player.
+
+..  _`roul.fib.ov`:
+
+Fibonacci Player Analysis
+-------------------------
+
+A player could use the :emphasis:`Fibonacci Sequence` to structure a
+series of bets in a kind of cancellation system. The Fibonacci Sequence is
+
+..  math::
+
+    1, 1, 2, 3, 5, 8, 13, ...
+
+At each loss, the sum of the previous two bets is used, which is
+the next number in the sequence. In the event of a win, we revert to
+the basic bet.
+
+**Example**.
+Here's an example of the Fibonacci system.
+
+#.  Bet 1. A win.
+
+#.  Bet 1. A loss.  The next value in the sequence is 1.
+
+#.  Bet 1. A loss. The next value in the sequence is 2.
+
+#.  Bet 2. A loss. The next value in the sequence will be 3
+
+#.  Bet 3.  In the event of a loss, the next bet is 5.  Otherwise, the bet is 1.
+
+**State**.
+In order to compute the Fibonacci sequence, we need to retain the two
+previous bets as the player's state. In the event of a win, we revert to
+the basic bet value of :literal:`1`.
+
+In the event of a loss, we can update the two numbers to show the
+next step in the sequence. The player's state is defined by these two numeric values.
+
+
+PlayerFibonacci Design
+----------------------
+
+..  class:: PlayerFibonacci
+
+    :class:`PlayerFibonacci` uses the Fibonacci betting system. This
+    player allocates their available budget into a sequence of bets that
+    have an accelerating potential gain.
+
+
+Fields
+~~~~~~
+
+..  attribute:: PlayerFibonacci.recent
+
+    This is the most recent bet amount.  Initially, this is 1.
+
+..  attribute:: PlayerFibonacci.previous
+
+    This is the bet amount previous to the most recent bet amount.  Initially, this is zero.
+
+
+Constructors
+~~~~~~~~~~~~
+
+
+..  method:: PlayerFibonacci.__init__(self, table: Table) -> None
+
+
+    Initialize the Fibonacci player.
+
+    :param table: The :class:`Table` object which will accept the bests.
+    :type table: :class:`Table`
+
+Methods
+~~~~~~~
+
+
+..  method:: PlayerFibonacci.win(self, bet: Bet) -> None
+
+    :param bet: The bet which won
+    :type bet: :class:`Bet`
+
+
+    Uses the superclass method to update the
+    stake with an amount won. It resets :obj:`recent` and :obj:`previous` to their
+    initial values of 1 and 0.
+
+
+..  method:: PlayerFibonacci.lose(self, bet: Bet) -> None
+
+    Uses the superclass method to update the
+    stake with an amount lost. This will go "forwards" in the
+    sequence. It updates :obj:`recent` and :obj:`previous` as follows.
+
+    ..  math::
+
+        next \gets recent + previous
+
+        previous \gets recent
+
+        recent \gets next
+
+    :param bet: The :class:`Bet` which lost.
+    :type bet: :class:`Bet`
+
+
+Fibonacci Player Deliverables
+------------------------------
+
+There are three deliverables for this exercise.
+
+
+-   The :class:`PlayerFibonacci` class.
+
+-   A unit test of the :class:`PlayerFibonacci` class. This test
+    should synthesize a fixed list of :class:`Outcome` instances, :class:`Bin` instances,
+    and calls a :class:`PlayerFibonacci` instance with various
+    sequences of reds and blacks. There are 16 different sequences of
+    four winning and losing bets. These range from four losses in a row
+    to four wins in a row. This should be sufficient to exercise the
+    class and see the changes in the bet amount.
+
+-   An update to the overall :class:`Simulator` that uses the :class:`PlayerFibonacci`.
+
+Looking Forward
+---------------
+
+We've looked at a number of individual class design and construction techniques.
+At this point, we have a comprehensive simulation of the game of Roulette
+with a variety of betting strategies. We can run simulations of the various
+techniques and learn the house always wins. The open question is
+how large is the house's edge.
+
+In the next chapter, we'll wrap up this game by observing some OO design
+principles and design patterns. This will set the stage for tackling the next
+game, Craps.

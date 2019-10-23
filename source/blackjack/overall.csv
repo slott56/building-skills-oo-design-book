@@ -1,0 +1,12 @@
+"BlackjackGame class","Hand class","BlackjackPlayer class","BlackjackTable class"
+"calls BlackjackPlayer placeBet",,"creates empty Hand, creates initial Ante Bet","accepts the ante bet, associates with the Hand"
+"gets the initial Hand; deal 2 cards to Hand","add cards","returns the initial Hand",
+"deal 2 cards to dealer's Hand","add cards",,
+"gets up card from dealer's Hand; if this card requires insurance, do the insurance procedure","return up card",,
+"iterate through all Hand instances; is the given Hand splittable?","return true if two cards of the same rank","returns a list iterator",
+"if the Hand is splittable, offer a split bet","get the BlackjackPlayer response; return it to the game","to split: create a split bet, and an empty Hand; return the new Hand","accept the split bet for the new Hand"
+"if splitting, move card and deal cards; continue looking for split offers","take a card out; add a card",,
+"iterate through all Hand; if the Hand is less than 21, do the fill-hand procedure",,"returns a list iterator",
+"while the dealer's point value is 16 or less, deal another card","return point value of the Hand; add a card",,
+"if the dealer busts, iterate through all Hand instances resolving the ante as a winner","return point value of the Hand","returns a list iterator","resolve bet as winner and remove"
+"if the dealer does not bust, iterate through all Hand instances comparing against the dealer's points, determining win, loss or push","return point value of the hand","returns a list iterator","resolve bet and remove"

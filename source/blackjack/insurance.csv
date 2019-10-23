@@ -1,0 +1,5 @@
+"BlackjackGame class","Hand class","BlackjackPlayer class","BlackjackTable class"
+"if BlackjackPlayer Hand imstamce is blackjack: offer even money","return true if 2 cards, soft 21","to accept, return true",
+"if BlackjackPlayer accepted even money offer: change bet, resolve; end of game",,,"update bet; resolve and remove bet"
+"offer insurance",,"to accept, create new bet; return true","accept insurance bet"
+"if BlackjackPlayer accepted insurance offer: check dealer's hand; if blackjack, insurance wins, ante loses, game over; otherwise insurance loses","return point value",,"resolve and remove bet"

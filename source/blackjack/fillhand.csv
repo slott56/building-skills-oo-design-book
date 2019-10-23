@@ -1,0 +1,4 @@
+"BlackjackGame class","Hand class","BlackjackPlayer class","BlackjackTable class"
+"if BlackjackPlayer's Hand instance is blackjack: resolve ante bet","return true if 2 cards, soft 21",,"resolve and remove bet"
+"while points less than 21, offer play options of double or hit; rejecting both offers is a stand.","return point value; pass offers to player","to double, increase the bet for this hand and return true; to hit, return true","update bet"
+"if over 21, the hand is a bust","return point value",,"resolve the ante as a loss"
