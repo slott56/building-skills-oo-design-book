@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fibonacci Player Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Conclusion" href="conclusion.html" />
+    <link rel="prev" title="Cancellation Player Class" href="cancellation.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="fibonacci-player-class">
+<span id="roul-fib"></span><h1>Fibonacci Player Class<a class="headerlink" href="#fibonacci-player-class" title="Permalink to this headline">¶</a></h1>
+<p>This section will describe a player who has an internal state that can
+be modeled using methods and simple values instead of state objects.</p>
+<p>This is a variation on the Martingale System.  See <a class="reference internal" href="player.html#roul-player-martingale"><span class="std std-ref">Martingale Player Design</span></a> for
+more  information.</p>
+<p>In <a class="reference internal" href="#fibonacci-player-analysis">Fibonacci Player Analysis</a> we’ll look at what this player does.</p>
+<p>We’ll turn to how the player works in <a class="reference internal" href="#playerfibonacci-design">PlayerFibonacci Design</a>.</p>
+<p>In <a class="reference internal" href="#fibonacci-player-deliverables">Fibonacci Player Deliverables</a> we’ll enumerate the deliverables for
+this player.</p>
+<div class="section" id="fibonacci-player-analysis">
+<span id="roul-fib-ov"></span><h2>Fibonacci Player Analysis<a class="headerlink" href="#fibonacci-player-analysis" title="Permalink to this headline">¶</a></h2>
+<p>A player could use the <em>Fibonacci Sequence</em> to structure a
+series of bets in a kind of cancellation system. The Fibonacci Sequence is</p>
+<div class="math">
+<p><img src="../_images/math/2d4e30c645f7d1a6d535ba3eafe883d01576798f.png" alt="1, 1, 2, 3, 5, 8, 13, ..."/></p>
+</div><p>At each loss, the sum of the previous two bets is used, which is
+the next number in the sequence. In the event of a win, we revert to
+the basic bet.</p>
+<p><strong>Example</strong>.
+Here’s an example of the Fibonacci system.</p>
+<ol class="arabic simple">
+<li><p>Bet 1. A win.</p></li>
+<li><p>Bet 1. A loss.  The next value in the sequence is 1.</p></li>
+<li><p>Bet 1. A loss. The next value in the sequence is 2.</p></li>
+<li><p>Bet 2. A loss. The next value in the sequence will be 3</p></li>
+<li><p>Bet 3.  In the event of a loss, the next bet is 5.  Otherwise, the bet is 1.</p></li>
+</ol>
+<p><strong>State</strong>.
+In order to compute the Fibonacci sequence, we need to retain the two
+previous bets as the player’s state. In the event of a win, we revert to
+the basic bet value of <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+<p>In the event of a loss, we can update the two numbers to show the
+next step in the sequence. The player’s state is defined by these two numeric values.</p>
+</div>
+<div class="section" id="playerfibonacci-design">
+<h2>PlayerFibonacci Design<a class="headerlink" href="#playerfibonacci-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="PlayerFibonacci">
+<em class="property">class </em><code class="sig-name descname">PlayerFibonacci</code><a class="headerlink" href="#PlayerFibonacci" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#PlayerFibonacci" title="PlayerFibonacci"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerFibonacci</span></code></a> uses the Fibonacci betting system. This
+player allocates their available budget into a sequence of bets that
+have an accelerating potential gain.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="PlayerFibonacci.recent">
+<code class="sig-prename descclassname">PlayerFibonacci.</code><code class="sig-name descname">recent</code><a class="headerlink" href="#PlayerFibonacci.recent" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the most recent bet amount.  Initially, this is 1.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="PlayerFibonacci.previous">
+<code class="sig-prename descclassname">PlayerFibonacci.</code><code class="sig-name descname">previous</code><a class="headerlink" href="#PlayerFibonacci.previous" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the bet amount previous to the most recent bet amount.  Initially, this is zero.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="PlayerFibonacci.__init__">
+<code class="sig-prename descclassname">PlayerFibonacci.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">table: Table</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#PlayerFibonacci.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the Fibonacci player.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table</strong> (<a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>) – The <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object which will accept the bests.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="PlayerFibonacci.win">
+<code class="sig-prename descclassname">PlayerFibonacci.</code><code class="sig-name descname">win</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#PlayerFibonacci.win" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet which won</p>
+</dd>
+</dl>
+<p>Uses the superclass method to update the
+stake with an amount won. It resets <a class="reference internal" href="#PlayerFibonacci.recent" title="PlayerFibonacci.recent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recent</span></code></a> and <a class="reference internal" href="#PlayerFibonacci.previous" title="PlayerFibonacci.previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">previous</span></code></a> to their
+initial values of 1 and 0.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PlayerFibonacci.lose">
+<code class="sig-prename descclassname">PlayerFibonacci.</code><code class="sig-name descname">lose</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#PlayerFibonacci.lose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the superclass method to update the
+stake with an amount lost. This will go “forwards” in the
+sequence. It updates <a class="reference internal" href="#PlayerFibonacci.recent" title="PlayerFibonacci.recent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recent</span></code></a> and <a class="reference internal" href="#PlayerFibonacci.previous" title="PlayerFibonacci.previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">previous</span></code></a> as follows.</p>
+<div class="math">
+<p><img src="../_images/math/dfc8c96c8f7c7cf6cd7e8c5718d4d824dd2f0727.png" alt="next \gets recent + previous
+
+previous \gets recent
+
+recent \gets next"/></p>
+</div><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> which lost.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="fibonacci-player-deliverables">
+<h2>Fibonacci Player Deliverables<a class="headerlink" href="#fibonacci-player-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise.</p>
+<ul class="simple">
+<li><p>The <a class="reference internal" href="#PlayerFibonacci" title="PlayerFibonacci"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerFibonacci</span></code></a> class.</p></li>
+<li><p>A unit test of the <a class="reference internal" href="#PlayerFibonacci" title="PlayerFibonacci"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerFibonacci</span></code></a> class. This test
+should synthesize a fixed list of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances,
+and calls a <a class="reference internal" href="#PlayerFibonacci" title="PlayerFibonacci"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerFibonacci</span></code></a> instance with various
+sequences of reds and blacks. There are 16 different sequences of
+four winning and losing bets. These range from four losses in a row
+to four wins in a row. This should be sufficient to exercise the
+class and see the changes in the bet amount.</p></li>
+<li><p>An update to the overall <a class="reference internal" href="control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> that uses the <a class="reference internal" href="#PlayerFibonacci" title="PlayerFibonacci"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerFibonacci</span></code></a>.</p></li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>We’ve looked at a number of individual class design and construction techniques.
+At this point, we have a comprehensive simulation of the game of Roulette
+with a variety of betting strategies. We can run simulations of the various
+techniques and learn the house always wins. The open question is
+how large is the house’s edge.</p>
+<p>In the next chapter, we’ll wrap up this game by observing some OO design
+principles and design patterns. This will set the stage for tackling the next
+game, Craps.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Fibonacci Player Class</a><ul>
+<li><a class="reference internal" href="#fibonacci-player-analysis">Fibonacci Player Analysis</a></li>
+<li><a class="reference internal" href="#playerfibonacci-design">PlayerFibonacci Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fibonacci-player-deliverables">Fibonacci Player Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="cancellation.html" title="previous chapter">Cancellation Player Class</a></li>
+      <li>Next: <a href="conclusion.html" title="next chapter">Conclusion</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Hand and Outcome Classes &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Blackjack Table Class" href="blackjack_table.html" />
+    <link rel="prev" title="Card, Deck and Shoe Classes" href="card_deck_shoe.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="hand-and-outcome-classes">
+<h1>Hand and Outcome Classes<a class="headerlink" href="#hand-and-outcome-classes" title="Permalink to this headline">¶</a></h1>
+<p>This chapter introduces the hand of cards used by player and dealer.
+It wrestles with the problems of scoring the value
+of the hand in the presence of soft and hard values for aces.
+It also introduces a subclass of the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class that
+can handle the more complex evaluation rules for Blackjack.</p>
+<p>In <a class="reference internal" href="#hand-analysis">Hand Analysis</a> we’ll look at a number of issues related to
+Blackjack hands. In <a class="reference internal" href="#payout-odds">Payout Odds</a> we’ll look at how the odds
+depend on the cards and the way the hands are resolved.
+In <a class="reference internal" href="#hard-and-soft-totals">Hard and Soft Totals</a> we’ll examine how an Ace leads to a
+hand having distinct hard and soft totals. This will cause
+us to rexamine the nature of outcomes; this is the subject of
+<a class="reference internal" href="#blackjack-outcomes">Blackjack Outcomes</a>.</p>
+<p>We can then design the overall <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class.
+This is described in <a class="reference internal" href="#hand-class-design">Hand Class Design</a>. We’ll look at all of the
+deliverables for this chapter in <a class="reference internal" href="#hand-deliverables">Hand Deliverables</a>.</p>
+<div class="section" id="hand-analysis">
+<h2>Hand Analysis<a class="headerlink" href="#hand-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The hand of cards is both a container for cards, but is also one
+dimension of the current state of the player’s playing strategy.
+In addition to the player’s hand, the other dimension to the
+strategy is the dealer’s up card.</p>
+<p>A player may have multiple hands. The hands are resolved independently.</p>
+<p>For each hand, a hand’s responsibilities include collecting the cards, producing a
+hard and soft point total and determining the appropriate payout odds.</p>
+<p>Collecting cards is trivial.  Each hand can be modeled as a bag or multiset of
+<a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances.  A hand can’t be a <code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code> because there can easily be duplicate
+cards in a multiple deck game.  In an 8-deck game, there are 8 separate instances of A♠.</p>
+<p>Determining the payout odds for a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object is somewhat more complex.</p>
+<div class="section" id="payout-odds">
+<h3>Payout Odds<a class="headerlink" href="#payout-odds" title="Permalink to this headline">¶</a></h3>
+<p>To be compatible with other games, we’ll be creating <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> objects which
+are associated with <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.  In Roulette, there were a profusion
+of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, each with fixed odds.  In Craps, there
+were fewer <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, some of which had odds that depended on a
+the current <a class="reference internal" href="../craps/throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object.</p>
+<p>The player’s <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> instance must be associated with an <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object.
+The core of the game simulation is matching the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object for a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance
+and the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object of a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> instance to determine the payout.</p>
+<p>In the case of Roulette, each <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance was a set of winning <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects.
+In the case of Craps, both the <a class="reference internal" href="../craps/throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object and the game had a mixtures of winning, losing and
+unresolved <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object.  The <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances were associated with
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. The <a class="reference internal" href="../roulette/wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>, <a class="reference internal" href="../craps/dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a>. or <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a>
+objects gave us sets of winning (and losing) <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>In Blackjack, there are relatively few distinct outcomes.  And, it’s not clear how each
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance associates with a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object.</p>
+<p><strong>Survey of Outcomes</strong>.
+To figure out how to associate a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object and a betting <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object,
+we’ll start by enumerating all the  individual <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances in this game.
+Note that the “Ante” bet, placed before any cards are seen, has three distinct outcomes.</p>
+<ol class="arabic simple">
+<li><p><strong>Insurance</strong>. This outcome pays <img class="math" src="../_images/math/2da4d58abd68781dcdd0b97ac1adbaaf01695038.png" alt="2:1"/>.
+This is offered when the up card is an Ace.
+This outcome is a winner when the dealer’s hand
+is blackjack. (Also, the “Ante” bet will be a loser.)
+This outcome a loser when the dealer’s hand is not blackjack. (The Ante bet is unresolved.)</p></li>
+<li><p><strong>Even Money</strong>. This outcome pays <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.
+This is offered in the rare case when the
+player’s hand is blackjack and the dealer’s up card is an Ace. If
+accepted, it can be looked at as a switch of the Ante bet
+from the original “Ante” outcome to a different
+“Even Money” outcome. After this change, the “Ante” bet is then resolved as a winner.</p></li>
+<li><p><strong>Ante</strong> paying <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.
+This variation occurs when the player’s hand is
+less than or equal to 21 and the dealer’s hand goes over 21. This
+payout also occurs when the player’s hand is less than or equal to
+21 and also greater than the dealer’s hand.
+All “Ante” outcome variants are a loser as soon as the player’s hand
+goes over 21. They are  also a loser when the player’s hand is less than
+or equal to 21 and also less than the dealer’s hand.
+The odds depend on both player and dealer’s hand.</p></li>
+<li><p><strong>Ante</strong> paying <img class="math" src="../_images/math/121f5f29be8f0ec9829a4d65d8dd52ff5f14eb1c.png" alt="3:2"/>.
+This variation occurs when the player’s hand is blackjack.
+The odds depend on the player’s hand.</p></li>
+<li><p><strong>Ante</strong> resolved as a push, paying <img class="math" src="../_images/math/d1068c8c727ca69808e731ad4f6c37cd167b2696.png" alt="1:0"/>.
+This variation occurs when the player’s
+hand is less than or equal to 21 and equal to the dealer’s hand.
+The odds depend on both player and dealer’s hand.</p></li>
+</ol>
+<p><strong>Problem</strong>. What kind of class is the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class?
+Is it a collection of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances?
+Or is it something different?</p>
+<p>It appears that the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class, as a whole, is not simply associated with an <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object.
+It appears that a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> instance must produce an <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object based on the hand’s
+total, the dealer’s total, and possibly the state of the game.</p>
+<p>This is a change from the way the <a class="reference internal" href="../craps/dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class and the collection of <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> isntances work.
+The <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances were directly (and immutably) associated with <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects.
+A Blackjack <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a>, however, must do a bit of processing
+to determine which <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance it represents.</p>
+<ul class="simple">
+<li><p>A two-card hand totalling soft 21 produces a blackjack <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object that pays
+<img class="math" src="../_images/math/121f5f29be8f0ec9829a4d65d8dd52ff5f14eb1c.png" alt="3:2"/>.</p></li>
+<li><p>All other hands produce an <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object that pays <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/> and could be resolved
+as a win, a loss, or a push.</p></li>
+</ul>
+<p>Also, changes to the state of the game depend on the values of both
+hands, as well as the visible up card in the dealer’s hand.  This makes
+the state of the hand part of the evolving state of the game, unlike the simple
+<a class="reference internal" href="../craps/throw_builder.html#RandomEvent" title="RandomEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomEvent</span></code></a> instances we saw in Roulette and Craps.</p>
+<p><strong>Forces</strong>.
+We have a few ways we can <em>deal</em> with the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class definition.</p>
+<ul class="simple">
+<li><p>We can make the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class a subclass of the <a class="reference internal" href="../craps/throw_builder.html#RandomEvent" title="RandomEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomEvent</span></code></a> class, even
+though it’s clearly more complex than other events.</p></li>
+<li><p>We can make the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class unique, unrelated to
+other games.</p></li>
+</ul>
+<p><strong>Hand is an “Event”</strong>?
+While a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object appears to be a subclass of the <a class="reference internal" href="../craps/throw_builder.html#RandomEvent" title="RandomEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomEvent</span></code></a> class,
+it jars our sensibilities. A <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object is built up from a
+number of <a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances. Dealing a <a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> object seems more event-like.</p>
+<p>One could rationalize calling a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> instance
+an “event” by claiming that the <a class="reference internal" href="card_deck_shoe.html#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> clss is the random event generator.
+The  act of shuffling is when the events are created.
+The complex event is then revealed to the player and dealer one card at a time.</p>
+<p>It seems that we need to define a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class that shares a common
+interface with the <a class="reference internal" href="../craps/throw_builder.html#RandomEvent" title="RandomEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomEvent</span></code></a> class, but extends the basic concept
+because a hand has an evolving state until it is fully revealed.</p>
+<p><strong>Hand is different</strong>.
+While we can object to calling a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> instance a single “event”, it’s difficult
+to locate a compelling reason for making the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class into something
+radically different from the <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> or <a class="reference internal" href="../craps/dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> classes.</p>
+<p><strong>Hand Features</strong>.
+Our first design decision, then, is to define the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class as a kind of <a class="reference internal" href="../craps/throw_builder.html#RandomEvent" title="RandomEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomEvent</span></code></a> subclass.
+We’ll need to create several <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances that can be paired with the event: Insurance, Even Money, Ante and Blackjack.</p>
+<p>A <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object will produce an appropriate  <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object based on the hand’s structure,
+the game state, and the dealer’s hand.  Generally, each <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object will produce a simple Ante outcome
+as a winner or loser.  Sometimes a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object will produce a Blackjack outcome.</p>
+<p>Sometimes the Player and Blackjack Game will collaborate to add an Insurance or Even Money <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object to the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a>.</p>
+</div>
+<div class="section" id="hard-and-soft-totals">
+<h3>Hard and Soft Totals<a class="headerlink" href="#hard-and-soft-totals" title="Permalink to this headline">¶</a></h3>
+<p>Our second design problem is to calculate the
+point value of the hand. Because of aces, hands can have two different point totals.
+If there are no aces, the total is hard.  When there is an Ace,
+there are two totals: the hard total uses an Ace as 1, the soft total
+uses an Ace as 11.</p>
+<p>We note that only one ace will participate in this
+hard total vs. soft total decision-making. If two aces contribute soft
+values, the hand is at least 22 points. Therefore, we need to note the presence
+of at most one ace to use the soft value of 11, all other cards will
+contribute their hard values to the hand’s total value.</p>
+<p>The presence of an Ace means finding at most one card with a <code class="docutils literal notranslate"><span class="pre">card.hardValue</span> <span class="pre">!=</span> <span class="pre">card.sotfValue</span></code>.</p>
+<p>A <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> object has a two internal point totals:</p>
+<ul class="simple">
+<li><p><strong>Hard</strong>.  All hands have a hard total. This is the total of the
+hard values of all of the <a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances.</p></li>
+<li><p><strong>Soft</strong>.  When a hand has at least one Ace, the soft total
+is computed as the hard total of all cards <em>except</em> the Ace,
+plus the soft value of the Ace.</p></li>
+</ul>
+<p>The final point total for a hand, then, has two options.
+When the soft total when is 21 or less, the soft total applies.
+WHen the soft total is over 21, the hard total applies.</p>
+<p>This leads us to a number of algorithms within the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a>
+class to locate and isolate one card with different
+hard and soft values.</p>
+</div>
+<div class="section" id="blackjack-outcomes">
+<h3>Blackjack Outcomes<a class="headerlink" href="#blackjack-outcomes" title="Permalink to this headline">¶</a></h3>
+<p>As a final design decision, we need to consider creating any
+subclasses of the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class to handle the variable odds for the “Ante”
+bet. We don’t need a subclass for the “Insurance” or “Even Money” outcomes,
+because the base <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class does everything we need.</p>
+<p>The notable complication here is that there are three different odds. If
+the player’s hand beats the dealer’s hand and is blackjack, the odds are
+<img class="math" src="../_images/math/121f5f29be8f0ec9829a4d65d8dd52ff5f14eb1c.png" alt="3:2"/>. If the player’s hand beats the dealer’s hand, but is not blackjack,
+the odds are <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>. If the player’s hand equals the dealer’s hand, the
+result is a push; something like <img class="math" src="../_images/math/d1068c8c727ca69808e731ad4f6c37cd167b2696.png" alt="1:0"/> odds where you get your money back.</p>
+<p>It doesn’t seem like new subclasses of the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class are necessary.
+We simply have some alternative <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances that can be produced by a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a>.</p>
+<p>The player can only create one of four basic <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.</p>
+<ul>
+<li><p>The “Ante” bet that starts play.  This is assumed to be <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/> until
+game conditions change this to <img class="math" src="../_images/math/121f5f29be8f0ec9829a4d65d8dd52ff5f14eb1c.png" alt="3:2"/> or a push.  This is the essential
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object for the player’s primary <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance.</p></li>
+<li><p>The “Insurance” and “Event Money” bets.
+One of these may also be active after the first cards are dealt.</p>
+<p>For the insurance <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object to be active,
+the dealer must be showing an Ace and the player’s hand is not 21.
+The player is offered and accepts by creating an insurance <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object.</p>
+<p>For even money <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object to be active,
+the dealer must be showing an Ace and the player’s hand is  21.
+The player is offered and accepts by creating an even money <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object.</p>
+<p>These are resolved before further cards are dealt.
+If the dealer does not have 21, these
+bets are lost.  If the dealer has 21, these bets win, but the Ante bet is a loss.</p>
+</li>
+<li><p>The “Double Down” bet.  This is generally offered at any time.  It can be
+looked at as an  an additional amount added to the “ante” bet and a modification
+to game play. The player creates this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object, changing the course
+of play: only a single card can be dealt when this bet is made.</p></li>
+</ul>
+<p><strong>Objects</strong>.
+It seems simplest to create a few common <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances: Ante, Insurance, Even Money
+and Double Down.</p>
+<p>The Table object will then have to combine a Double-Down <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object’s amount
+into the Ante <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object’s amount.</p>
+</div>
+</div>
+<div class="section" id="hand-class-design">
+<h2>Hand Class Design<a class="headerlink" href="#hand-class-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Hand">
+<em class="property">class </em><code class="sig-name descname">Hand</code><a class="headerlink" href="#Hand" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> contains a collection of individual <a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances,
+and determines the two point values for the hand.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="Hand.cards">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">cards</code><a class="headerlink" href="#Hand.cards" title="Permalink to this definition">¶</a></dt>
+<dd><p>Holds the collection of individiual <a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances of this hand.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Hand.__init__">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">*card: Card=None</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Hand.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>card</strong> (<a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>) – cards to add</p>
+</dd>
+</dl>
+<p>Creates an empty hand. The <code class="xref py py-attr docutils literal notranslate"><span class="pre">Hard.cards</span></code> variable is
+initialized to an empty sequence.</p>
+<p>If <code class="xref py py-obj docutils literal notranslate"><span class="pre">card</span></code> values are provided, then use the <a class="reference internal" href="#Hand.add" title="Hand.add"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add()</span></code></a>
+method to add these cards to the hand.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Hand.hard">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">hard</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#Hand.hard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the hard total of all cards in the hand.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Hand.soft">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">soft</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#Hand.soft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does the soft-total computation.</p>
+<ol class="arabic">
+<li><p>Partition the cards into two collections:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Ace</strong>. This collection has at most one Ace. For this card, <code class="docutils literal notranslate"><span class="pre">card.softValue</span> <span class="pre">!=</span> <span class="pre">card.hardValue</span></code>.
+If there’s no card here, the value is zero.
+If there’s a card here, the value is the soft value of the one-and-only <a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instance.</p></li>
+<li><p><strong>Non-Ace</strong>. This collection has all the cards except
+for the card in the <strong>Ace</strong> collection. If there is no Ace, this collection
+is all the cards. The value is the hard total of all cards.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Return the sum of the values for each collection, <strong>Ace</strong> plus <strong>Non-Ace</strong>.</p></li>
+</ol>
+</dd></dl>
+
+<dl class="method">
+<dt id="Hand.add">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">card: Card</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Hand.add" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>card</strong> (<a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>) – A card to hadd</p>
+</dd>
+</dl>
+<p>Add this card to the <a class="reference internal" href="#Hand.cards" title="Hand.cards"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Hand.cards</span></code></a> list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Hand.value">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">value</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#Hand.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the final total of this hand.</p>
+<p>If there are any aces, and the soft total
+is 21 or less, this will be the soft total.
+If there are no aces, or the soft
+total is over 21, this will be the hard total.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Hand.size">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">size</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#Hand.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of cards in the hand, the size of the <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Hand.blackjack">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">blackjack</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#Hand.blackjack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if this hand has a size of two and a value of 21.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Hand.busted">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">busted</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#Hand.busted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if this hand a value over 21.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Hand.__iter__">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Iterator[Card]<a class="headerlink" href="#Hand.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterator over the cards of the <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Hand.__str__">
+<code class="sig-prename descclassname">Hand.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#Hand.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays the content of the hand as a String with all of the card names.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="hand-deliverables">
+<h2>Hand Deliverables<a class="headerlink" href="#hand-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are six deliverables for this exercise.</p>
+<ul class="simple">
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">HandTotal</span></code> class hierarchy:  <code class="xref py py-class docutils literal notranslate"><span class="pre">HandTotal</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">HandHardTotal</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">HandSoftTotal</span></code>.</p></li>
+<li><p>A unit test for each of these classes.</p></li>
+<li><p>The <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class.</p></li>
+<li><p>A class which performs a unit tests of the <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class.
+The unit test should create several instances of <a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>, <a class="reference internal" href="card_deck_shoe.html#FaceCard" title="FaceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceCard</span></code></a>
+and <a class="reference internal" href="card_deck_shoe.html#AceCard" title="AceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">AceCard</span></code></a>, and add these to instances of <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a>,
+to create various point totals.</p></li>
+<li><p>The <a class="reference internal" href="card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> and <a class="reference internal" href="card_deck_shoe.html#AceCard" title="AceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">AceCard</span></code></a> modifications required to set the appropriate values
+in a <a class="reference internal" href="#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a></p></li>
+<li><p>A set of unit tests for assembling a hand and changing the total object in use to correctly
+compute hard or soft totals for the hand.</p></li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>The Cards and Hands are essential elements for the game of Blackjack.
+Following the pattern of previous games, the next chapter will look
+at the implementation of a table to hold the player’s <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> objects.
+An interesting part of this is the a player’s hand can be split,
+leading to multiple hands, each of which has multiple active bets.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Hand and Outcome Classes</a><ul>
+<li><a class="reference internal" href="#hand-analysis">Hand Analysis</a><ul>
+<li><a class="reference internal" href="#payout-odds">Payout Odds</a></li>
+<li><a class="reference internal" href="#hard-and-soft-totals">Hard and Soft Totals</a></li>
+<li><a class="reference internal" href="#blackjack-outcomes">Blackjack Outcomes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hand-class-design">Hand Class Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hand-deliverables">Hand Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="card_deck_shoe.html" title="previous chapter">Card, Deck and Shoe Classes</a></li>
+      <li>Next: <a href="blackjack_table.html" title="next chapter">Blackjack Table Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

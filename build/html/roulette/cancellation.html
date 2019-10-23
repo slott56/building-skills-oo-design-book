@@ -1,0 +1,294 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Cancellation Player Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Fibonacci Player Class" href="fibonacci.html" />
+    <link rel="prev" title="Player 1-3-2-6 Class" href="1_3_2_6.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="cancellation-player-class">
+<span id="roul-cancellation"></span><h1>Cancellation Player Class<a class="headerlink" href="#cancellation-player-class" title="Permalink to this headline">¶</a></h1>
+<p>This section will describe a player who has a complex internal state
+that can be modeled using existing library classes.</p>
+<p>In <a class="reference internal" href="#cancellation-player-analysis">Cancellation Player Analysis</a> we’ll look at what this player does.</p>
+<p>We’ll turn to how the player works in <a class="reference internal" href="#playercancellation-design">PlayerCancellation Design</a>.</p>
+<p>In <a class="reference internal" href="#cancellation-player-deliverables">Cancellation Player Deliverables</a> we’ll enumerate the deliverables for
+this player.</p>
+<div class="section" id="cancellation-player-analysis">
+<span id="roul-cancellation-ov"></span><h2>Cancellation Player Analysis<a class="headerlink" href="#cancellation-player-analysis" title="Permalink to this headline">¶</a></h2>
+<p>One method for tracking the lost bets is called the “cancellation”
+system or the “Labouchere” system.</p>
+<p>The bets are designed around an ascending sequence of
+values, <img class="math" src="../_images/math/45aa82f2bd7cbb02d5db3cef8e9901803575e6de.png" alt="[1, 2, 3, 4, 5, 6]"/>. The sum, 21, is the total budget.
+Each bet will be a multiple of the table minimum, <img class="math" src="../_images/math/68c7c8c65602677ab56cf7fd88002023f0edc575.png" alt="b"/>.
+The core principle is to bet on the sum of the numbers at the end
+of the sequence.</p>
+<p>In this example, the end values of of the sequence are <img class="math" src="../_images/math/84b6828c013421b12a6f2ae566543c7bbbb09ad5.png" alt="1+6"/>,
+leading the player to bet <img class="math" src="../_images/math/c1baa537196b270c413f5100dbf6b352f731f1f4.png" alt="7 \times b"/>.</p>
+<p>On a win, the player cancels the two numbers used to make the bet. In
+the event that all the numbers are cancelled, the player has doubled their
+money, and can retire from the table happy.</p>
+<p>For each loss, however, the player adds the amount of the bet to the end of the sequence; this
+is a loss to be recouped. The next bet is designed to recoups the most recent loss
+and provide a small gain. Multiple winning bets will recoup multiple
+losses, supplemented with small gains.</p>
+<p><strong>Example</strong>.
+Here’s an example of the cancellation system using a budget
+of 21 times the base bet, decomposed to <img class="math" src="../_images/math/45aa82f2bd7cbb02d5db3cef8e9901803575e6de.png" alt="[1, 2, 3, 4, 5, 6]"/>.</p>
+<ol class="arabic simple">
+<li><p>Bet <img class="math" src="../_images/math/84b6828c013421b12a6f2ae566543c7bbbb09ad5.png" alt="1+6"/>. A win. Cancel 1 and 6, leaving <img class="math" src="../_images/math/69b77a18f456446a7390f9c3f5e2de05385dd593.png" alt="[2, 3, 4, 5]"/>.</p></li>
+<li><p>Bet <img class="math" src="../_images/math/ea39aa009beed06b9f912ebbef51cc2585d4a73e.png" alt="2+5"/>. A loss. Add 7, leaving <img class="math" src="../_images/math/a28c9d93352f8cd7b4a92ed9e2e897713fd2cdd1.png" alt="[2, 3, 4, 5, 7]"/>.</p></li>
+<li><p>Bet <img class="math" src="../_images/math/ebc0cd0528eac9d5ca9438ecc7d1ecd137bb7224.png" alt="2+7"/>. A loss. Add 9, leaving <img class="math" src="../_images/math/ea843bf85a71fe9965025877bf23a60cec2056e3.png" alt="[2, 3, 4, 5, 7, 9]"/>.</p></li>
+<li><p>Bet <img class="math" src="../_images/math/86b220de50065e384b23dc7f75ceccce386b38e8.png" alt="2+9"/>. A win. Cancel 2 and 9, leaving <img class="math" src="../_images/math/41e66dbf1e85ac78c3adcfe1f3a898bc6d92744b.png" alt="[3, 4, 5, 7]"/>.</p></li>
+<li><p>Next bet will be <img class="math" src="../_images/math/6284e94be4b63b04cd6732df0b8a7fb338d94000.png" alt="3+7"/>.</p></li>
+</ol>
+<p><strong>State</strong>. The player’s state is the list of multipliers. This
+list grows and shrinks; when it is empty, the player leaves the table.
+The bet amount will be the first and last elements of this list. Wins will remove
+elements from the collection; losses will add elements to the
+collection.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Alternative Budgets</p>
+<p>The system of betting shown above can involve large numbers, since
+the betting starts at <img class="math" src="../_images/math/e9855e89e6e96d173a08b4fdb914f2cadc88a1af.png" alt="7 \times"/> the table minimum. The numbers
+are smaller when working with a list of smaller numbers.</p>
+<p>Consider a starting list of <img class="math" src="../_images/math/ec80c1bbee5516a292ef405e21a982b6c46a4b21.png" alt="[1, 1]"/>.  The bet is 2. A win cancels both
+numbers and resets the betting.</p>
+<p>A loss, however, appends the bet to the sequence, leaving us with <img class="math" src="../_images/math/e380bab8a76213a568d124aefb3de91f8e811f79.png" alt="[1, 1, 2]"/>.
+The next bet becomes 3.</p>
+<p>A win will leave one uncancelled value, this can be dropped, the list
+reset to <img class="math" src="../_images/math/ec80c1bbee5516a292ef405e21a982b6c46a4b21.png" alt="[1, 1]"/>, and betting can resume.</p>
+<p>A subsequent loss appends 3, leaving us with <img class="math" src="../_images/math/3fe66b3c28379312c6fc8cfed2838ba70a62a2e7.png" alt="[1, 1, 2, 3]"/>.
+The next bet becomes 4.</p>
+<p>Almost any starting sequence will work as long as the values are positive
+integers.</p>
+</div>
+</div>
+<div class="section" id="playercancellation-design">
+<h2>PlayerCancellation Design<a class="headerlink" href="#playercancellation-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="PlayerCancellation">
+<em class="property">class </em><code class="sig-name descname">PlayerCancellation</code><a class="headerlink" href="#PlayerCancellation" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#PlayerCancellation" title="PlayerCancellation"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerCancellation</span></code></a> uses the cancellation betting system.
+This player allocates their available budget into a sequence of bets
+that have an accelerating potential gain as well as recouping any losses.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="PlayerCancellation.sequence">
+<code class="sig-prename descclassname">PlayerCancellation.</code><code class="sig-name descname">sequence</code><a class="headerlink" href="#PlayerCancellation.sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>This <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code> keeps the bet amounts; wins are removed
+from this list and losses are appended to this list. THe current bet
+is the first value plus the last value.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="PlayerCancellation.outcome">
+<code class="sig-prename descclassname">PlayerCancellation.</code><code class="sig-name descname">outcome</code><a class="headerlink" href="#PlayerCancellation.outcome" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the player’s preferred <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="PlayerCancellation.__init__">
+<code class="sig-prename descclassname">PlayerCancellation.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">table: Table</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#PlayerCancellation.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>This uses the <a class="reference internal" href="#PlayerCancellation.resetSequence" title="PlayerCancellation.resetSequence"><code class="xref py py-meth docutils literal notranslate"><span class="pre">PlayerCancellation.resetSequence()</span></code></a> method to initialize the
+sequence of numbers used to establish the bet amount. This also
+picks a suitable even money <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>, for example, black.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table</strong> (<a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>) – The <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object which will accept the bests.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="PlayerCancellation.resetSequence">
+<code class="sig-prename descclassname">PlayerCancellation.</code><code class="sig-name descname">resetSequence</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#PlayerCancellation.resetSequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Puts the initial sequence
+of six values, <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6]</span></code>  into the <a class="reference internal" href="#PlayerCancellation.sequence" title="PlayerCancellation.sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence</span></code></a>
+variable. The sequence <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1]</span></code> will also work,
+and the bets will be smaller.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PlayerCancellation.placeBets">
+<code class="sig-prename descclassname">PlayerCancellation.</code><code class="sig-name descname">placeBets</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#PlayerCancellation.placeBets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a bet from the
+sum of the first and last values of <a class="reference internal" href="#PlayerCancellation.sequence" title="PlayerCancellation.sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence</span></code></a> and the preferred
+outcome.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PlayerCancellation.win">
+<code class="sig-prename descclassname">PlayerCancellation.</code><code class="sig-name descname">win</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#PlayerCancellation.win" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet which won</p>
+</dd>
+</dl>
+<p>Uses the superclass method to update the
+stake with an amount won. It then removes the fist and last element from
+<a class="reference internal" href="#PlayerCancellation.sequence" title="PlayerCancellation.sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PlayerCancellation.lose">
+<code class="sig-prename descclassname">PlayerCancellation.</code><code class="sig-name descname">lose</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#PlayerCancellation.lose" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet which lost</p>
+</dd>
+</dl>
+<p>Uses the superclass method to update the
+stake with an amount lost. It then appends the sum of the first and
+list elements of <a class="reference internal" href="#PlayerCancellation.sequence" title="PlayerCancellation.sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence</span></code></a> to the end of <a class="reference internal" href="#PlayerCancellation.sequence" title="PlayerCancellation.sequence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence</span></code></a>
+as a new value.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="cancellation-player-deliverables">
+<h2>Cancellation Player Deliverables<a class="headerlink" href="#cancellation-player-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise.</p>
+<ul class="simple">
+<li><p>The <a class="reference internal" href="#PlayerCancellation" title="PlayerCancellation"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerCancellation</span></code></a> class.</p></li>
+<li><p>A unit test of the <a class="reference internal" href="#PlayerCancellation" title="PlayerCancellation"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerCancellation</span></code></a> class. This test
+should synthesize a fixed list of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>
+s, and calls a <a class="reference internal" href="#PlayerCancellation" title="PlayerCancellation"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerCancellation</span></code></a> instance with various
+sequences of reds and blacks. There are 16 different sequences of
+four winning and losing bets. These range from four losses in a row
+to four wins in a row. This should be sufficient to exercise the
+class and see the changes in the bet amount.</p></li>
+<li><p>An update to the overall <a class="reference internal" href="control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class that uses the <a class="reference internal" href="#PlayerCancellation" title="PlayerCancellation"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerCancellation</span></code></a> class.</p></li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>In the <a class="reference internal" href="sevenreds.html#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a> subclass of <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>, the state was a simple
+count. In the <a class="reference internal" href="1_3_2_6.html#Player1326" title="Player1326"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player1326</span></code></a> subclass, the state was a more complex
+hierarchy of classes. In this case, a built-in <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> object could
+maintain the player’s state.
+In the next chapter we’ll look at one more way to maintain state of a player,
+using a pair of integer values.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Cancellation Player Class</a><ul>
+<li><a class="reference internal" href="#cancellation-player-analysis">Cancellation Player Analysis</a></li>
+<li><a class="reference internal" href="#playercancellation-design">PlayerCancellation Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cancellation-player-deliverables">Cancellation Player Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="1_3_2_6.html" title="previous chapter">Player 1-3-2-6 Class</a></li>
+      <li>Next: <a href="fibonacci.html" title="next chapter">Fibonacci Player Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

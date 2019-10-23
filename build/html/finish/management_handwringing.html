@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Rework and Management Hand-Wringing: A Post-Script &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Command-Line Interface (CLI)" href="command_line_interface.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="rework-and-management-hand-wringing-a-post-script">
+<h1>Rework and Management Hand-Wringing: A Post-Script<a class="headerlink" href="#rework-and-management-hand-wringing-a-post-script" title="Permalink to this headline">¶</a></h1>
+<p>A great deal of this book involves rework. This is done,
+knowing it is very difficult to justify design rework in an enterprise
+development environment. Some managers have an amazingly large
+blind-spot covering the amount of evidence
+required to justify rework. The conversations have the following form.</p>
+<p><strong>Architect</strong>. We need to disentangle Roulette and Craps so that
+Craps is not a subclass of Roulette. I’ve got a revised design
+that will take <em>X</em> hours of effort to implement.</p>
+<p><strong>Manager</strong>. I’ll need some justification. Why do we have to fix it?</p>
+<p><strong>Architect</strong>. The structure is illogical: Craps isn’t a special
+case of Roulette, they’re independent specializations of
+something more general.</p>
+<p><strong>Manager</strong>. (Pounds Table) Illogical! Illogical!  That’s insane!
+Illogical isn’t a good enough justification. Our
+overall problem domain always contains illogical special cases
+and user-oriented considerations. You’ll have to provide
+something more concrete that a hand-waving nonsense about Illogical.</p>
+<p><strong>Architect</strong>. Okay, in addition to being illogical, it will
+become too complex: in the future, we’ll probably have trouble
+implementing other games.</p>
+<p><strong>Manager</strong>. How much trouble? Will it be more than <em>X</em>
+hours of effort? How can you be sure sure you’re <em>X</em> of effort
+now will have any payoff in the future? You’re gambling with the
+stakeholder’s money. I need proof.</p>
+<p><strong>Architect</strong>. When we include maintenance, adaptation and
+debugging, the potential future cost is probably larger than <em>2X</em>
+hours of effort. And it’s illogical.</p>
+<p><strong>Manager</strong>. Probably larger?  Probably? First you have illogic? Now you
+have probably? This is all guess-work. We can’t be guessing!
+(More Table Pounding.) We can’t justify rework based on
+probable costs. You’ll need something tangible. Will it save us
+any lines of code?</p>
+<p><strong>Architect</strong>. No, it will add lines of code. But it will reduce
+maintenance and adaptation costs because it will be more logical.</p>
+<p><strong>Manager</strong>. I conclude that the change is unjustified. You can’t use
+guesswork. Go away. Get back on schedule.</p>
+<p><strong>Architect</strong>. The initial schedule was guesswork.</p>
+<p>In many cases, we have a manager who’s mind is only influenced by the tangible schedule.
+The schedule that was created prior to any deep knowledge of the
+software being built. Once focused on the schedule, a manager may be reluctant
+to deal in new facts that have been learned along the way.</p>
+<p>However, in some cases, conversation continues in the following vein.</p>
+<p><strong>Architect</strong>. If guesswork isn’t good enough, please define what constitutes
+adequate justification for improvements?</p>
+<p><strong>Manager</strong>. Real savings. Real money. Measurable dollars and sense. I’m a plain
+old count-the-money kind of manager. Ideas like “illogical” don’t map to money.
+A measurable, definite quantity of labor effort is the only justification for
+disrupting the schedule.</p>
+<p><strong>Architect</strong>. And future effort doesn’t count?</p>
+<p><strong>Manager</strong>. The probability of savings in the future isn’t tangible. It’s not
+real. It’s made-up pie-in-the-sky pipe-dreams of some possible future state.</p>
+<p><strong>Architect</strong>. And software that’s more logical doesn’t count?</p>
+<p><strong>Manager</strong>. If course not; it doesn’t result in real schedule savings.
+Logic isn’t money. It’s pretty pictures on UML diagrams. It’s a slide-deck with
+bubbles and arrows. That’s not the schedule, that’s just information.</p>
+<p><strong>Architect</strong>. The schedule
+was only a notional projection of possible effort based on no actual hands-on
+knowledge. At this point, we have knowledge. A <em>possible</em>
+reduction in the possible effort has more factual basis than the original schedule.</p>
+<p><strong>Manager</strong>. Forget about the refactoring. I have an idea. Wouldn’t it be simpler to…?</p>
+<p>For reasons we don’t fully understand, a schedule becomes a kind
+of established fact. Any change to the schedule requires other
+established facts, not the conjecture of design.</p>
+<p>By some magical process, the schedule is transformed from a conjecture, based
+on a previously conjectured design. Managers
+can often cling to the schedule when it’s little more than conjecture.
+In effect, no level of proof can ever
+override the precedence-setting fact of the schedule.
+This makes it nearly impossible
+to justify making a design change. In the worst cases, the only way to accumulate
+enough evidence is to actually implement the change and then measure
+the impact of the change.</p>
+<p>To continue this rant, the same kind of “inadequate evidence”
+issue seems to surround many technology changes. We have had
+conversations like the one shown above regarding object-oriented
+design, the use of objects in relational databases, the use of
+object-oriented databases, the use of open-source software, and
+the use of the star-schema data model for reporting and
+analysis. Here’s the summary</p>
+<blockquote>
+<div><p>Change can only be considered based on established facts.</p>
+<p>The facts can only be established by making a change.</p>
+</div></blockquote>
+<p>While this
+chicken-and-egg problem is easily resolved by recognizing that
+the current architecture or schedule is actually <em>not</em>
+an established fact, this is a difficult mental step to take.</p>
+<p>As a final complaint, we note that all “wouldn’t it be simpler…”
+gambits can be described as a management trump card. The
+point is rarely an effort to reduce code complexity, but to
+promote management understanding of the design. While this is a
+noble effort, there is sometimes a communication gap between
+designers and managers. It is incumbent both on designers to
+communicate fully, and on managers to provide time, budget and
+positive reinforcement for detailed communication of design
+considerations and consequences.</p>
+<p>The “tl;dr” here is that rework leads to worry and it shouldn’t.</p>
+<p>Rework reflects valuable lessons learned, and is perhaps the most
+important work than can be done.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="command_line_interface.html" title="previous chapter">Command-Line Interface (CLI)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

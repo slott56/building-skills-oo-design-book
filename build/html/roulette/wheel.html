@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Wheel Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bin Builder Class" href="bin_builder.html" />
+    <link rel="prev" title="Bin Class" href="bin.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="wheel-class">
+<span id="roul-wheel"></span><h1>Wheel Class<a class="headerlink" href="#wheel-class" title="Permalink to this headline">¶</a></h1>
+<p>This chapter builds on the previous two chapters, creating a more
+complete composite object from the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> and <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>
+classes we have already defined. In <a class="reference internal" href="#wheel-analysis">Wheel Analysis</a> we’ll look
+at the responsibilities of a wheel and it’s collaboration.</p>
+<p>In the <a class="reference internal" href="#wheel-design">Wheel Design</a> we’ll provide the detailed design
+information. In the <a class="reference internal" href="#test-setup">Test Setup</a> we’ll address some considerations
+for testing a class which has random behavior.
+In <a class="reference internal" href="#wheel-deliverables">Wheel Deliverables</a> we’ll enumerate what must
+be built.</p>
+<div class="section" id="wheel-analysis">
+<h2>Wheel Analysis<a class="headerlink" href="#wheel-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The wheel has two responsibilities:</p>
+<ul class="simple">
+<li><p>it is a container for the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances, and</p></li>
+<li><p>it picks one <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> at random.</p></li>
+</ul>
+<p>Separately, we’ll look at ways to initialize the various <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances that comprise a
+standard Roulette wheel.</p>
+<p>In <a class="reference internal" href="#the-container-responsibility">The Container Responsibility</a> we’ll look at the container aspect in detail.</p>
+<p>In <a class="reference internal" href="#the-random-bin-selection-responsibility">The Random Bin Selection Responsibility</a> we’ll look at the random selection aspects.</p>
+<p>Based on this, the <a class="reference internal" href="#constructing-a-wheel">Constructing a Wheel</a> section provides a description of
+how we can build the Wheel instance.</p>
+<div class="section" id="the-container-responsibility">
+<h3>The Container Responsibility<a class="headerlink" href="#the-container-responsibility" title="Permalink to this headline">¶</a></h3>
+<p>Since a <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> object contains 38 <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances,
+it is a collection. We can review our survey of available collections in
+<a class="reference internal" href="bin.html#roul-bin-collections"><span class="std std-ref">Design Decision – Choosing A Collection</span></a> for some guidance on how to choose the
+best collection.</p>
+<p>In this case, the choice of the winning <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>
+will be selected by a random numeric index.  We need some kind of sequential
+collection.</p>
+<p>This makes an immutable <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> very appealing.
+This is a subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Sequence</span></code> and has
+the features we’re looking for.</p>
+<p>Once we’ve decided to use a sequential collection, we have a second decision.
+We need to choose an indexing scheme for the various <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances.
+In the case of Roulette, we have a problem with zero and double-zero:
+there’s no 00 integer.</p>
+<p>The index values of 1
+to 36 are logical mappings to <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances based on the straight bet.
+The roulette wheel’s bins have the 36 numbers prominently displayed.
+The <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> at index 1 would contain <code class="samp docutils literal notranslate"><span class="pre">Outcome(&quot;1&quot;,</span> <span class="pre">35)</span></code> among several others.
+The <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> at index 2 would contain <code class="samp docutils literal notranslate"><span class="pre">Outcome(&quot;2&quot;,</span> <span class="pre">35)</span></code>.</p>
+<p>We have a small problem, however, with 0 and 00: we need two separate indexes.
+While 0 is a valid index, what do we do with 00?</p>
+<p>The trick here is to step away from being too literal in our mappings
+from numbers to bins. There’s no real reason why the bin with
+<code class="samp docutils literal notranslate"><span class="pre">Outcome(&quot;1&quot;,</span> <span class="pre">35)</span></code> should be at index position 1 in the <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> collection.</p>
+<p>Because the index of the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> doesn’t have any significance at
+all, we can assign the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> that has the <code class="samp docutils literal notranslate"><span class="pre">Outcome(&quot;00&quot;,</span> <span class="pre">35)</span></code>
+to position 37 in the <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> collection.
+The index value doesn’t actually matter because we’ll never
+use the index for any purpose other than random selection.</p>
+</div>
+<div class="section" id="the-random-bin-selection-responsibility">
+<h3>The Random Bin Selection Responsibility<a class="headerlink" href="#the-random-bin-selection-responsibility" title="Permalink to this headline">¶</a></h3>
+<p>In order for the <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class to select a <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance
+at random, we’ll need a random number from 0 to 37 that we can use an an
+index. There is an alternative, however.</p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">random</span></code> module offers a <code class="xref py py-meth docutils literal notranslate"><span class="pre">Random.choice()</span></code> function
+which picks a random value from a
+sequence. This is ideal for returning a randomly selected <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>
+from our list of <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances. The numeric value doesn’t
+matter if we use the <code class="xref py py-meth docutils literal notranslate"><span class="pre">choice()</span></code> method.</p>
+<p><strong>Testability</strong>.
+Note that testing a class using random numbers isn’t going to be easy.
+To do testing properly, need a non-random
+random number generator with predictable results.</p>
+<p>To create a non-random random-number generator, we can do
+something like the following.</p>
+<ol class="arabic simple">
+<li><p>Set a specific seed value. This will generate
+a known sequence of values.</p></li>
+<li><p>Create a mock class for the random number generator that returns
+a known, fixed sequence of values. We can leverage the <code class="xref py py-mod docutils literal notranslate"><span class="pre">unittest.mock</span></code>
+module for this.</p></li>
+</ol>
+<p>We’ll address this in detail in <a class="reference internal" href="testability.html#roul-test"><span class="std std-ref">Review of Testability</span></a>. For now, we’ll suggest
+using the first technique – set a specific seed value.</p>
+</div>
+<div class="section" id="constructing-a-wheel">
+<h3>Constructing a Wheel<a class="headerlink" href="#constructing-a-wheel" title="Permalink to this headline">¶</a></h3>
+<p>Each instance of the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class has a list of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+The zero (“0”) and double zero (“00”) <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances only have two <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+The other numbers have anywhere from twelve to fourteen <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>Clearly, there’s quite a bit of complexity in building some of the bins.</p>
+<p>Rather than dwell on these algorithms, we’ll apply a common OO principle of
+deferred binding. We’ll build a very basic wheel first
+and work on the bin-building algorithms in the next chapter.</p>
+<p>It’s often simplest to build a class incrementally. This is an example where
+a simpler overall structure includes rather complex details.</p>
+</div>
+</div>
+<div class="section" id="wheel-design">
+<h2>Wheel Design<a class="headerlink" href="#wheel-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Wheel">
+<em class="property">class </em><code class="sig-name descname">Wheel</code><a class="headerlink" href="#Wheel" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> contains the 38 individual bins on a Roulette wheel,
+plus a random number generator. It can select a <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> at
+random, simulating a spin of the Roulette wheel.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="Wheel.bins">
+<code class="sig-prename descclassname">Wheel.</code><code class="sig-name descname">bins</code><a class="headerlink" href="#Wheel.bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains the individual <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances.</p>
+<p>This is a <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> of 38 elements.  This can be built
+with <code class="samp docutils literal notranslate"><span class="pre">tuple(Bin()</span> <span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range(38))</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Wheel.rng">
+<code class="sig-prename descclassname">Wheel.</code><code class="sig-name descname">rng</code><a class="headerlink" href="#Wheel.rng" title="Permalink to this definition">¶</a></dt>
+<dd><p>A random number generator to select a <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>
+from the <a class="reference internal" href="#Wheel.bins" title="Wheel.bins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bins</span></code></a> collection.</p>
+<p>For testing, we’ll often want to seed this generator.
+For simulation processing, we can set the seed value using <code class="xref py py-func docutils literal notranslate"><span class="pre">os.urandom()</span></code>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Wheel.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><p>Creates a new wheel with 38 empty <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances. It will also
+create a new random number generator instance.</p>
+<p>At the present time, this does not do the full initialization of the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances.
+We’ll rework this in a future exercise.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Wheel.</code><code class="sig-name descname">addOutcome</code><span class="sig-paren">(</span><em class="sig-param">number: int</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><p>Adds the given <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object to the
+<a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance with the given number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bin</strong> (<em>int</em>) – bin number, in the range zero to 37 inclusive.</p></li>
+<li><p><strong>outcome</strong> (<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><em>Outcome</em></a>) – The Outcome to add to this Bin</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Wheel.choose">
+<code class="sig-prename descclassname">Wheel.</code><code class="sig-name descname">choose</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Bin<a class="headerlink" href="#Wheel.choose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a random number between 0
+and 37, and returns the randomly selected <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance.</p>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">Random.choice()</span></code> function of the <code class="xref py py-class docutils literal notranslate"><span class="pre">random</span></code>
+module will select one of the available <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances from the <a class="reference internal" href="#Wheel.bins" title="Wheel.bins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bins</span></code></a>
+collection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A Bin selected at random from the wheel.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="bin.html#Bin" title="Bin">Bin</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Wheel.get">
+<code class="sig-prename descclassname">Wheel.</code><code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">bin: int</em><span class="sig-paren">)</span> &#x2192; Bin<a class="headerlink" href="#Wheel.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the given <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance from the
+internal collection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bin</strong> (<em>int</em>) – bin number, in the range zero to 37 inclusive.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The requested Bin.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="bin.html#Bin" title="Bin">Bin</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="test-setup">
+<h2>Test Setup<a class="headerlink" href="#test-setup" title="Permalink to this headline">¶</a></h2>
+<p>We need a controlled kind of random number generation for testing
+purposes. This is done with tests that look like the following:</p>
+<p class="rubric">Test Outline</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_wheel_sequence</span><span class="p">():</span>
+    <span class="n">wheel</span> <span class="o">=</span> <span class="n">Wheel</span><span class="p">()</span>
+    <span class="n">wheel</span><span class="o">.</span><span class="n">addOutcome</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">wheel</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">wheel</span><span class="o">.</span><span class="n">choose</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The values delivered from this seeded random number generator
+can be seen from this experiment.</p>
+<p class="rubric">Fixed pseudo-random sequence</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">37</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+<span class="go">[8, 36, 4, 16, 7, 31, 28, 30, 24, 13]</span>
+</pre></div>
+</div>
+<p>This allows us to predict the output from the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Wheel.next()</span></code> method.
+Because the first value is 8, we only need to put an outcome into
+<a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance at position 8 in the <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> collection.</p>
+<p>The special `` Outcome(“test”, 1)`` object should be found
+in the expected <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance.</p>
+</div>
+<div class="section" id="wheel-deliverables">
+<h2>Wheel Deliverables<a class="headerlink" href="#wheel-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise. The new class and the
+unit test will have Python docstrings.</p>
+<ul class="simple">
+<li><p>The <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class. This is part of the <code class="file docutils literal notranslate"><span class="pre">roulette.py</span></code> file,
+along with the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> and <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> classes.</p></li>
+<li><p>A class which performs a unit test of building the <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>
+class. The unit test should create several instances of the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class,
+two instances of the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class, and an instance of the <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class.
+The unit test should establish that <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances can be
+added to the <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>.</p></li>
+<li><p>A class which tests the Wheel class by selecting “random” values
+from a <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> object using a fixed seed value.</p></li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>Given the overall structure of the <a class="reference internal" href="#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> object, the next
+chapter will show how to build the collection of individual <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+instances in each <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Wheel Class</a><ul>
+<li><a class="reference internal" href="#wheel-analysis">Wheel Analysis</a><ul>
+<li><a class="reference internal" href="#the-container-responsibility">The Container Responsibility</a></li>
+<li><a class="reference internal" href="#the-random-bin-selection-responsibility">The Random Bin Selection Responsibility</a></li>
+<li><a class="reference internal" href="#constructing-a-wheel">Constructing a Wheel</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#wheel-design">Wheel Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#test-setup">Test Setup</a></li>
+<li><a class="reference internal" href="#wheel-deliverables">Wheel Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="bin.html" title="previous chapter">Bin Class</a></li>
+      <li>Next: <a href="bin_builder.html" title="next chapter">Bin Builder Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

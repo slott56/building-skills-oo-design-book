@@ -1,0 +1,127 @@
+..  _`found.starting`:
+
+Getting Started
+^^^^^^^^^^^^^^^
+
+In this chapter, we'll build the initial working development
+environment. We'll install some tools, create a template directory
+structure, and run the first round of tests to be sure
+things work.
+
+We'll start with an overview of what we're going to build.
+In `Deliverables_`, we'll address the kinds of deliverables
+that should be produced. These kinds of deliverables form the basis for each chapter.
+
+
+Deliverables
+============
+
+Each chapter defines the classes to be built and the unit testing
+that is expected. A third category of deliverable -- documentation -- is merely implied.
+
+The purpose of
+each chapter is to write the source files for one or more classes, the
+source files for one or more unit tests, and assure that a minimal set
+of API documentation is available.
+
+-   **Source Files**.
+    The source files are the most important deliverable. In effect,
+    this is the working application program. Generally, we will be
+    running this application from within the Integrated Development
+    Environment (IDE).
+
+    We can always run the Python as a stand-alone program, if we want
+    to exercise it the way end-users will see it.
+
+    In the case of Python, a "program" is the collection of
+    :file:`.py` files. There really isn't much more to deliver.
+    This makes our life simpler than in other languages with
+    complex compilers and other tools.
+
+-   **Unit Test Files**.
+    The deliverables section of each chapter summarizes the unit
+    testing that is expected, in addition to the classes to be built. We
+    feel that unit testing is a critical skill, and emphasize it
+    throughout the inividual exercises.
+
+    There are two broad approaches for unit tests.
+
+    -   The built-in :mod:`unittest` module has facilities
+        for defining test classes.
+
+    -   The add-on :mod:`pytest` package has facilities
+        for writing somewhat simpler test functions.
+        The ``pytest`` tool can collect :class:`unittest.TestCase`
+        classes as part of a test suite, making this
+        an ideal choice for running unit tests.
+
+    We'll look closely at the overall project structure in the next section.
+
+-   **Documentation**.
+    The job isn't over until the paperwork is done.
+    The internal documentation is generally built from
+    specially formatted blocks of comments within the source itself.
+    We can use :application:`Epydoc` (or :application:`sphinx`) to create
+    documentation based on the code.
+
+We'll be building three separate, but closely-related things:
+the code, the test cases, and the documentation. In the next
+section we'll organize our tools.
+
+Tools
+=====
+
+
+Perhaps one of the most important considerations is to have
+a way to manage Python environments. There are a number
+of "virtual environment" tools available. In this book,
+we're going to suggest using **conda** to manage Python
+installation and environment setup.
+
+While Python is often available on modern OS's, it tends
+to be out-of-date. The OS Python often requires privileges
+to do installs and upgrades.
+
+..  important:: Don't Use the OS Python
+
+    Even if Python is already installed, don't use it.
+
+    Always install your own, so you can keep it up-to-date
+    without worrying about OS conflicts or privileges.
+
+Here's a good way to proceed.
+
+1.  Download Miniconda.  https://docs.conda.io/en/latest/miniconda.html
+
+2.  Detailed instructions: https://conda.io/projects/conda/en/latest/user-guide/install/index.html
+
+#.  Once conda is installed, create a working environment.
+
+    ::
+
+        conda create --name oo-design python=3.7 pytest sphinx
+
+#.  Activate the working environment.
+
+    ::
+
+        conda activate oo-design
+
+#.  Add ``tox`` to the environment. This isn't available from the libraries
+    searched by ``conda``, so we'll use ``pip`` to install it.
+
+    ::
+
+        python -m pip install tox
+
+At this point, we can enter the following command to see we have a useful,
+working virtual environment.
+
+    ::
+
+        (oo-design) slott@MacBookPro-SLott % python -V
+        Python 3.7.4
+
+Python is relatively easy to work with: any text editor will serve
+a developer's needs. Something as simple as Atom or something
+as sophisticated as PyCharm are both acceptable as IDE's.

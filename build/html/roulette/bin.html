@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bin Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Wheel Class" href="wheel.html" />
+    <link rel="prev" title="Outcome Class" href="outcome.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="bin-class">
+<span id="roul-bin"></span><h1>Bin Class<a class="headerlink" href="#bin-class" title="Permalink to this headline">¶</a></h1>
+<p>This chapter will present the design for the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class.
+In <a class="reference internal" href="#bin-analysis">Bin Analysis</a> we’ll look at the responsibilities and collaborators
+for a bin.</p>
+<p>As part of designing the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class, we need to choose what
+is the most appropriate kind of collection class to use.
+We’ll show how to do this in <a class="reference internal" href="#design-decision-choosing-a-collection">Design Decision – Choosing A Collection</a>.</p>
+<p>In <a class="reference internal" href="#wrap-vs-extend-a-collection">Wrap vs. Extend a Collection</a> we’ll look at two
+principle ways to embed a collection class in an application.
+We’ll clarify a few additional issues in <a class="reference internal" href="#bin-questions-and-answers">Bin Questions and Answers</a>.</p>
+<p>In the <a class="reference internal" href="#bin-design">Bin Design</a> section we’ll provide the detailed design
+information. In <a class="reference internal" href="#bin-deliverables">Bin Deliverables</a> we’ll enumerate what must be
+built.</p>
+<div class="section" id="bin-analysis">
+<h2>Bin Analysis<a class="headerlink" href="#bin-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The Roulette wheel has 38 bins, identified with a number and a color.
+Each of these bins defines a number of closely related winning
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>Each <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> object will have from one to fourteen different
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. An individual number pays a variety
+of bets because it’s associated with a number of outcomes.
+The number 12, for example, is also even. The exact collection
+of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances for each <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> is
+part of a later exercise.</p>
+<p>At this time, we’ll define the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class, and use
+this class to contain a number of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects.</p>
+<p>Two of the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances have relatively few <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+These are the exceptional cases:</p>
+<ul class="simple">
+<li><p>The zero <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance contains a “0”
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object and the “00-0-1-2-3” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object.</p></li>
+<li><p>The double-zero <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance contains
+a “00” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object and the “00-0-1-2-3” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object.</p></li>
+</ul>
+<p>The other 36 <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances contain a mixture of bets including
+a straight bet, split bets,
+street bets, corner bets, line bets and all of the outside bets (column,
+dozen, even or odd, red or black, high or low). Any of these bits will win
+if this <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> is selected.</p>
+<p>Some <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, like “red” or “black”, occur in as many as 18 individual
+<a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances. Other <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, like the straight bet
+numbers, each occur in only a single <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>. We will have to
+be sure that our <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects are shared appropriately
+by the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances.</p>
+<p>Since a <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> is a collection of individual <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+objects, we have to select a collection class to contain the objects.
+In the next section we’ll overview how this choice of a collection
+can be made.</p>
+</div>
+<div class="section" id="design-decision-choosing-a-collection">
+<span id="roul-bin-collections"></span><h2>Design Decision – Choosing A Collection<a class="headerlink" href="#design-decision-choosing-a-collection" title="Permalink to this headline">¶</a></h2>
+<p>There are five basic Python types that are a containers for other objects.</p>
+<ul class="simple">
+<li><p><strong>Immutable Sequence</strong>: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>.
+This is a good candidate for the kind of collection we need, since the
+elements of a <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> don’t change.  However, a <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> allows
+duplicates and retains things in a specific order; we can’t tolerate
+duplicates, and order doesn’t matter.</p></li>
+<li><p><strong>Mutable Sequence</strong>: <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>.
+While handy for the initial construction of the
+bin, this isn’t really useful because the contents of a bin don’t
+change once they have been enumerated.</p></li>
+<li><p><strong>Mutable Mapping</strong>: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>.
+We don’t need the key-to-value mapping feature at all.
+A map does more than we need for representing a <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>.</p></li>
+<li><p><strong>Mutable Set</strong>: <code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code>.
+Duplicates aren’t allowed, membership tests are fast, and there’s no inherent ordering.
+This looks close to what we need.</p></li>
+<li><p><strong>Immutable Set</strong>: <code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code>.
+Duplicates aren’t allowed, membership tests are fast, and there’s no inherent ordering.
+There’s not changing it after it’s been built.
+This seems to be precisely what we need.</p></li>
+</ul>
+<p>Having looked at the fundamental collection varieties, we will elect to
+use a <code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code>.</p>
+<p>How will we use this collection?</p>
+</div>
+<div class="section" id="wrap-vs-extend-a-collection">
+<h2>Wrap vs. Extend a Collection<a class="headerlink" href="#wrap-vs-extend-a-collection" title="Permalink to this headline">¶</a></h2>
+<p>There are two general ways to use a collection.</p>
+<ul>
+<li><p><strong>Wrap</strong>. Define a class which has an attribute that holds the collection.
+We’re wrapping an existing data structure in a new class. The type
+hint suggests we can use any iterable collection of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+as a source to create the <code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code> collection.</p>
+<p>Something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Bin</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outcomes</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Outcome</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">outcomes</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Extend</strong>. Define a class which <strong>is</strong> the collection.
+We’re essentially renaming an existing data structure to provide
+a more descriptive name for the class.</p>
+<p>Something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Bin</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Both are widely-used design techniques.
+The trade off between them isn’t clear at first.</p>
+<p>Considerations include the following:</p>
+<ul>
+<li><p>When we <strong>wrap</strong>, we’ll often need to write a lot of additional
+methods for representation, length, comparisons, inquiries, etc.</p>
+<p>In some cases, we will wrap a collection specifically so that
+these additional methods are <strong>not</strong> available. We want to completely
+conceal the underlying data structure.</p>
+</li>
+<li><p>When we <strong>extend</strong>, we get all of the base methods of the collection.
+We can add any unique features.</p></li>
+</ul>
+<p>In this case, extending the existing data structure seems to make more sense
+than wrapping a <code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code>.</p>
+</div>
+<div class="section" id="bin-questions-and-answers">
+<h2>Bin Questions and Answers<a class="headerlink" href="#bin-questions-and-answers" title="Permalink to this headline">¶</a></h2>
+<p>Why wasn’t <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> in the design overview?</p>
+<blockquote>
+<div><p>The definition of the Roulette game did mention the 38 bins of the
+wheel. However, when identifying the nouns, it didn’t seem important.
+Then, as we started designing the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class, the
+description of the wheel as 38 bins came more fully into focus. Rework
+of the preliminary design is part of detailed design. This is the first
+of several instances of rework.</p>
+</div></blockquote>
+<p>Why introduce an entire class for the bins of the wheel? Why can’t the
+wheel be an array of 38 individual arrays?</p>
+<blockquote>
+<div><p>There are two reasons for introducing <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> as a separate
+class:</p>
+<ul class="simple">
+<li><p>A separate class can improve the fidelity of our object model of the problem.</p></li>
+<li><p>A new class will reduce the complexity of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class.</p></li>
+</ul>
+<p>The definition
+of the game describes the wheel as having 38 bins, each bin causes a
+number of individual <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances to win. Without thinking too
+deeply, we opted to define the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class to hold a
+collection of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. At the present time, we can’t
+foresee a lot of processing that is the responsibility of a <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>.
+But allocating a class permits us some flexibility in assigning
+responsibilities there in the future. We can, specifically, change to
+alternative implementations of the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> to try to optimize resource
+use.</p>
+<p>Additionally, looking forward, it is clear that the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>
+class will use a random number generator and will pick a winning <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>.
+In order to keep this crisp definition of responsibilities for the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>
+class, it makes sense to delegate all of the remaining details to
+another class.</p>
+</div></blockquote>
+<p>Isn’t an entire class for bins a lot of overhead?</p>
+<blockquote>
+<div><p>The short answer is no, class definitions are almost no overhead at all.
+At run-time a class definition is a namespace for methods.
+It’s the class instances that cause run-time overhead.</p>
+</div></blockquote>
+<p>How can you introduce Set, List, Dict and other types when these don’t appear in the problem?</p>
+<blockquote>
+<div><p>We have to make a distinction between the classes that are uncovered
+during analysis of the problem in general, and classes are that are
+part of the implementation of this particular solution. This emphasizes
+the distinction between <em>the problem</em> as described by users and
+<em>a solution</em> as designed by software developers.</p>
+<p>The built-in collections is part of a solution, and only hinted at by the
+definition of the problem.  The whole point of creating a solution
+is to introduce the right technology choices; the solution will always
+have classes and modules never mentioned in the problem domain.</p>
+</div></blockquote>
+<p>Why extend (or rename) a built-in data structure? Why not simply use it?</p>
+<blockquote>
+<div><p>There are two reasons for extending a built-in data structure:</p>
+<ul class="simple">
+<li><p>We can easily add methods when extending.  In the case of a
+<a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>, there doesn’t seem to be much we want to add.
+In the future, we many uncover attributes or behaviors that we
+need to include in our software.</p></li>
+<li><p>We can easily change the underlying data structure when extending.
+For example, we might have a different set-like collection
+that also inherits from the <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Set</span></code> base class. We can
+make this change in just one place – our class extension –
+and the entire application benefits from the alternative set
+implementation.</p></li>
+</ul>
+</div></blockquote>
+<p>What about hash and equality?</p>
+<blockquote>
+<div><p>We are’t going to be comparing bins against each other.
+The default rules for equality and hash computation
+will work out just fine for this class.</p>
+</div></blockquote>
+</div>
+<div class="section" id="bin-design">
+<h2>Bin Design<a class="headerlink" href="#bin-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Bin">
+<em class="property">class </em><code class="sig-name descname">Bin</code><span class="sig-paren">(</span><em class="sig-param">Collections.frozenset</em><span class="sig-paren">)</span><a class="headerlink" href="#Bin" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> contains a collection of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances which
+reflect the winning bets that are paid for a particular bin on a
+Roulette wheel. In Roulette, each spin of the wheel has a number of
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. Example: A spin of 1, selects the “1” bin with the following winning
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances: “1” , “Red” , “Odd” , “Low”
+, “Column 1” , “Dozen 1-12” , “Split 1-2” ,
+“Split 1-4” , “Street 1-2-3” , “Corner 1-2-4-5” ,
+“Five Bet” , “Line 1-2-3-4-5-6” , “00-0-1-2-3” ,
+“Dozen 1” , “Low” and “Column 1” . These are
+collected into a single <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> .</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<p>Since this is an extension to the existing <code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code>, we don’t
+need to define any additional fields.</p>
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<p>We don’t really need to write any more specialized constructor
+method.</p>
+<p>We’d use this as follows:</p>
+<p class="rubric">Python Bin Construction</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">five</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;00-0-1-2-3&quot;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">zero</span> <span class="o">=</span> <span class="n">Bin</span><span class="p">([</span><span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;0&quot;</span><span class="p">,</span><span class="mi">35</span><span class="p">),</span> <span class="n">five</span><span class="p">])</span>
+<span class="n">zerozero</span> <span class="o">=</span> <span class="n">Bin</span><span class="p">([</span><span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;00&quot;</span><span class="p">,</span><span class="mi">35</span><span class="p">),</span> <span class="n">five</span><span class="p">])</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero</span></code> is based on
+references to two objects: the “0” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> and the
+“00-0-1-2-3” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.</p></li>
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zerozero</span></code> is based on references to
+two objects: the “00” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> and the “00-0-1-2-3”
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.</p></li>
+</ol>
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<p>We don’t really <strong>need</strong> to write any more specialized methods.</p>
+<p>How do we accumulate several outcomes in a single <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>?</p>
+<ol class="arabic simple">
+<li><p>Create a simple list, tuple, or set as an interim
+structure.</p></li>
+<li><p>Create the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> from this.</p></li>
+</ol>
+<p>We might have something like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bin1</span> <span class="o">=</span> <span class="n">Bin</span><span class="p">({</span><span class="n">outcome1</span><span class="p">,</span> <span class="n">outcome2</span><span class="p">,</span> <span class="n">outcome3</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>We created an interim set object and built the final <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> from
+that collection object.</p>
+</div>
+</div>
+<div class="section" id="bin-deliverables">
+<h2>Bin Deliverables<a class="headerlink" href="#bin-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are two deliverables for this exercise. Both should have Python docstrings.</p>
+<ul>
+<li><p>The <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class. This is part of the <code class="file docutils literal notranslate"><span class="pre">roulette.py</span></code> file,
+along with the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class.</p></li>
+<li><p>A class which performs a unit test of the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class.
+The unit test should create several instances of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>,
+two instances of <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> and establish that <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances
+can be constructed from the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>Programmers who are new to OO techniques are sometimes
+confused when reusing individual <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+This unit test is a good place to examine the ways in which object <em>references</em>
+are shared. A single <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object can be referenced
+by several <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances. We will make increasing use of this
+in later sections.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>In the next chapter, we’ll design the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class to contain
+all of the <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> objects. A <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> object can select
+a <a class="reference internal" href="#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> which has a number of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects representing
+winning bets.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Bin Class</a><ul>
+<li><a class="reference internal" href="#bin-analysis">Bin Analysis</a></li>
+<li><a class="reference internal" href="#design-decision-choosing-a-collection">Design Decision – Choosing A Collection</a></li>
+<li><a class="reference internal" href="#wrap-vs-extend-a-collection">Wrap vs. Extend a Collection</a></li>
+<li><a class="reference internal" href="#bin-questions-and-answers">Bin Questions and Answers</a></li>
+<li><a class="reference internal" href="#bin-design">Bin Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bin-deliverables">Bin Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="outcome.html" title="previous chapter">Outcome Class</a></li>
+      <li>Next: <a href="wheel.html" title="next chapter">Wheel Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

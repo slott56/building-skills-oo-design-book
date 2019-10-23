@@ -1,0 +1,505 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Craps Details &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Craps Solution Overview" href="solution.html" />
+    <link rel="prev" title="Conclusion" href="../roulette/conclusion.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="craps-details">
+<span id="id1"></span><h1>Craps Details<a class="headerlink" href="#craps-details" title="Permalink to this headline">¶</a></h1>
+<p>In the first section of this chapter, <a class="reference internal" href="#craps-game-overview">Craps Game Overview</a>,
+we will present elements of the game of Craps.
+Craps is a stateful game, and we’ll describe the state changes in some detail.</p>
+<p>We’ll look at the way dice work in <a class="reference internal" href="#creating-a-dice-frequency-distribution">Creating A Dice Frequency Distribution</a>.</p>
+<p>We will review some of the bets available on the Craps table in some
+depth in <a class="reference internal" href="#available-bets">Available Bets</a>. Craps offers some very obscure bets, and part of this obscurity
+stems from the opaque names for the various bets. Creating this wide
+variety of bets is an interesting programming exercise, and the first
+four exercise chapters will focus on this.</p>
+<p>In <a class="reference internal" href="#some-betting-strategies">Some Betting Strategies</a> we will describe some common betting strategies that we will
+simulate. The betting strategies described in <a class="reference internal" href="../index.html#roul"><span class="std std-ref">Roulette</span></a> will be
+applied to Craps bets, forcing us to examine the Roulette solution for
+reuse opportunities.</p>
+<p>We’ll also look at an alternative set of bets in <a class="reference internal" href="#wrong-betting">Wrong Betting</a>.</p>
+<div class="section" id="craps-game-overview">
+<span id="craps-details-game-rules"></span><h2>Craps Game Overview<a class="headerlink" href="#craps-game-overview" title="Permalink to this headline">¶</a></h2>
+<p>Craps centers around a pair of six-sided dice. The 36
+combinations form eleven numbers from 2 to 12; additionally, if the two
+die have equal values, this is called a “hardways,” because the
+number was made “the hard way”.</p>
+<p>The table in the casino has a
+surface marked with spaces on which players can place bets.
+The names of the bets are opaque, and form an obscure jargon. There are
+several broad classification of bets, including the following:</p>
+<ul class="simple">
+<li><p>those which follow the sequence of dice throws that make up a complete game,</p></li>
+<li><p>the propositions based on only the next throw of the dice,</p></li>
+<li><p>some “hardways” bets on rolling an equal pair before the game is revolved, and,</p></li>
+<li><p>some unmarked bets.</p></li>
+</ul>
+<p>These bets will be defined more completely, below, under <a class="reference internal" href="#craps-details-bets"><span class="std std-ref">Available Bets</span></a>.</p>
+<p>After the bets are placed, the dice are thrown by one of the players.
+This number resolves any one-roll bets into immediate winners or losers; it
+also determines the state change in the game, which may also resolve any
+game-based bets.</p>
+<p>The first roll of the dice in a given game can be an
+immediate win or loss, or it can establish the point
+for the following rounds of this game. Subsequent rolls either make the
+point and win the game, roll a seven and lose the game, or the game
+continues. When the game is won, the winning player continues to shoot;
+a losing player passes the dice around the table to the next player.</p>
+<p>Note that a game is of indefinite length. Less likely point values (4 and 10)
+will have longer games. More likely point values (6 and 8) will have
+shorter games.</p>
+<p>In addition to the bets marked on the table, there are some additional
+bets. Some of these are called
+odds bets, or free odds bets, and pay off at
+odds that depend on the dice, not on the bet itself. An odds bet must be
+associated with a bet called a line bet, and are said to be
+“behind” the original bet; they can be called “behind the
+line” bets. The four line bets will be defined more fully, below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Casino Variation</p>
+<p>There are slight variations in the bets available in different
+casinos. We’ll focus on a common subset of bets.</p>
+</div>
+<p>The dice form a frequency distribution with values from 2 to 12. An
+interesting preliminary exercise is to produce a table of this
+distribution with a small demonstration program. This frequency
+distribution is central to understanding the often cryptic rules for
+Craps. See <a class="reference internal" href="#craps-ov-freq"><span class="std std-ref">Creating A Dice Frequency Distribution</span></a> for a small application to develop this
+frequency distribution.</p>
+</div>
+<div class="section" id="game-state-changes">
+<h2>Game State Changes<a class="headerlink" href="#game-state-changes" title="Permalink to this headline">¶</a></h2>
+<p>The Craps game has two states: <strong>point off</strong> and
+<strong>point on</strong>. When a player begins a game, the point is off;
+the initial throw of the dice is called the “come out roll”. The
+number thrown on the dice determines the next state, and also the bets
+that win or lose. The rules are detailed in the following table.</p>
+<p class="rubric">Craps Game States</p>
+<table class="docutils align-default" id="id2">
+<caption><span class="caption-text">Point is off. Only <strong>Pass</strong> and <strong>Don’t Pass</strong> Bets Allowed.</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Roll</p></th>
+<th class="head"><p>Bet Resolution</p></th>
+<th class="head"><p>Next State</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2, 3, 12</p></td>
+<td><p>“Craps”: Pass bets lose, Don’t Pass bets win.</p></td>
+<td><p>Point Off</p></td>
+</tr>
+<tr class="row-odd"><td><p>7, 11</p></td>
+<td><p>“Winner”: Pass bets win, Don’t Pass bets lose.</p></td>
+<td><p>Point Off</p></td>
+</tr>
+<tr class="row-even"><td><p>4, 5, 6, 8, 9, 10</p></td>
+<td></td>
+<td><p>Point on the number rolled, <em>p</em>.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-text">Point is on <em>p</em>. Additional Bets Allowed.</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Roll</p></th>
+<th class="head"><p>Bet Resolution</p></th>
+<th class="head"><p>Next State</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2, 3, 12</p></td>
+<td></td>
+<td><p>Point still on <em>p</em></p></td>
+</tr>
+<tr class="row-odd"><td><p>11</p></td>
+<td></td>
+<td><p>Point still on <em>p</em></p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>“Loser”: <strong>all</strong> bets lose. The table is cleared.</p></td>
+<td><p>Point Off</p></td>
+</tr>
+<tr class="row-odd"><td><p>Point, <em>p</em></p></td>
+<td><p>“Winner”: point is made, Pass bets win, Don’t Pass bets lose.</p></td>
+<td><p>Point Off</p></td>
+</tr>
+<tr class="row-even"><td><p>Non-<em>p</em> number</p></td>
+<td><p>Come bets are activated on this new number</p></td>
+<td><p>Point still on <em>p</em></p></td>
+</tr>
+</tbody>
+</table>
+<p>There is a symmetry to these rules. The most frequent number, 7, is
+either an immediate winner or an immediate loser. The next most frequent
+numbers are the six point numbers, 4, 5, 6, 8, 9, 10, which form three
+sets: 4 and 10 are high odds, 5 and 9 are middle odds, 6 and 8 are low
+odds. The relatively rare numbers (2, 3, 11 and 12) are handled
+specially on the first roll only, otherwise they are ignored. Because of
+the small distinction made between the <em>craps</em> numbers (2, 3
+and 12), and 11, there is an obscure “C-E” bet to cover both
+craps and eleven.</p>
+</div>
+<div class="section" id="creating-a-dice-frequency-distribution">
+<span id="craps-ov-freq"></span><h2>Creating A Dice Frequency Distribution<a class="headerlink" href="#creating-a-dice-frequency-distribution" title="Permalink to this headline">¶</a></h2>
+<p>Since Python is interpreted, you can enter the following directly in
+the interpreter and get the frequency of each number.</p>
+<p class="rubric">Dice Frequency I</p>
+<pre class="code python literal-block"><code><span class="keyword namespace">from</span> <span class="name namespace">collections</span> <span class="keyword namespace">import</span> <span class="name">defaultdict</span>
+
+<span class="name">freq</span> <span class="operator">=</span> <span class="name">defaultdict</span><span class="punctuation">(</span><span class="name builtin">int</span><span class="punctuation">)</span>
+<span class="keyword">for</span> <span class="name">d1</span> <span class="operator word">in</span> <span class="name builtin">range</span><span class="punctuation">(</span><span class="literal number integer">6</span><span class="punctuation">):</span>
+    <span class="keyword">for</span> <span class="name">d2</span> <span class="operator word">in</span> <span class="name builtin">range</span><span class="punctuation">(</span><span class="literal number integer">6</span><span class="punctuation">):</span>
+        <span class="name">n</span> <span class="operator">=</span> <span class="name">d1</span> <span class="operator">+</span> <span class="name">d2</span> <span class="operator">+</span> <span class="literal number integer">2</span>
+        <span class="name">freq</span><span class="punctuation">[</span><span class="name">n</span><span class="punctuation">]</span> <span class="operator">+=</span> <span class="literal number integer">1</span>
+<span class="keyword">print</span><span class="punctuation">(</span><span class="name">freq</span><span class="punctuation">)</span></code></pre>
+<p>We’ve enumerate all 36 combinations of values <code class="samp docutils literal notranslate"><span class="pre">(d1,</span> <span class="pre">d2)</span></code>. The sum
+of these will be a value between 2 and 12. The list <code class="code docutils literal notranslate"><span class="pre">freq</span></code> is a
+dictionary that maps an integer sum of the dice to an integer count of the number
+of occurrences of that sum.</p>
+<p>This can also be done with a counter and a generator expression.</p>
+<p class="rubric">Dice Frequency II</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span>
+
+<span class="n">freq</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">((</span><span class="n">d1</span> <span class="o">+</span> <span class="n">d2</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">d1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="k">for</span> <span class="n">d2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here we’ve used a <code class="xref py py-class docutils literal notranslate"><span class="pre">Counter</span></code>. We’ve initialized the counter
+using a generator expression that – similar to the previous example –
+enumerates all 36 combinations of values <code class="samp docutils literal notranslate"><span class="pre">(d1,</span> <span class="pre">d2)</span></code>.</p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Counter</span></code> class consumes all of the values from the generator expression.
+The generate has two nested <code class="docutils literal notranslate"><span class="pre">for</span></code> clauses, <code class="docutils literal notranslate"><span class="pre">(d1</span> <span class="pre">+</span> <span class="pre">d2</span> <span class="pre">+</span> <span class="pre">2)</span> <span class="pre">for</span> <span class="pre">d1</span> <span class="pre">in</span> <span class="pre">range(6)</span> <span class="pre">for</span> <span class="pre">d2</span> <span class="pre">in</span> <span class="pre">range(6)</span></code>
+The <code class="xref py py-class docutils literal notranslate"><span class="pre">Counter</span></code> class automatically finds matching values and counts how many times the
+duplicate values were seen.</p>
+</div>
+<div class="section" id="available-bets">
+<span id="craps-details-bets"></span><h2>Available Bets<a class="headerlink" href="#available-bets" title="Permalink to this headline">¶</a></h2>
+<p>There are four broad classification of bets:</p>
+<ul class="simple">
+<li><p>those which follow the sequence of dice throws that make up a complete game,</p></li>
+<li><p>those based on just the next throw of the dice (called proposition bets),</p></li>
+<li><p>the hardways bets, and</p></li>
+<li><p>the unmarked bets.</p></li>
+</ul>
+<p>The game bets are also called line bets, can be supplemented with additional odds bets, placed
+behind the line bet.  There are actually two sets of game bets based on the pass line and the come line.</p>
+<p>The following illustration shows half of a typical craps table
+layout. On the left are the game bets. On the right (in the center of
+the table) are the single-roll propositions.</p>
+<div class="figure align-default" id="id4">
+<img alt="../_images/Craps2.png" src="../_images/Craps2.png" />
+<p class="caption"><span class="caption-text">Craps Table Layout</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</div>
+<p><strong>Game Bets</strong>.
+The Game bets have two states.  There is a set of bets allowed for the
+first roll, called the “come out” roll.  If a point is established
+a number of additional bets become available.  These are the pass line
+bets.</p>
+<p>In addition to the basic pass line bets, there are also come line
+bets, which are similar to game bets.</p>
+<p><strong>Come Out Roll</strong>.
+When the point is <em>off</em>, the player will be making the come
+out roll, and only a subset of bets are available. Once the point is <em>on</em>,
+all bets are available.</p>
+<p>The bets which are allowed on the come out roll are the Pass Line
+and Don’t Pass Line bets. These bets follow the action of
+the player’s game. There are several possible outcomes for these two bets.</p>
+<ul class="simple">
+<li><p>Player throws craps (2, 3, or 12). A Pass Line bet loses. A Don’t
+Pass Line bet wins even money on 2 or 3; however, on 12, it returns
+the bet. This last case is called a “push” ; this rule is
+noted on the table by the “bar 12” legend in the Don’t Pass area.</p></li>
+<li><p>Player throws 7 or 11. A Pass Line bet wins even money. A Don’t Pass
+Line bet loses.</p></li>
+<li><p>Player throws a point number. The point is now <em>on</em>. A
+large white token, marked “on” is placed in one of the six
+numbered boxes to announce the point. The player can now place an
+additional odds bet behind the line. Placing a bet behind the Pass
+Line is called “buying odds on the point”. Placing a bet
+behind the Don’t Pass Line is called “laying odds against the point”.</p></li>
+</ul>
+<p><strong>Point Rolls</strong>.
+Once the point is on, there are three possible outcomes.</p>
+<ul class="simple">
+<li><p>The player makes the point before rolling 7. A Pass Line bet
+wins even money. A Don’t Pass Line bet loses. The point
+determines the odds used to pay the behind the Pass Line odds bet.</p></li>
+<li><p>The player throws 7 before making the point. A Pass Line bet
+loses. A Don’t Pass Line bet pays even money. The point
+determines the odds used to pay the behind the Don’t Pass Line
+odds bet.</p></li>
+<li><p>The player throws a number other than 7 and the point: the game continues.</p></li>
+</ul>
+<p><strong>Come Line Bets</strong>.
+Once the point is on, the bets labeled “Come” and
+“Don’t Come” are allowed. These bets effectively form a game
+parallel to the main game, using a come point instead of the main game
+point. Instead of dropping the large “on” token in a numbered
+square on the layout, the house will move the individual Come and Don’t
+Come bets from their starting line into the numbered boxes (4, 5, 6, 8,
+9, 10) to show which bets are placed on each point number. There are
+several possible outcomes for these two bets.</p>
+<ul class="simple">
+<li><p>Player throws craps (2, 3, or 12). A Come Line bet loses. There are
+some additional special cases: a Don’t
+Come bet wins even money on 2 or 3; it is a push on 12. Established
+come point bets in the numbered squares remain.</p></li>
+<li><p>Player throws 11. A Come Line bet wins even money. A Don’t Come bet
+loses. Established come point bets in the numbered squares remain.</p></li>
+<li><p>Player throws a point number (4, 5, 6, 8, 9, or 10). Any come bets
+in that numbered box are winners – the come point was made – and
+the point determines the odds used to pay the behind the line odds.
+(Note that if this is the point for the main game, there will be no
+bets in the box, instead the large “on” token will be sitting
+there.) New bets are moved from the Come Line and Don’t Come Line to
+the numbered box, indicating that this bet is waiting on that point
+number to be made. Additional behind the line odds bets can now be
+placed. If the main game’s point was made, the “on” token
+will be removed (and flipped over to say “off”), and the
+next roll will be a come out roll for the main game. These bets
+(with the exception of the free odds behind a Come Line bet) are
+still working bets.</p></li>
+<li><p>The player throws 7 before making the main point. A Come bet loses.
+A Don’t Come bet pays even money. The bets in the numbered boxes are
+all losers.</p></li>
+</ul>
+<p><strong>Propositions</strong>.
+There are also a number of one-roll propositions,
+including the individual numbers 2, 3, 7, 11, 12; also field
+(2, 3, 4, 9, 10, 11 or 12), any craps (2, 3 or 12), the horn
+(2, 3, 11 or 12), and a hop bet. These bets have no
+minimum, allowing a player to cover a number of them inexpensively.</p>
+<p><strong>Hardways</strong>.
+There are four hardways bets. These are bets that 4, 6, 8 or 10 will
+come up on two equal die (the hard way) before they come up on two
+unequal die (the easy way) or before a 7 is rolled. Hard 6, for example,
+is a bet that the pair (3,3) will be rolled before any of the other four
+combinations (1,5), (2,4), (5,1), (4,2) that total 6, or any of the 6
+combinations that total 7. These bets can only be placed when the point
+is on, but they are neither single-roll propositions, nor are they tied
+to the game point.</p>
+<p><strong>Unmarked Bets</strong>.
+There are additional unmarked bets. One is to make a “place bet”
+on a number; these bets have a different set of odds than the odds bets
+behind a line bet. Other unmarked bets are to “buy” a number or “lay”
+a number, both of which involve paying a commission on the bet.
+Typically, only the six and eight are bought, and they can only be
+bought when they are not the point.</p>
+<p>For programmers new to casino gambling, see <a class="reference internal" href="#craps-bg-odds"><span class="std std-ref">Odds and Payouts</span></a> for
+more information on odds payments for the various kinds of bets.</p>
+<div class="sidebar" id="craps-bg-odds">
+<p class="sidebar-title">Odds and Payouts</p>
+<p>Not all of the Craps outcomes are equal probability. Some of the
+bets pay fixed odds, defined as part of the bet. Other bets pay
+odds that depend on the point established.</p>
+<p>The basic Pass Line, Don’t Pass, Come Line and Don’t Come bets
+are even money bets. A $5 bet wins an additional $5.</p>
+<p>The odds of winning a Pass Line bet is 49.3%. The <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/> payout
+presumes a 50% chance of winning. The gap between
+actual odds and payout is the house edge.</p>
+<p>The points have distinct odds, as follows:</p>
+<ul class="simple">
+<li><p>4 and 10 have odds of <img class="math" src="../_images/math/aee77caba29dca6399c5ceb96e133ba33aea644e.png" alt="\tfrac{3}{36}"/> to win, <img class="math" src="../_images/math/2473b08ff30382967a6da9c5b96679e929ec2350.png" alt="\tfrac{6}{36}"/> to lose,
+otherwise the game continues. This is a <img class="math" src="../_images/math/d1170514c898ee4291bdfbcb59914e3d982760e5.png" alt="1:2"/> payout.</p></li>
+<li><p>5 and 9 have odds of <img class="math" src="../_images/math/5159b34e8c92dac26669f852b31a4cd172ddf244.png" alt="\tfrac{4}{36}"/> to win, leading to a <img class="math" src="../_images/math/02022dc7fad858c6684a880d113bb38ce876e930.png" alt="4: 6 = 2:3"/> payout.</p></li>
+<li><p>6 and 8 have odds of <img class="math" src="../_images/math/6cd83a940d7ff5d5256ccf39bcfbaa82c396e4f0.png" alt="\tfrac{5}{36}"/> to win. this is a <img class="math" src="../_images/math/7caea0e38d65a4b05509d5e281c7bb70294f1f3e.png" alt="5:6"/> payout.</p></li>
+</ul>
+<p>Each of these behind-the-line odds bets has a correct payout to
+match the actual odds of winning.</p>
+<p>The combination of a Pass Line bet plus odds behind the line
+narrows the house edge. For example, a bet on the
+Pass Line has an expected return of -1.414%. If we place double
+odds behind the line with an expected return of 0, the net
+expected return for the combination is -0.471%.</p>
+<p>The various proposition bets have odds stated on the table. Note
+that these rarely reflect the actual odds of winning. For
+example, a bet on 12 is a <img class="math" src="../_images/math/85070a0f351fad0c6746d4e7eb95bf32d17ab76f.png" alt="\tfrac{1}{36}"/> probability, but only
+pays as if it were <img class="math" src="../_images/math/2a616c973c9f2c2baaa1273baf060d1510d1232e.png" alt="\tfrac{1}{30}"/>.</p>
+<p>There are <img class="math" src="../_images/math/85070a0f351fad0c6746d4e7eb95bf32d17ab76f.png" alt="\tfrac{1}{36}"/> ways to win a hard six or hard eight bet,
+and <img class="math" src="../_images/math/2c18432a84c42076a07b7508b0caf2372a200798.png" alt="\tfrac{10}{36}"/>. The remaining 25 outcomes are indeterminate.
+While a hard 6 or hard 8 should pay <img class="math" src="../_images/math/d2656d16b8678f9b4b289ed1724165c2cd622d0e.png" alt="10:1"/>, the actual payment is
+<img class="math" src="../_images/math/7e1eb5992befe2bc70ca4372ca0349eb3970ab05.png" alt="9:1"/>. Similarly for a hard 4 or hard 10: they should pay <img class="math" src="../_images/math/e342128e9a64c26c7f9487fa2f25bc9a840aad6e.png" alt="8:1"/>, the
+actual payment is <img class="math" src="../_images/math/8d830a607750235cdbf23b477cbeb61b8d8f17e9.png" alt="7:1"/>.</p>
+</div>
+</div>
+<div class="section" id="some-betting-strategies">
+<span id="craps-game-ov-workingbets"></span><h2>Some Betting Strategies<a class="headerlink" href="#some-betting-strategies" title="Permalink to this headline">¶</a></h2>
+<p>All of the Roulette betting strategies apply to Craps. However, the
+additional complication of Craps is the ability to have multiple working
+bets. The player can add bets during the game. The most important of
+these additional bets are the behind the line odds bets. Since these are
+paid at proper odds, they are the most desirable bets on the layout. The
+player, therefore, should place a line bet, followed by a behind the
+line odds bet.</p>
+<p>The other commonly used additional bets are the Come bets.
+These increase the number of working bets. Since the additional
+odds bets for these pay proper odds, they are also highly desirable. A
+player can place a Come bet, followed by a behind the line odds bet on
+the specific number rolled.</p>
+<p>Beyond this, the bets are less interesting. All of the proposition
+and hardways bets have odds that are incorrect. We can simulate these
+bets to discover the house edge built into the incorrect odds.</p>
+<p>Some players will count the number of throws in
+game, and place a “7” bet if the game lasts more than six throws.
+This is a form of betting against oneself. When the player has a Pass Line bet
+that the game will be won, they’re diluted this with a 7 bet that the game will be
+lost. While the common rationale is that the second bet protects against
+a loss, it also reduces the potential win. We can simulate this kind of
+betting and examine the potential outcomes.</p>
+</div>
+<div class="section" id="wrong-betting">
+<h2>Wrong Betting<a class="headerlink" href="#wrong-betting" title="Permalink to this headline">¶</a></h2>
+<p>Craps has two forms of odds betting: “right” and “wrong”. The Pass
+Line and Come Line, as well as buying odds, are all “right”.
+The Don’t Pass, Don’t Come and Laying Odds are all “wrong”.</p>
+<p>Right betting involves odds that provide a large reward for a
+small wager. The odds on a Pass Line bet for the number 4 are
+<img class="math" src="../_images/math/2da4d58abd68781dcdd0b97ac1adbaaf01695038.png" alt="2:1"/>: they player can win double the bet if the point is made.
+The bet is to put 10 at risk to make 20.</p>
+<p>Wrong betting involves odds that provide a small reward for a
+large wager. The odds on a Don’t Pass Line bet for the number 4
+are described as “laid at 2:1”; the player will win half of what was bet if the point is missed.
+The player puts 20 at risk to make 10.</p>
+<p>This distinction can be ignored by novice programmers. None of our
+simulated players are wrong bettors, since this involves putting a large
+amount at risk for a small payout, which violates a basic rule
+of gambling:</p>
+<blockquote>
+<div><p><strong>Never risk a lot to win a little.</strong></p>
+</div></blockquote>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>Now that we’ve considered the details of the craps game, we’ll
+need to look at the overall structure of the solution. It’s important
+to consider how the classes will interact with each other. Each class,
+in isolation, does very little. The aggregation of those classes will
+provide the required behavior.</p>
+<p>The next chapter will propose an initial set of classes, and some
+revisions to classes we’ve already written.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Craps Details</a><ul>
+<li><a class="reference internal" href="#craps-game-overview">Craps Game Overview</a></li>
+<li><a class="reference internal" href="#game-state-changes">Game State Changes</a></li>
+<li><a class="reference internal" href="#creating-a-dice-frequency-distribution">Creating A Dice Frequency Distribution</a></li>
+<li><a class="reference internal" href="#available-bets">Available Bets</a></li>
+<li><a class="reference internal" href="#some-betting-strategies">Some Betting Strategies</a></li>
+<li><a class="reference internal" href="#wrong-betting">Wrong Betting</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../roulette/conclusion.html" title="previous chapter">Conclusion</a></li>
+      <li>Next: <a href="solution.html" title="next chapter">Craps Solution Overview</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,397 @@
+..  include:: ../definitions.inc
+
+Python Unit Testing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Python :mod:`unittest` module encourages us to build a test module
+separate from the application class we're testing. The test module will
+have one more more :class:`TestCase` classes, each of which has one
+or more test methods.
+
+In `Using Unit Tests`_ we'll look at an overall development process
+that leverages unit tests as a way to write testable specifications.
+
+In `Dependencies`_ we'll touch briefly on testing dependent classes
+together or creating mock objects.
+
+We'll look at an example in `Example Unit Test`_. To be complete,
+we'll show the class which was tested in `Example Class Definition`_.
+
+In `Python doctest Testing`_ we'll look at how we can execute the test cases
+in the document strings of a module, class, function, or method.
+
+In `Building Doctest Examples`_ we'll show how we can take
+interactive Python output and transform it into a doctest example.
+This will involve copy and paste. It's not too challenging.
+
+In `Mixed unittest and doctest`_ we'll show how we can combine unittest
+tests with doctest tests.
+
+Using Unit Tests
+================
+
+One approach to unit testing is to build the tests first, then write a
+class which at least doesn't crash, but may not pass all the tests. Once
+we have this in place, we can now debug the tests until everything looks
+right. This is called test-driven development.
+
+We'd start with unittest files in the :file:`test` directory of our
+project. In this case, we'd have :file:`testCard.py` and :file:`testDeck.py`.
+We also need skeleton files in our :class:`src` directory: :class:`cards.py`
+and :class:`deck.py`.
+
+Generally, the process for creating a class with the unit tests has the following outline.
+
+1.  Write a skeleton for the class that's the :phrase:`Unit Under Test` (:abbrev:`UUT`).
+    This class that doesn't really do anything,
+    but at least compiles and has the right method names.
+
+2.  Write the test class.  This will create instances of the class under test,
+    exercise those instances, and make assertions about the state of those instances.
+    The test class may create mocks for the various collaborators of the
+    target class.
+
+3.  Run the test, knowing that the first few attempts will fail.
+    Sometimes our class under test is so simple
+    that we get it right the first time.  Other times, the class under test is more complex
+    and there are parts we didn't finish when we wrote the skeleton version.
+
+4.  While at least one test is failing.
+
+    a.  Refactor.  We finish our target class.  Sometimes we simply fill in the missing
+        parts.  Other times, we have more serious design work to do.
+
+    b.  Run the test suite.
+
+5.  At this point, the  class under test passes the suite of tests.  However, it may still
+    fail to meet other quality criteria.  For example, it may have a convoluted
+    structure, or it may be inefficient, or it may lack appropriate documentation.
+    In any case, we're not really done with development.
+
+6.  While our target class fails to meet our quality standards.
+
+    a.  Refactor.  We correct the quality problems in our target class.
+
+    b.  Run the test suite.  If we have refactored properly, the tests still
+        pass.  If we have introduced a problem, tests will fail.
+
+**Using unittest**.
+A test runner will locate all the :class:`TestCase` instances, execute them
+and summarize the pass/fail status of each individual test method.
+
+Generally, the useful modules will be in package with a name like :file:`casino_sim`.
+The test modules will be in a separate package named :file:`test`.
+
+We might have something like this::
+
+    casino_sim
+        __main__.py
+        common.py
+        roulette.py
+        craps.py
+        blackjack.py
+    test
+        __main__.py
+        test_common.py
+        test_roulette.py
+        test_craps.py
+        test_blackjack.py
+
+(This isn't a requirement, it's just a notion.
+In many cases, we'll want to subdivide each game into
+game and player modules because they evolve independently.)
+
+Here is an example of running a test from the command
+line.
+
+..  code-block:: sh
+
+    python3 -m unittest test.test_blackjack.TestDeck
+    ..
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.001s
+
+    OK
+
+
+
+
+Dependencies
+=============
+
+Let's assume we've built two classes in some chapter; for example, we're building
+:class:`Card` and :class:`Deck`. One class defines a standard
+playing card and the other class deals individual card instances. We
+need unit tests for each class.
+
+Generally, unit tests are taken to mean that a class is tested in
+isolation. In our case, a unit test for Card is completely isolated because
+it has no dependencies.
+
+However, our Deck class depends on Card, leading us to make a choice.
+Either we have to create a Mock Card that can be used to test Deck
+in complete isolation, or our Deck test will depend on both Deck and
+Card. The choice depends on the relative complexity of Card, and whether
+or not Deck and Card will evolve independently.
+
+Some folks demand that **all** testing be done in "complete" isolation with
+a lot of mock classes.  Other folks are less strict on this, recognizing
+that Deck and Card are very tightly coupled and Card is very simple.
+The Mock Card is almost as complex as Card.
+
+Example Unit Test
+==================
+
+..  rubric:: test_card.py
+
+..  include:: ../../code/test_card.py
+    :code: python
+
+#.  Generally, we create a number of object instances in the
+    setup method. In this case, we created five distinct
+    :class:`Card` instances. These object constructors
+    imply several things in our :class:`Card`
+    class.
+
+    a.  There will be a set of manifest constants for the suits:
+        :obj:`Clubs`, :obj:`Diamonds`,
+        :obj:`Hearts` and
+        :obj:`Spades`.
+
+    b.  The constructor (:meth:`Card.__init__`) will accept a rank and a suit
+        constant.
+
+    Note that we didn't write tests to create all suits or all
+    ranks. In same cases, we may need to produce tests which exhaustively
+    enumerate all possibe alternatives. We may also want to include
+    :phrase:`edge and corner` cases like trying to create an :class:`AceCard`
+    with a rank of 2.
+
+    For the purposes of learning
+    OO design, we only need to sketch out our class by defining the
+    tests it must pass. We sometimes call these :phrase:`happy path` test
+    cases.
+
+#.  In :meth:`testString`, we exercise the
+    :meth:`__str__` method of the
+    :class:`Card` class to be sure that it formats cards
+    correctly. These tests tell us what the formatting algorithm will
+    look like.
+
+#.  In :meth:`testOrder`, we exercise some comparison methods of the
+    :class:`Card` class to be sure that it compares card
+    ranks correctly. Note that we have explicitly claimed that the
+    equality test only checks the rank and ignores the suit; this is
+    typical for Blackjack, but won't work well for Bridge or
+    Solitaire.
+
+    Note that we didn't exhaustively test all possible
+    comparisons among the four cards we defined. We tested enough
+    to be sure we had an implementation that was good enough to
+    get started.
+
+#.  This is the standard main program for a :class:`unittest` module.
+    We often include this in each test module. We'll also include
+    a :mod:`__main__` module that includes all of the tests into
+    a master test suite.
+
+Example Class Definition
+========================
+
+Our initial :class:`Card` class needs to have just enough of an API to allow the
+tests to run. Here's our skeleton :class:`Card` class.
+
+..  rubric::  blackjack.py
+
+..  include:: ../../code/blackjack.py
+    :code: python
+    :start-line: 9
+    :end-line: 70
+
+This class will -- minimally -- participate in the testing. It won't
+pass many tests, but it serves as a basis for developing the class implementation.
+
+Note that there's almost no documentation in this class.
+We'll address that gap in :ref:`documentation`.
+
+Python :application:`doctest` Testing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Python :application:`doctest`  module requires us to put our test cases
+and expected results into the docstring comments on a class, method
+or function.  The test case information becomes a formal part of the API
+documentation.  When a docstring includes doctest comments, the string
+serves dual duty as formal test and a working example.
+
+**Workflow**.
+To use   :application:`doctest` is to build the class, exercise it in the
+Python interpreter, then put snippets of the interactive log into our
+docstrings.
+
+Generally, we follow this outline.
+
+1.  Write and debug the class, including docstring comments.
+
+2.  Exercise the class in an interactive Python interpreter.
+    You can use :application:`IDLE` or any other command line.
+
+3.  Copy the snippets out of the interactive log.  Paste them into
+    the docstring comments.
+
+4.  Run doctest to be sure that you've copied and pasted correctly.
+
+
+**Using Doctest**.
+There are two ways to use doctest.
+
+Start with Python 2.6, you can run doctest from the command line like this.
+
+..  rubric:: Running Doctest from the Command Line
+
+..  code-block:: sh
+
+    python -m doctest -v roulette.py
+
+You can also add a test function to a module which runs doctest on the module.
+This test function should have a name which begins with :literal:`_` to make it
+a name that's private to the module and not part fo the module's interface.
+
+..  rubric:: Running Doctest Within a Module
+
+..  include:: ../../code/blackjack_doctest.py
+    :code: python
+    :start-line: 144
+
+This :func:`_test` function is the main function of the module, so that when
+you run the module, it performs it's internal doctests.
+
+..  rubric:: Running A Module with Doctest
+
+..  code-block:: sh
+
+    python roulette.py
+
+
+**Test-Driven Development**.
+Note that the strict test-driven development (:abbrev:`TDD`)
+approach to unit testing is to build the tests first, then write a
+class which at least doesn't crash, but may not pass all the tests. Once
+we have this in place, we can now debug the tests until everything looks
+right. This is called test-driven development, because the test cases
+come first, driving the rest of the work.
+
+The test-driven approach doesn't fit well with :class:`doctest`.
+It's very difficult to develop the test output without having the class
+available to exercise interactively. Also, we don't want to put
+comprehensive test scripts into our class docsting; they can easily get
+too long to be useful.
+
+Also, it's difficult to "fake" the interactive log when designing the
+class.  It's usually simpler to have a working class and then add
+test cases.
+
+Finally, we need to pick essential features for
+demonstration in the doctest comments. We can't easily write comprehensive tests
+that cover all features or all line of code in doctest comments.
+
+
+Building Doctest Examples
+=========================
+
+Let's assume we've built two classes; for example, :class:`Card` and :class:`Deck`.
+One class defines a standard
+playing card and the other class deals individual card instances. We'll
+define some minimal doctests.
+
+The first step is to develop our baseline class. See `Example Class Definition`_
+for a version of the blackjack module with the :class:`Card` class definition
+that we might start with.
+
+**Exercise the Class**.
+Once we have the class, we need to exercise it using interactive Python.
+Here's what we saw.
+
+
+..  code-block:: python
+
+    MacBookPro-SLott:OODesign-3.1 slott$ python3
+    Python 3.4.3 (v3.4.3:9b73f1c3e601, Feb 23 2015, 02:52:03)
+    [GCC 4.2.1 (Apple Inc. build 5666) (dot 3)] on darwin
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from blackjack import Card, AceCard, FaceCard
+    >>> c2d = Card(2, Card.Diamonds)
+    >>> str(c2d)
+    ' 2♢'
+    >>> cas = AceCard(Card.Ace, Card.Spades)
+    >>> str(cas)
+    ' A♠'
+    >>> cas.softValue
+    11
+
+During our session, we played with the preferred use
+cases for our class. We can copy the examples from the interactive session and
+paste them into our class docstrings.
+
+
+**Update the Docstrings**.
+After we have some output that shows correct behavior of our class, we
+can put that output into the class docstrings. Here's our updated :file:`card.py`
+module with doctest comments.
+
+
+..  rubric:: blackjack.py With Doctests Included
+
+..  include:: ../../code/blackjack_doctest.py
+    :code: python
+    :start-line: 5
+    :end-line: 16
+
+..  include:: ../../code/blackjack_doctest.py
+    :code: python
+    :start-line: 84
+    :end-line: 92
+
+We've only shown the docstrings from two classes within
+the overall module file.
+
+In both cases, we've copied and pasted lines from
+an interactive session to show show the class definitions
+shold behave.  When we process this module with
+:mod:`doctest` we can confirm that the advertised behavior
+matches the actual behavior of the classes.
+
+Mixed :class:`unittest` and :class:`doctest`
+====================================================
+
+A more complete approach is to use :class:`unittest` for most
+testing and :class:`doctest` to emphasize specific use cases in the
+docstrings. When doing this, you'll have a test module that looks
+something like the following.
+
+
+..  rubric::  combined_test.py
+
+..  include:: ../../code/combined_test.py
+    :code: python
+
+We've imported :mod:`unittest` and :mod:`doctest` because we'll be
+executing a combined suite of tests.
+
+We've imported the :mod:`blackjack_doctest` module. This is an
+example that *includes* doctests in the comments. We have a separate
+example that doesn't include an doctests in the comments.
+
+We've also imported the :mod:`test_card` module that performs
+unit tests on the class definitions in the :mod:`blackjack` module.
+
+We can the build a test suite from these two sources of tests:
+
+-   The doctest strings in the module, and
+
+-   The unit tests :class:`TestCase` classes in the test module.
+
+Between the two sources, we have eight separate tests.
+
+Our :file:`test/__main__.py` module will often use this technique
+to build a complete suite of tests incorporating unittest and doctest
+tests.

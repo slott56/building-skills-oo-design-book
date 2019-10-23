@@ -1,0 +1,303 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Variant Game Rules &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Conclusion" href="conclusion.html" />
+    <link rel="prev" title="Simple Blackjack Player Class" href="simple_blackjack_player.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="variant-game-rules">
+<span id="blackjack-var"></span><h1>Variant Game Rules<a class="headerlink" href="#variant-game-rules" title="Permalink to this headline">¶</a></h1>
+<p>There are a number of variations in the sequence of game play offered by
+different casinos. In addition to having variations on the player’s
+strategy, we also need to have variations on the casino rules.</p>
+<p>We’ll look at just a few of the variants in <a class="reference internal" href="#variant-game-examples">Variant Game Examples</a>.</p>
+<p>In order to support some of the variants, we’ll rework our
+game class. The details are in <a class="reference internal" href="#blackjackgame-rework">BlackjackGame Rework</a>.</p>
+<p>We’ll define a single-deck game in <a class="reference internal" href="#onedeckgame-class">OneDeckGame Class</a>. We won’t delve into
+too many other variants. We’ll detail the deliverables in <a class="reference internal" href="#variant-game-deliverables">Variant Game Deliverables</a>.</p>
+<div class="section" id="variant-game-examples">
+<h2>Variant Game Examples<a class="headerlink" href="#variant-game-examples" title="Permalink to this headline">¶</a></h2>
+<p>There are wide variations in the ways people conduct Blackjack games.
+We’ll list a few of the variations we have heard of.</p>
+<ul class="simple">
+<li><p><strong>Additional Win Rule: Charlie</strong>. Informal games may allow a
+“five-card Charlie” or “six-card Charlie” win. If the
+player’s hand stretches to five (or six) cards, they are paid at <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.</p></li>
+<li><p><strong>Additional Offer: Surrender</strong>. This variation allows the player to
+lose only half their bet. The offer is made after insurance and
+before splitting. Surrender against ace and 10 is a good strategy,
+if this offer is part of the game.</p></li>
+<li><p><strong>No Resplit</strong>. This variation limits the player to a single split. In
+the rare event of another matching card, resplitting is not allowed.</p></li>
+<li><p><strong>No Double After Split</strong>. This variation prevents the player from a
+double-down after a split.  Ordinarily, splitting Aces is followed
+by double-downs because 4/13 cards will lead to blackjack.</p></li>
+<li><p><strong>Dealer Hits Soft 17</strong>. This variation forces the dealer to hit soft
+17 instead of standing. This tends in increase the house edge slightly.</p></li>
+<li><p><strong>Single Deck</strong>. Some casinos offer single-deck blackjack, making
+it easier to count cards. It’s common for this variant to offer
+only <img class="math" src="../_images/math/05a6d3e3b3c0e5b46c0a4e3b5f88d4fa0b867c1d.png" alt="6:5"/> payouts on a “natural” or two-card blackjack.
+Casinos often pair the two variants; it’s possible for this simulation
+to treat them separately.</p></li>
+</ul>
+</div>
+<div class="section" id="additional-wins">
+<h2>Additional Wins<a class="headerlink" href="#additional-wins" title="Permalink to this headline">¶</a></h2>
+<p>Supporting an addition “5-card” win rule is a profound change to the <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a> class.
+This additional rule means another <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> type must be created. The game rule
+must check for this as part of resolving hands that did not go bust.</p>
+<p>Currently, the conditions for winning are buried in the <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a> class. To
+change these rules, we’ll need to modify the class design to create a method to test these additional winning conditions.
+This will change the implementation of the <a class="reference internal" href="blackjack_game.html#BlackjackGame.cycle" title="BlackjackGame.cycle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BlackjackGame.cycle()</span></code></a> method described in
+<a class="reference internal" href="blackjack_game.html#blackjack-game"><span class="std std-ref">Blackjack Game Class</span></a>. Comparing two hands which have not gone bust needs to be extracted
+from the <a class="reference internal" href="blackjack_game.html#BlackjackGame.cycle" title="BlackjackGame.cycle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BlackjackGame.cycle()</span></code></a> method and made into a separate method so a subclass
+can override it.</p>
+</div>
+<div class="section" id="no-resplit-no-double-after-split">
+<h2>No Resplit, No Double After Split<a class="headerlink" href="#no-resplit-no-double-after-split" title="Permalink to this headline">¶</a></h2>
+<p>The restrictions on splitting and doubling down are small changes to the
+offers made by a variation on <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a>.  This would require
+creating a subclass of  <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a> to implement the
+alternative rules.</p>
+<p>To modify the offer, we’ll need to modify the class design to create a method to
+change the rules for making an offer.
+This will change the implementation of the <a class="reference internal" href="blackjack_game.html#BlackjackGame.cycle" title="BlackjackGame.cycle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BlackjackGame.cycle()</span></code></a> method described in
+<a class="reference internal" href="blackjack_game.html#blackjack-game"><span class="std std-ref">Blackjack Game Class</span></a>.</p>
+</div>
+<div class="section" id="dealer-hits-soft-17">
+<h2>Dealer Hits Soft 17<a class="headerlink" href="#dealer-hits-soft-17" title="Permalink to this headline">¶</a></h2>
+<p>The variations in the dealer’s rules (hitting a soft 17) is also a small
+change best implemented by creating a subclass of  <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a>.
+A new method for dealer hand-filling needs to be written, pulling some
+of one step from the <a class="reference internal" href="blackjack_game.html#BlackjackGame.cycle" title="BlackjackGame.cycle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BlackjackGame.cycle()</span></code></a> method. This new method
+can then be over-ridden by a subclass.</p>
+</div>
+<div class="section" id="changing-the-number-of-decks">
+<h2>Changing the Number of Decks<a class="headerlink" href="#changing-the-number-of-decks" title="Permalink to this headline">¶</a></h2>
+<p>Reducing the number of decks is a relatively easy change to our application. Since our main application
+constructs the <a class="reference internal" href="card_deck_shoe.html#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> before constructing the <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a>,
+it can construct a single-deck <a class="reference internal" href="card_deck_shoe.html#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a>.</p>
+</div>
+<div class="section" id="changing-the-payout-odds">
+<h2>Changing the Payout Odds<a class="headerlink" href="#changing-the-payout-odds" title="Permalink to this headline">¶</a></h2>
+<p>Handling the variations in
+the payout odds is a bit more complex.</p>
+<ol class="arabic">
+<li><p>The Player creates each Hand, associated with a Bet.  The Bet is associated
+with the simple Ante outcome.</p></li>
+<li><p>At the end of the Game, the Hand does a comparison between itself
+and the Dealer’s Hand to determine the odds for the Ante outcome.</p>
+<p>It’s a <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/> <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance if the player does not have blackjack.</p>
+<p>It’s a <img class="math" src="../_images/math/121f5f29be8f0ec9829a4d65d8dd52ff5f14eb1c.png" alt="3:2"/> <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance if the player does have blackjack.</p>
+</li>
+</ol>
+<p>Allocating this responsiblity to the <a class="reference internal" href="hand.html#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class for this was a bad design decision.</p>
+<p>We should have allocated responsibility to the <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a> class.  We will need
+to add a method to the game which compares a player’s <a class="reference internal" href="hand.html#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a>
+with the dealer’s <a class="reference internal" href="hand.html#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a>, sets the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> correctly,
+and resolves the bet.</p>
+<p>This works out well with other changes like adding additional wins.</p>
+</div>
+<div class="section" id="blackjackgame-rework">
+<h2>BlackjackGame Rework<a class="headerlink" href="#blackjackgame-rework" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of methods of the parent <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a> class
+that need to be reworked to permit some flexibility in the game definitions.</p>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">BlackjackGame.</code><code class="sig-name descname">cycle</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><p>A single game of Blackjack. This steps through the sequence to play one full game.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="BlackjackGame.check_winner">
+<code class="sig-prename descclassname">BlackjackGame.</code><code class="sig-name descname">check_winner</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">hand: Hand</em><span class="sig-paren">)</span> &#x2192; Outcome<a class="headerlink" href="#BlackjackGame.check_winner" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>hand</strong> (<a class="reference internal" href="hand.html#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a>) – A specific non-bust hand for the current player</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the final Outcome object for resolving bets.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.</p>
+</dd>
+</dl>
+<p>This checks to see if the winning conditions are met or not for this hand.
+The default implementation compares the player’s total to the dealer’s total.
+If the player has a two-card twenty-one, called “blackjack” or “a natural”,
+a <img class="math" src="../_images/math/121f5f29be8f0ec9829a4d65d8dd52ff5f14eb1c.png" alt="3:2"/> Blackjack outcome is provided. If the player has more than
+two cards, and more than the dealer, this is a <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/> win. If the player
+has a total equal to the dealer, this a push, where the bet value is returned
+with no winnings. Otherwise, the Ante outcome can be left in place, because
+this hand is a  loser.</p>
+<p>There can be alternate definitions for this method, supporting variant games.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="fivecardcharlie-class">
+<h2>FiveCardCharlie Class<a class="headerlink" href="#fivecardcharlie-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="OneDeckGame">
+<em class="property">class </em><code class="sig-name descname">OneDeckGame</code><a class="headerlink" href="#OneDeckGame" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#OneDeckGame" title="OneDeckGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">OneDeckGame</span></code></a> is a subclass of <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a>
+that manages the sequence of actions for a one-deck game of Blackjack
+where a player taking five cards without going bust is actually a win,
+irrespective of the dealer’s total.</p>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">OneDeckGame.check_winner()</span></code> method overrides the superclass.
+This method  will set the hand’s outcome’s odds if the hand is large enough.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="onedeckgame-class">
+<h2>OneDeckGame Class<a class="headerlink" href="#onedeckgame-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-name descname">OneDeckGame</code></dt>
+<dd><p><a class="reference internal" href="#OneDeckGame" title="OneDeckGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">OneDeckGame</span></code></a> is a subclass of <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a>
+that manages the sequence of actions for a one-deck game of Blackjack
+with a <img class="math" src="../_images/math/05a6d3e3b3c0e5b46c0a4e3b5f88d4fa0b867c1d.png" alt="6:5"/> blackjack <code class="xref py py-class docutils literal notranslate"><span class="pre">OutcomeAnteLowOdds</span></code>.</p>
+<p>Typically, this is built with a one-deck instance of <a class="reference internal" href="card_deck_shoe.html#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a>.</p>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">OneDeckGame.check_winner()</span></code> method overrides the superclass.
+This method  will set the hand’s outcome’s odds to 6:5 if the player holds Blackjack.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="variant-game-deliverables">
+<h2>Variant Game Deliverables<a class="headerlink" href="#variant-game-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise.</p>
+<ul class="simple">
+<li><p>The revised <a class="reference internal" href="blackjack_game.html#BlackjackGame" title="BlackjackGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlackjackGame</span></code></a> class.   All of the original unit
+tests should apply to the refactored function that sets the outcome
+odds.</p></li>
+<li><p>The <a class="reference internal" href="#OneDeckGame" title="OneDeckGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">OneDeckGame</span></code></a> class.</p></li>
+<li><p>A class to perform a unit test of the <a class="reference internal" href="#OneDeckGame" title="OneDeckGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">OneDeckGame</span></code></a> class.</p></li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>In this chapter, we’ve built a working simulation of Blackjack, and refactored it so we can accomodate
+more game and play variants. Along the way, we’ve written (and rewritten) a good deal
+of Python code.</p>
+<p>In the next chapter, we’ll summarize the various components built so far.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Variant Game Rules</a><ul>
+<li><a class="reference internal" href="#variant-game-examples">Variant Game Examples</a></li>
+<li><a class="reference internal" href="#additional-wins">Additional Wins</a></li>
+<li><a class="reference internal" href="#no-resplit-no-double-after-split">No Resplit, No Double After Split</a></li>
+<li><a class="reference internal" href="#dealer-hits-soft-17">Dealer Hits Soft 17</a></li>
+<li><a class="reference internal" href="#changing-the-number-of-decks">Changing the Number of Decks</a></li>
+<li><a class="reference internal" href="#changing-the-payout-odds">Changing the Payout Odds</a></li>
+<li><a class="reference internal" href="#blackjackgame-rework">BlackjackGame Rework</a><ul>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fivecardcharlie-class">FiveCardCharlie Class</a></li>
+<li><a class="reference internal" href="#onedeckgame-class">OneDeckGame Class</a></li>
+<li><a class="reference internal" href="#variant-game-deliverables">Variant Game Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="simple_blackjack_player.html" title="previous chapter">Simple Blackjack Player Class</a></li>
+      <li>Next: <a href="conclusion.html" title="next chapter">Conclusion</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

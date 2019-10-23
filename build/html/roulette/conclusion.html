@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Conclusion &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Craps Details" href="../craps/details.html" />
+    <link rel="prev" title="Fibonacci Player Class" href="fibonacci.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="conclusion">
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
+<p>The game of Roulette has given us an opportunity to build an application
+with a considerable number of classes and objects. It is comfortably
+large, but not complex; we have built tremendous fidelity to a
+real-world problem. Finally, this program produces moderately
+interesting simulation results.</p>
+<p>In this section we’ll look at our overall approach to design in <a class="reference internal" href="#exploration">Exploration</a>.</p>
+<p>We’ll look at some design principles in <a class="reference internal" href="#the-solid-principles">The SOLID Principles</a>.</p>
+<p>In <a class="reference internal" href="#other-design-patterns">Other Design Patterns</a> we’ll look at some of the other design
+patterns we’ve been using.</p>
+<div class="section" id="exploration">
+<h2>Exploration<a class="headerlink" href="#exploration" title="Permalink to this headline">¶</a></h2>
+<p>We note that a great many of our design decisions were not easy to make
+without exploring a great deal of the overall application’s design.
+We’ve shown how to do this exploration: design just enough but remain tolerant of our own ignorance.</p>
+<p>There’s an idealized fantasy in which a developer design an entire, complex application
+before writing any software. The process for creating a complete design is still
+essentially iterative. Some parts are designed in detail, with
+tolerance for future changes; then other parts are designed in detail
+and the two design elements reconciled. This <strong>can</strong> be done on paper
+or on a whiteboard.</p>
+<p>With Python, however, we can write – and revise – draft programming
+as easily as erasing a whiteboard. It’s quite easy to do incremental
+design by writing and revising a working base of code.</p>
+<p>For new designers, we can’t give enough emphasis to the importance of
+creating a trial design, exploring the consequences of that design, and
+then doing rework of that design. Too often, we have seen trial designs
+finalized into deliverables with no opportunity for meaningful rework. In
+<a class="reference internal" href="testability.html#roul-test"><span class="std std-ref">Review of Testability</span></a>, we presented one common kind of rework to support
+more complete testing. In <a class="reference internal" href="player.html#roul-player"><span class="std std-ref">Player Class</span></a>, we presented another
+kind of rework to advance a design from a stub to a complete implementation.</p>
+</div>
+<div class="section" id="the-solid-principles">
+<h2>The SOLID Principles<a class="headerlink" href="#the-solid-principles" title="Permalink to this headline">¶</a></h2>
+<p>There are five principles of object-oriented design. We’ve touched on several.
+For more information, see <a class="reference external" href="https://en.wikipedia.org/wiki/SOLID_(object-oriented_design">https://en.wikipedia.org/wiki/SOLID_(object-oriented_design</a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">S</dt>
+<dd class="field-odd"><p>Single responsibility principle. We’ve emphasized this heavily by trying to
+narrow the scope of responsibility in each class.</p>
+</dd>
+<dt class="field-even">O</dt>
+<dd class="field-even"><p>Open/closed principle. The terminology here is important. A class is open to extension
+but closed to modification. We prefer to wrap or extend classes. We prefer not to modify
+or tweak a class. When we make a change to a class, we are careful to be sure that
+the ripple touches the entire hierarchy and all of the collaborators.</p>
+</dd>
+<dt class="field-odd">L</dt>
+<dd class="field-odd"><p>Liskov substitution principle. In essence, this is a test for proper polymorphism.
+If classes are truly polymorphic, one can be substituted for another. We’ve generally
+focused on assuring this.</p>
+</dd>
+<dt class="field-even">I</dt>
+<dd class="field-even"><p>Interface segregation principle. In most of what we’re doing, we’ve kept interfaces
+as narrow as possible. When confronted with <strong>Wrap vs. Extend</strong> distinctions, the
+idea of interface segregation suggests that we should prefer wrapping a class
+because that tends to narrow the interface.</p>
+</dd>
+<dt class="field-odd">D</dt>
+<dd class="field-odd"><p>Dependency inversion principle. This principle guides us toward creating common
+abstractions. Our <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class is an example of this. We didn’t create games
+and tables that depend on a specific player. We created games and tables that would
+work with any class that met the minimal requirements for the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class
+interface.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="other-design-patterns">
+<h2>Other Design Patterns<a class="headerlink" href="#other-design-patterns" title="Permalink to this headline">¶</a></h2>
+<p>We also feel compelled to point out the distinction between relatively
+active and passive classes in this design. We had several passive
+classes, like the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>, <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>, and <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> classes,
+which had few responsibilities beyond collecting a number of related
+attributes and providing simple functions.</p>
+<p>These classes are slightly easier to implement using the <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator.
+It can help when a few common features get built automatically.</p>
+<p>We also had several complex,
+active classes, like the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code>, <a class="reference internal" href="bin_builder.html#BinBuilder" title="BinBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinBuilder</span></code></a>, and all
+of the variations on the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> classes. These classes, typically, had
+fewer attributes and more complex methods. In the middle of the spectrum
+is the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class.</p>
+<p>We find this distinction to be an enduring
+feature of OO design: there are <em>things</em> and <em>actors</em>;
+the things tend to be passive, acted upon by the actors. The overall
+system behavior emerges from the collaboration among all of the objects
+in the system; primarily – but not exclusively – the behavior of the
+active classes.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>The next part of the book centers on the game of Craps. This game is stateful
+with a number of more intricate betting rules. We’ll start out with a discussion
+of the game itself in the next chapter.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Conclusion</a><ul>
+<li><a class="reference internal" href="#exploration">Exploration</a></li>
+<li><a class="reference internal" href="#the-solid-principles">The SOLID Principles</a></li>
+<li><a class="reference internal" href="#other-design-patterns">Other Design Patterns</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="fibonacci.html" title="previous chapter">Fibonacci Player Class</a></li>
+      <li>Next: <a href="../craps/details.html" title="next chapter">Craps Details</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

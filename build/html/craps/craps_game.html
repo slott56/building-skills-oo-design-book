@@ -1,0 +1,1720 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>CrapsGame Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CrapsPlayer Class" href="craps_player.html" />
+    <link rel="prev" title="Craps Table Class" href="craps_table.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="crapsgame-class">
+<span id="craps-game"></span><h1>CrapsGame Class<a class="headerlink" href="#crapsgame-class" title="Permalink to this headline">¶</a></h1>
+<p>In <a class="reference internal" href="throw.html#craps-throw"><span class="std std-ref">Throw Class</span></a>, we roughed out a stub version of <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>
+that could be used to test <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>. We extended that stub in <a class="reference internal" href="craps_table.html#craps-table"><span class="std std-ref">Craps Table Class</span></a>.
+In this chapter, we will revise the game to provide the complete
+process for Craps. This involves a number of features, and we will have
+a state hierarchy as well as the Game class itself.</p>
+<p>In the process of completing the design for the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class, we
+will uncover another subtlety of craps: winning bets and losing bets.
+Unlike Roulette, where a <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> contained winning <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+and all other <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances where losers, Craps includes winning
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, and unresolved <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+This will lead to some rework of previously created Craps classes.</p>
+<p>In <a class="reference internal" href="#craps-game-analysis">Craps Game Analysis</a> we’ll examine the game of craps in detail.
+We’ll look at four topics:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#game-state">Game State</a> will address how the game transitions between point
+on and point off states.</p></li>
+<li><p><a class="reference internal" href="#the-game-state-class-hierarchy">The Game State Class Hierarchy</a> will look at the <strong>State</strong> design
+pattern and how it applies here.</p></li>
+<li><p>In <a class="reference internal" href="#resolving-bets">Resolving Bets</a> we’ll look at how game, table, and player collaborate
+to resolved bets.</p></li>
+<li><p>In <a class="reference internal" href="#movable-bets">Movable Bets</a> we’ll look at how the game collaborates with
+bets like the Pass Line bet which have an outcome that moves.</p></li>
+</ul>
+<p>In <a class="reference internal" href="#design-decision-win-lose-wait">Design Decision – Win, Lose, Wait</a> we’ll look at bet payoff issues.</p>
+<p>In <a class="reference internal" href="#additional-craps-design">Additional Craps Design</a> we’ll revisit our algorithm for building
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances and <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances and creating the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a>.</p>
+<p>This chapter involves a large amount of programming. We’ll detail
+this in <a class="reference internal" href="#craps-game-implementation-steps">Craps Game Implementation Steps</a>.</p>
+<p>We’ll look at preliminary rework in a number of sections:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#throw-rework">Throw Rework</a>,</p></li>
+<li><p><a class="reference internal" href="#throwbuilder-rework">ThrowBuilder Rework</a>, and</p></li>
+<li><p><a class="reference internal" href="#bet-rework">Bet Rework</a>.</p></li>
+</ul>
+<p>Once we’ve cleaned up the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> and <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> classes, we
+can focus on new development for the Craps game.</p>
+<p>In <a class="reference internal" href="#crapsplayer-class-stub">CrapsPlayer Class Stub</a> we’ll rough out a design for a player.</p>
+<p>We’ll define the game states in the following sections:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#crapsgamestate-class">CrapsGameState Class</a> will address the superclass,</p></li>
+<li><p><a class="reference internal" href="#crapsgamepointoff-class">CrapsGamePointOff Class</a> will look at the point off state, and</p></li>
+<li><p><a class="reference internal" href="#crapsgamepointon-class">CrapsGamePointOn Class</a> will look at the point on state.</p></li>
+</ul>
+<p>In <a class="reference internal" href="#crapsgame-design">CrapsGame Design</a> we’ll define the overall game class. We’ll
+enumerate the deliverables for this chapter in <a class="reference internal" href="#craps-game-deliverables">Craps Game Deliverables</a>.</p>
+<p>We’ll look at some additional game design issues in <a class="reference internal" href="#optional-working-bets">Optional Working Bets</a>.</p>
+<div class="section" id="craps-game-analysis">
+<h2>Craps Game Analysis<a class="headerlink" href="#craps-game-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Craps is considerably more complex than Roulette. As noted in <a class="reference internal" href="details.html#craps-details"><span class="std std-ref">Craps Details</span></a>,
+there is a multi-step procedure that involves state changes, multiples rounds
+of betting, and bets that move from generic (“Come” or “Pass Line”) to specific
+numbers based on the current <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance.</p>
+<p>We can see several necessary features to the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#game-state">Game State</a>,</p></li>
+<li><p><a class="reference internal" href="#the-game-state-class-hierarchy">The Game State Class Hierarchy</a>,</p></li>
+<li><p><a class="reference internal" href="#resolving-bets">Resolving Bets</a>, and</p></li>
+<li><p><a class="reference internal" href="#movable-bets">Movable Bets</a> when a point is established.</p></li>
+</ul>
+<p>Also, we will discover some additional design features to add to other classes.</p>
+<div class="section" id="game-state">
+<span id="craps-game-algorithm"></span><h3>Game State<a class="headerlink" href="#game-state" title="Permalink to this headline">¶</a></h3>
+<p>A <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object cycles through the various steps of the
+Craps game; this sequence is shown in <a class="reference internal" href="#craps-game-algorithm"><span class="std std-ref">Game State</span></a>.
+Since we will follow the <strong>State</strong> design pattern, we have three
+basic design decisions. First, we have to design the state class
+hierarchy to own responsibilities for the unique processing present in each of the
+individual states. Second, we have to design an interface for the game
+state objects to interact with the overall <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>.
+Third, we will need to keep an object in the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>
+which contains the current state. Each throw of the dice will update the
+state, and possibly resolve game bets. To restart the game, we can
+create a fresh object for the initial point-off state.</p>
+<p>The following procedure provides the detailed algorithm for the game of Craps.</p>
+<p class="rubric">A Single Game of Craps</p>
+<p><strong>Point Off State</strong>.
+The first throw of the dice is made with no point.  This game may
+be resolved in a single throw of the dice, no point will be established.
+If a point is established the game transitions to the <strong>Point On State</strong>.</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p><strong>Place Bets</strong>.
+The point is off; this is the come out roll. Notify the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
+to create <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances. The real work of placing bets is delegated
+to the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class. Only Pass and Don’t Pass bets will be
+allowed by the current game state.</p></li>
+<li><p><strong>Odds Bet Off?</strong>
+Optional, for some casinos only. For any odds bets behind a come point,
+interrogate the player to see if the bet is on or off. These bets were
+unresolved because the previous game ended in a winning point.</p></li>
+<li><p><strong>Come-Out Roll</strong>.
+Get the next throw of the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> object, giving the winning <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance,
+<em>t</em>. The <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object contains the individual <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+that can be resolved on this throw.</p></li>
+<li><p><strong>Resolve Proposition Bets</strong>.
+For each <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object, <em>b</em>, placed on a one-roll proposition:</p>
+<ul class="simple" id="craps-game-algorithm-proposition">
+<li><p><strong>Proposition Winner?</strong>
+If <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em>’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is in the winning
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>, <em>t</em>, then notify the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object that
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em> was a winner.  Update the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+object’s stake. Note that the odds paid for winning field bets and horn bets
+depend on the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object.</p></li>
+<li><p><strong>Proposition Loser?</strong>
+If <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em>’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is not in the winning
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>, <em>t</em>, then notify the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> that
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em> was a loser. This allows the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+to update their betting amount for the next round.</p></li>
+</ul>
+</li>
+<li><p><strong>Natural?</strong>
+If the throw is a 7 or 11, this game is an immediate winner. The game
+state must provide the Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance as a winner.</p>
+<p>For each <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>, <em>b</em>:</p>
+<ul class="simple">
+<li><p><strong>Come-Out Roll Natural Winner?</strong>
+If <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em>’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is in the
+winning game state, then notify the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object that <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>
+<em>b</em> was a winner and update the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object’s stake.
+The <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance will contain outcomes to make sure
+a Pass Line bet is a winner, and a Don’t Pass bet is a loser.</p></li>
+<li><p><strong>Come-Out Roll Natural Loser?</strong>
+If <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em>’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is not in the
+winning game state, then notify the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object that <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>
+<em>b</em> was a loser. This allows the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object to update
+the betting amount for the next round. A Pass Line bet is a loser, and a
+Don’t Pass bet is a winner.</p></li>
+</ul>
+</li>
+<li><p><strong>Craps?</strong>
+If the throw is a 2, 3, or 12, this game is an immediate loser. The game
+state must provide the Don’t Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances as a winner;
+note that 12 is a push in this case, requiring special processing by the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>
+or the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>: the bet amount is simply returned.</p>
+<p>For each <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>, <em>b</em>:</p>
+<ol class="loweralpha simple">
+<li><p><strong>Come-Out Roll Craps Winner?</strong>
+If <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em>’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is in the
+winning game state and the bet is working, then notify the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+that <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em> was a winner and update the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object’s
+stake. If the bet is not working, it is ignored.</p></li>
+<li><p><strong>Come-Out Roll Craps Loser?</strong>
+If <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em> ‘s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is not in the
+winning game state and the bet is working, then notify the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+that <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> <em>b</em> was a loser. If the bet is not
+working, it is ignored.</p></li>
+</ol>
+</li>
+<li><p><strong>Point Established</strong>.
+If the throw is a 4, 5, 6, 8, 9 or 10, a point is established. The game
+state changes, to reflect the point being on. The Pass Line and Don’t
+Pass Line bets have a new <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance assigned to them, based on the point.</p></li>
+</ol>
+</div></blockquote>
+<p><strong>Point On State</strong>.
+While the game remains unresolved, the following steps are performed.
+The game will be resolved when the point is made or a natural is thrown.</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p><strong>Place Bets</strong>.
+Notify the player to place any additional bets. In this game state all
+bets are allowed.</p></li>
+<li><p><strong>Point Roll</strong>.
+Get the next <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance from the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> object.</p></li>
+<li><p><strong>Resolve Proposition Bets</strong>.
+Resolve any one-roll proposition bets. This is the procedure described
+above for iterating through all one-roll propositions. See <a class="reference internal" href="#craps-game-algorithm-proposition"><span class="std std-ref">Resolve Proposition Bets</span></a>.</p></li>
+<li><p><strong>Natural?</strong>
+If the throw was 7, the game is a loser. Resolve all bets; the game
+state will show that all bets are active. The game state will include
+Don’t Pass and Don’t Come bets as winners, as will any of the six point
+bets created from Don’t Pass and Don’t Come Line bets. All other bets
+will lose, including all hardways bets.</p>
+<p>This throw resolves the game, changing the game state: the point is off.</p>
+</li>
+<li><p><strong>Point Made?</strong>
+If the throw was the main game point, the game is a winner. Resolve Pass
+Line and Don’t Pass Line bets, as well as the point and any odds behind
+the point.</p>
+<p>Come Point and Don’t Come Point bets (and their odds) remain for the
+next game. A Come Line or Don’t Come Line bet will be moved to the
+appropriate Come Point.</p>
+<p>This throw ends the game, changing the game state.
+The point is off; odds placed behind Come Line
+bets are not working for the come out roll.</p>
+</li>
+<li><p><strong>Other Point Number?</strong>
+If the throw was any of the come point numbers, come bets on that point
+are winners. Resolve the point come bet and any odds behind the point.
+Also, any buy or lay bets will be resolved as if they were odds bets
+behind the point; recall that the buy and lay bets involved a
+commission, which was paid when the bet was created.</p></li>
+<li><p><strong>Hardways?</strong>
+For 4, 6, 8 and 10, resolve hardways bets. If the throw was made the
+hard way (both dice equal), a hardways bet on the thrown number is a
+winner. If the throw was made the easy way, a hardways bet on the thrown
+number is a loser. If the throw was a 7, all hardways bets are losers.
+Otherwise, the hardways bets remain unresolved.</p></li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="the-game-state-class-hierarchy">
+<h3>The Game State Class Hierarchy<a class="headerlink" href="#the-game-state-class-hierarchy" title="Permalink to this headline">¶</a></h3>
+<p>We have identified some processing that is
+unique to each game state. Both states will have a list of
+allowed bets, a list of non-working bets, a list of throws
+that cause state change and resolve game bets, and a list of throws that resolve
+hardways bets.</p>
+<p>In the Craps Table (<a class="reference internal" href="craps_table.html#craps-table-ov"><span class="std std-ref">Craps Table Analysis</span></a>), we allocated some
+responsibilities to the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class so that a <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> instance
+could validate bets and determine which bets were
+working.</p>
+<p>Our further design details have shown that the work varies by game state.
+Therefore, the methods in the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class
+will delegate the real work to each state’s methods. The current
+stub implementation checks the value of the <code class="xref py py-obj docutils literal notranslate"><span class="pre">point</span></code> variable to
+determine the state. We’ll replace this with a call to an appropriate
+method of the current state object.</p>
+<p><strong>State Responsibilities</strong>.
+Each <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> subclass, therefore, will have an <code class="xref py py-meth docutils literal notranslate"><span class="pre">isValid()</span></code>
+method that implements the state-specific bet validation rules. In this case, a
+point-off state object only allows the two Pass Line bets: Pass Line,
+Don’t Pass Line. The point-on state allows all bets. Additionally, we’ve
+assigned to the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> class the responsibility to determine if the total
+amount of all a player’s bets meets or exceeds the table limits.</p>
+<p>Each subclass of the <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> class will override an <code class="xref py py-meth docutils literal notranslate"><span class="pre">isWorking()</span></code>
+method with one that validates the state-specific rules for the working
+bets. In this case, a point-off state object will identify the the six
+odds bets placed behind the come point numbers (4, 5, 6, 8, 9 and 10) as
+non-working bets, and all other bets will be working bets. A point-on
+state object will simply identify all bets as working.</p>
+<p>The subclasses of the <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> class will need methods with
+which to collaborate with a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object to update the
+state of the current <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> instance.</p>
+<p><strong>Changing Game State</strong>. We have identified two game states: point-off
+(also know as the come out roll) and point-on. We have also set aside
+four methods that the various <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> objects will use to
+change the game state. The interaction between the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class,
+the four kinds of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> subclasses and the two subclasses of <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> instances works as follows:</p>
+<ol class="arabic">
+<li><p>There are 36 instances of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>,
+one of which was selected at random to be the current throw of the dice.</p>
+<p>The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object calls the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">updateGame()</span></code>
+method.  Each of the subclasses of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> have different implementations for this method.</p>
+</li>
+<li><p>The <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object calls back to one of the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object’s
+methods to change the state. There are four methods available: <code class="xref py py-meth docutils literal notranslate"><span class="pre">craps()</span></code>,
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">natural()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">eleven()</span></code>, and <code class="xref py py-meth docutils literal notranslate"><span class="pre">point()</span></code>.
+Different subclasses of the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class will call an appropriate
+method for the kind of throw.</p></li>
+<li><p>The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object has a current state, embodied in a <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a>
+object.  The game will delegate each of the four state change
+methods (<code class="xref py py-meth docutils literal notranslate"><span class="pre">craps()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">natural()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">eleven()</span></code>,
+and <code class="xref py py-meth docutils literal notranslate"><span class="pre">point()</span></code>) to the current <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a>
+object.</p></li>
+<li><p>In parallel with <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class, each <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a>
+subclass has four state change methods (<code class="xref py py-meth docutils literal notranslate"><span class="pre">craps()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">natural()</span></code>,
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">eleven()</span></code>, and <code class="xref py py-meth docutils literal notranslate"><span class="pre">point()</span></code>). Each state
+provides different implementations for these methods. In effect, the
+two states and four methods create a kind of table that enumerates
+all possible state change rules.</p></li>
+</ol>
+<p><strong>Complex?</strong>
+At first glance the indirection and delegation seems like a lot of
+overhead for a simple state change. When we consider the kinds of
+decision-making this embodies, however, we can see that this is an
+effective solution.</p>
+<p>When one of the 36 available <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances
+has been chosen, the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> instance calls a single method to
+update the game state. Because the various subclasses of the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class
+are polymorphic, they all respond with unique, correct behavior based on state.</p>
+<p>Similarly, each of the subclasses of the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class use one
+of four methods to update the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object, without having to
+discern the current state of the game. We can consider the
+<a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class as a kind of façade over the methods of the polymorphic
+<a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> subclasses. Our objective is to do the decision-making
+once when the object is created; this makes all subsequent processing
+free of complex if-based decision-making.</p>
+<p>What’s important about this design is that there are no if-statements
+required to make it work.  Instead, objects simply invoke methods.</p>
+</div>
+<div class="section" id="resolving-bets">
+<span id="craps-game-resolve"></span><h3>Resolving Bets<a class="headerlink" href="#resolving-bets" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class also has the responsibility for
+matching the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances in the current <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object
+with the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances of the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances held by the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> object.</p>
+<p>In addition to matching <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances in the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object,
+we also have to match the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances of the current game
+state.</p>
+<p>Finally, the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class must also resolve hardways bets, which are
+casually tied to the current
+game state. We’ll look at each of these three resolution procedures in
+some detail before making any final design decisions.</p>
+<ul>
+<li><p><strong>Resolving Bets on Proposition Outcomes</strong>. We’ll need a bet resolution
+method that handles one-roll propositions. This is similar to the bet
+resolution in the Roulette game class. The current <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance
+contains a collection of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances which are resolved as
+winners. All other <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances will be losers. While appropriate
+for the one-roll propositions, we’ll see that this doesn’t generalize for
+other kinds of bets.</p></li>
+<li><p><strong>Resolving Bets on Game Outcomes</strong>. The second, and most complex, bet
+resolution method handles game outcomes. Bets on the game as a whole
+have three groups of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances: winners, losers and
+unresolved.</p>
+<p>This “unresolved” outcome is fundamentally different from Roulette
+bet resolution and proposition bet resolution.</p>
+<p>Consider a Pass Line bet: in the point-off state, a roll of
+7 or 11 makes this bet a winner, a roll of 2, 3 or 12 makes this bet a
+loser, all other numbers leave this bet unresolved. After a point is
+established, this Pass Line bet has the following resolutions: a roll of
+7 makes this bet a loser, rolling the point makes this bet is a winner,
+all other numbers leave this bet unresolved.</p>
+<p>In addition to this three-way decision, we have the additional subtlety
+of Don’t Pass Line bets that can lead to a fourth resolution: a push
+when the throw is 12 on a come out roll. We don’t want to ignore this
+detail because it changes the odds by almost 3%.</p>
+</li>
+<li><p><strong>Resolving Hardways Bets</strong>.
+We have several choices for implementation of this multi-way decision.  This
+is an overview, we’ll dive into details below.</p>
+<ul class="simple">
+<li><p>We can keep separate collections of winning and losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+in each <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object. This will obligate the game to check
+a set of winners and a set of losers for bet resolution. Other <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+can remain unresolved.</p></li>
+<li><p>We can add a method to the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class that will return a
+code for the effect of a win, lose, or wait for each <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.
+A win would add money to the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object’s stake;
+a lose would subtract money from the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object.
+This means that the game will have to decode this win-lose response as part
+of bet resolution.</p></li>
+<li><p>We can make each kind of resolution into a <strong>Command</strong> class.  Each
+subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">BetResolution</span></code> would perform the “pay a winner”,
+“collect a loser” or “leave unresolved” procedure based on the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance
+or class:<cite>CrapsGameState</cite> object.</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="movable-bets">
+<h3>Movable Bets<a class="headerlink" href="#movable-bets" title="Permalink to this headline">¶</a></h3>
+<p>In the casino, the Come (and Don’t Come) Line bets start on the given
+line. If a come point is established, the come line bet is moved to a
+box with the point. When you add behind the line odds bets, you place the
+chips directly on the numbered box for the Come Point number.</p>
+<p>This procedure is different from the Pass (and Don’t Pass) Line bet. The bet is is
+placed on the line. If a point is established, a large white “On” token shows
+the numbered box where, in effect, the behind the line odds chips belong.</p>
+<p>Note that the net effect of both bets is identical.  The pass line and behind-the-line odds bets
+have a payout that depends on the “On” token.  The come line bets are moved and odds a place in a
+box on which the payout depends.</p>
+<p>One of the things the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class does is change the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance
+of the Come and Don’t Come Line bets. If a Come or Don’t Come Line bet is placed and the throw
+is a point number (4, 5, 6, 8, 9, or 10), the bet is not resolved on the first
+throw; it is moved to one of the six point number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>When designing the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class, in the
+Craps Bet section (<a class="reference internal" href="bet.html#craps-bet-ov"><span class="std std-ref">Bet Analysis</span></a>,) we recognized the need to change the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance
+from a generic “Pass Line Odds” to a specific point with specific
+odds of <img class="math" src="../_images/math/2da4d58abd68781dcdd0b97ac1adbaaf01695038.png" alt="2:1"/>, <img class="math" src="../_images/math/121f5f29be8f0ec9829a4d65d8dd52ff5f14eb1c.png" alt="3:2"/>, or <img class="math" src="../_images/math/05a6d3e3b3c0e5b46c0a4e3b5f88d4fa0b867c1d.png" alt="6:5"/>.</p>
+<p>We’ll develop a <code class="xref py py-meth docutils literal notranslate"><span class="pre">moveToThrow()</span></code> method that accepts a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object
+and the current <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance so it can move the bet to the new
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.</p>
+<p>In addition to moving bets, we also need to create bets based on
+the currently established point.  We also need to deactivate bets
+based on the established point.</p>
+<p>As an example, the Pass Line Odds and Don’t Pass Odds are created after the point is
+established. Since the point is already known, creating these bets is
+best done by adding a <a class="reference internal" href="#CrapsGame.pointOutcome" title="CrapsGame.pointOutcome"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CrapsGame.pointOutcome()</span></code></a> method
+that returns an <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance based on the current point. This
+allows the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> object to get the necessary <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+object, create a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance and give that <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance to the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> object.</p>
+</div>
+</div>
+<div class="section" id="design-decision-win-lose-wait">
+<h2>Design Decision – Win, Lose, Wait<a class="headerlink" href="#design-decision-win-lose-wait" title="Permalink to this headline">¶</a></h2>
+<p>Bet resolution in Craps is more complex than simply paying winners
+and collecting all other bets as losers.  In Craps, bets can be winners, losers
+or unresolved.  Further, some bets have a “push” resolution in which
+only the original price of the bet is returned.  This is a kind of <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/> odds
+special case.</p>
+<p><strong>Problem</strong>.  What’s the best way to retain a collection
+of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances that are resolved as a mixture of winning, losing, unresolved, and
+pushes.</p>
+<p>Note that if we elect to introduce a more complex multi-way bet resolution, we
+have to decide if we should re-implement the bet resolution in Roulette.
+Using very different bet resolution algorithms for Craps and Roulette
+doesn’t seem appealing. While a uniform
+approach is beneficial, it would involve some rework of the Roulette
+game to work correctly in spite of a more sophisticated design.</p>
+<p><strong>Alternatives</strong>.
+We’ll look at three alternative responsibility assignments in some depth.</p>
+<ul class="simple">
+<li><p><strong>Winning and Losing Collections</strong>.</p></li>
+<li><p><strong>Winning and Losing Status Codes</strong>.</p></li>
+<li><p><strong>Wining and Losing Command Objects</strong>.</p></li>
+</ul>
+<p>Each of these is a profoundly different way to assign responsibilities.</p>
+<p><strong>Winning and Losing Collections</strong>. We could expand the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class to keep separate
+collections of winners and losers.  We could expand the <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> class
+to detail the winning and losing
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances for each state. All other <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+would be left unresolved.</p>
+<p>This is a minor revision to the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> and
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> classes to properly create the two groups of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+Consequently <a class="reference internal" href="throw_builder.html#ThrowBuilder" title="ThrowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThrowBuilder</span></code></a> class will have to be expanded to
+identify losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances in addition to the existing winning
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>This will also require the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class to make
+two passes through the bets.  It must match all active <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances
+on the table against the winning <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+in the current state; the matches are paid a
+winning amount and removed. It must also match match all active <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances
+on the table against the losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+in the current state; these are removed as losers.</p>
+<p><strong>Winning and Losing Codes, Evaluated by CrapsGame</strong>. We could
+enumerate three code values that represent actions to take:  these actions
+are “win”, “lose”, and “unresolved”.
+The class <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> and
+each subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">GameState</span></code> would have a resolution method that examines a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> and
+returns the appropriate code value.</p>
+<p>This is a minor revision to <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> and
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> to properly associate a special code with each <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.
+Consequently <a class="reference internal" href="throw_builder.html#ThrowBuilder" title="ThrowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThrowBuilder</span></code></a> will have to be expanded to
+identify losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances in addition to the existing winning <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>Each <cite>GameState</cite> would also need to respond with appropriate codes.</p>
+<p>This will require the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> to make one pass through the
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances, passing each
+each bet to the <code class="xref py py-class docutils literal notranslate"><span class="pre">GameState</span></code> resolution method.  Based on the
+code returned, the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> would then have an if-statement to decide
+to provide bets to the <a class="reference internal" href="refactoring.html#Player.win" title="Player.win"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.win()</span></code></a> or <a class="reference internal" href="refactoring.html#Player.lose" title="Player.lose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.lose()</span></code></a> method.</p>
+<p><strong>Wining and Losing Commands</strong>.  We could define a hierarchy of three subclasses.
+Each subclass implements
+winning, losing or leaving a bet unresolved.</p>
+<p>This is a minor revision to <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> and
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> to properly associate a special object with each <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.
+We would create
+single objects of each resolution subclass.
+The <a class="reference internal" href="throw_builder.html#ThrowBuilder" title="ThrowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThrowBuilder</span></code></a> will have to be expanded to
+associate the loser Command or winner command with each <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.
+Further, the unresolved Command would have to be associated with all <cite>Outcome</cite> instances
+that are not resolved by the <cite>Throw</cite> or <cite>GameState</cite>.</p>
+<p>This will require the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> to make one pass through the
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances, using the associated resolution object.  The resolution
+object would then handle winning, losing and leaving the bet unresolved.</p>
+<p>Before making a determination, we’ll examine the remaining bet
+resolution issue to see if a single approach can cover single-roll, game
+and hardways outcomes.</p>
+<p><strong>Resolving Bets on Hardways Outcomes</strong>. In addition to methods to resolve
+one roll and game bets, we have to resolve the hardways bets. Hardways
+bets are similar to game bets. For <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances of 4, 6, 8 or 10
+there will be one of three outcomes:</p>
+<ul class="simple">
+<li><p>when the number is made the hard way, the matching hardways bet is a winner;</p></li>
+<li><p>when the number is made the easy way, the matching hardways bet is a loser;
+otherwise the hardways bet is unresolved;</p></li>
+<li><p>on a roll of seven, all hardways bets are losers.</p></li>
+</ul>
+<p>Since this parallels the game rules, but applies to an individual <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object,
+it leads us to consider the design of the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class to be
+parallel to the design of the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class. We can use either a
+collection of losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances in addition to the
+collection of winning <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, or create a multi-way
+discrimination method, or have the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class call appropriate
+methods of <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> object to resolve the bet.</p>
+<p><strong>Solution</strong>. A reasonably flexible design for bet
+resolution that works for all three kinds of bet resolutions is to have the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>
+and <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> classes call specific bet resolution methods in the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class.</p>
+<p>This unifies one-roll, game and hardways bets into a single mechanism.
+It requires us to provide methods for win, lose and push in the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class.
+We can slightly simplify this to treat a push as a kind of win that
+returns the bet amount.</p>
+<p><strong>Consequences</strong>.
+The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class will iterate through the active <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.
+Each <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object and the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object will be provided to
+the current <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance for resolving one-roll and hardways bets. Each
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object and the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object will also be provided to
+the <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> instance to resolve the winning and losing game bets.</p>
+<p>We can further simplify this if each <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object carries a reference to the owning <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>.
+In this way, the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object has all the information necessary to
+notify the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance of the outcome.</p>
+<p>In the long run, this reflects the reality of Craps table where the table
+operators assure that each bet has an owning player.</p>
+</div>
+<div class="section" id="additional-craps-design">
+<h2>Additional Craps Design<a class="headerlink" href="#additional-craps-design" title="Permalink to this headline">¶</a></h2>
+<p>We will have to rework our design for the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class to have both a
+one-roll resolution method and a hardways resolution method. Each of
+these methods will accept a single active <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance.
+Each resolution method could use a set of winner <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+and a set of loser <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances to attempt to resolve the bet.</p>
+<p>We will also need to rework our design for the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class to
+correctly set both winners and losers for both one-roll and hardways bets
+when constructing the 36 individual <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances.</p>
+<p>We can use the following expanded algorithm for building the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> collection
+of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances.
+This is a revision to <a class="reference internal" href="throw_builder.html#craps-throwbuilder-ov"><span class="std std-ref">Throw Builder Analysis</span></a> to include
+lists of losing bets as well as winning bets.</p>
+<p class="rubric">Building Dice With Winning and Losing Outcomes</p>
+<p><strong>For All Faces Of Die 1</strong>. For all <img class="math" src="../_images/math/3ae609da43d4b08e38f5d39c0e6b1334d3c6bbd9.png" alt="d_1"/>, such that <img class="math" src="../_images/math/1de44ff56b755f801705a68a067a435860e93a88.png" alt="1 \leq d_1 &lt; 7"/>:</p>
+<blockquote>
+<div><p><strong>For All Faces Of A Die 2</strong>. For <img class="math" src="../_images/math/cc01b82d36d02dbb2f81204ce239408227e1f242.png" alt="d_2"/>, such that <img class="math" src="../_images/math/2b35e9a3c9019abf95bd741872cc89733798a086.png" alt="1 \leq d_2 &lt; 7"/>:</p>
+<blockquote>
+<div><p><strong>Sum the Dice</strong>. Compute the sum, <img class="math" src="../_images/math/8ab0c2bcc030581dbad123db5e83aebb4e08f4bb.png" alt="s \gets d_1 + d_2"/>.</p>
+<p><strong>Craps?</strong> If <em>s</em> is in 2, 3, and 12, we create a <a class="reference internal" href="throw.html#CrapsThrow" title="CrapsThrow"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsThrow</span></code></a>
+instance. The winning bets include one of the 2, 3 or 12 number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects,
+plus all craps, horn and field <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. The losing bets include the other number
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. This throw does not resolve
+hardways bets.</p>
+<p><strong>Point?</strong> For <em>s</em> in 4, 5, 6, 8, 9, and 10 we will create a <a class="reference internal" href="throw.html#PointThrow" title="PointThrow"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointThrow</span></code></a>
+instance.</p>
+<blockquote>
+<div><p><strong>Hard way?</strong> When  <img class="math" src="../_images/math/ece909b94a0350daf43c23fd37ce69633586233f.png" alt="d_1 = d_2"/>,
+this is a <em>hard</em> 4, 6, 8 or 10. The appropriate hard number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object
+is a winner.</p>
+<p><strong>Easy way?</strong>  Otherwise, <img class="math" src="../_images/math/b05191797371b753b1316b3738b1e950c27a9212.png" alt="d_1 \ne d_2"/>, this is an <em>easy</em> 4, 6, 8 or 10. The
+appropriate hard number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object is a loser.</p>
+</div></blockquote>
+<p><strong>Field?</strong> For <em>s</em> in 4, 9 and 10 we include the field <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object
+as a winner. Otherwise the field <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object is a loser.
+Note that 2, 3, and 12 Field outcomes where handled above under <strong>Craps</strong>.</p>
+<p><strong>Losing Propositions</strong>. Other one-roll <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, including
+2, 3, 7, 11, 12, Horn and Any Craps <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are all losers.</p>
+<p><strong>Natural?</strong> If <em>s</em> is 7, we create a <a class="reference internal" href="throw.html#NaturalThrow" title="NaturalThrow"><code class="xref py py-class docutils literal notranslate"><span class="pre">NaturalThrow</span></code></a>
+instance. This will also include a 7 <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object as a winner.
+It will have numbers 2, 3, 11, 12, Horn, Field and Any Craps <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances  as
+losers. Also, all four hardways are losers for this throw.</p>
+<p><strong>Eleven?</strong> If <em>s</em> is 11, we create an <a class="reference internal" href="throw.html#ElevenThrow" title="ElevenThrow"><code class="xref py py-class docutils literal notranslate"><span class="pre">ElevenThrow</span></code></a>
+instance. This will include 11, Horn and Field <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances as
+winners. It will have numbers 2, 3, 7, 12 and Any Craps <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances as losers.
+There is no hardways resolution.</p>
+</div></blockquote>
+</div></blockquote>
+<p><strong>Craps Player Class Hierarchy</strong>. We have not designed the actual <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class yet.
+This is really a complete tree of classes, each of which provides a
+different betting strategy. We will defer this design work until later.
+For the purposes of making the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class, we can
+develop our unit tests with a kind of stub for the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class
+which simply creates a single Pass Line <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance. In several
+future exercises, we’ll revisit this design to make more sophisticated players.</p>
+<p>See <a class="reference internal" href="details.html#craps-game-ov-workingbets"><span class="std std-ref">Some Betting Strategies</span></a> for a further discussion on an
+additional player decision offered by some variant games. Our design can
+be expanded to cover this. We’ll leave this as an exercise for the more
+advanced student. This involves a level of collaboration between the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code>
+and <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> classes that is over the top for this part. We’ll
+address this kind of very rich interaction in <a class="reference internal" href="../index.html#blackjack"><span class="std std-ref">Blackjack</span></a>.</p>
+</div>
+<div class="section" id="craps-game-implementation-steps">
+<h2>Craps Game Implementation Steps<a class="headerlink" href="#craps-game-implementation-steps" title="Permalink to this headline">¶</a></h2>
+<p>We have identified the following things that must be done to
+implement the craps game.</p>
+<ol class="arabic simple">
+<li><p>Change the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class to include both winning and losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances</p></li>
+<li><p>Once we have fixed the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class,
+we can update the <a class="reference internal" href="throw_builder.html#ThrowBuilder" title="ThrowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThrowBuilder</span></code></a> class to do a correct
+initialization using both winners and losers. Note that we have
+encapsulated this information so that there is no change to the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class.</p></li>
+<li><p>We will also update the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class to carry a reference to the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class
+to make it easier to post winning and losing information directly to the
+player object.</p></li>
+<li><p>We will need to create a stub <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class for testing purposes.</p></li>
+<li><p>We will also need to create our <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> class
+hierarchy to represent the two states of the game.</p></li>
+<li><p>Once the preliminary work is complete, we can then transform the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class
+we started in <a class="reference internal" href="craps_table.html#craps-game-stub"><span class="std std-ref">CrapsGame Stub</span></a>
+into a final version. This will collaborate
+with a <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> instance and maintain a correct <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> object.
+It will be able to get a random <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object and resolve <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances
+on the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>.</p></li>
+</ol>
+<p>We’ll address each of these separately.</p>
+</div>
+<div class="section" id="throw-rework">
+<h2>Throw Rework<a class="headerlink" href="#throw-rework" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> cass is the superclass for the various throws of the dice.
+A <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance identifies two sets of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances:
+immediate winners and immediate losers. Each subclass is a different
+grouping of the numbers, based on the state-change rules for Craps.</p>
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="Throw.win1Roll">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">win1Roll</code><a class="headerlink" href="#Throw.win1Roll" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code> of of one-roll <code class="xref py py-class docutils literal notranslate"><span class="pre">Outcomes</span></code> that win with this throw.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Throw.lose1Roll">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">lose1Roll</code><a class="headerlink" href="#Throw.lose1Roll" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code> of one-roll <code class="xref py py-class docutils literal notranslate"><span class="pre">Outcomes</span></code> that lose with this throw.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Throw.winHardway">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">winHardway</code><a class="headerlink" href="#Throw.winHardway" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code> of hardways <code class="xref py py-class docutils literal notranslate"><span class="pre">Outcomes</span></code> that win with this
+throw. Not all throws resolve hardways bets, so this and the
+loseHardway Set may both be empty.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Throw.loseHardway">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">loseHardway</code><a class="headerlink" href="#Throw.loseHardway" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code> of hardways <code class="xref py py-class docutils literal notranslate"><span class="pre">Outcomes</span></code> that lose with this
+throw. Not all throws resolve hardways bets, so this and the
+winHardway Set may both be empty.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Throw.d1">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">d1</code><a class="headerlink" href="#Throw.d1" title="Permalink to this definition">¶</a></dt>
+<dd><p>One of the two die values, from 1 to 6.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Throw.d2">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">d2</code><a class="headerlink" href="#Throw.d2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The other of the two die values, from 1 to 6.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Throw.__init__">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">d1: int</em>, <em class="sig-param">d2: int</em>, <em class="sig-param">winners: Optional[Set[Outcome]]=None</em>, <em class="sig-param">losers: Optional[Set[Outcome]]=None</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Throw.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d1</strong> (<em>int</em>) – One die value.</p></li>
+<li><p><strong>d2</strong> (<em>int</em>) – The other die value.</p></li>
+<li><p><strong>winners</strong> (Optional[Set[<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>]]) – All the outcomes which will be paid as winners for this Throw.</p></li>
+<li><p><strong>losers</strong> – All the outcomes which will be collected as winners for this Throw.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Creates this throw, and associates the two given sets of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+instances that are winning one-roll propositions and losing one-roll propositions.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Throw.add1Roll">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">add1Roll</code><span class="sig-paren">(</span><em class="sig-param">self, winners: Set[Outcome], losers: Set[Outcome]</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Throw.add1Roll" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>winners</strong> (Set[<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>]) – All the outcomes which will be paid as winners for this Throw.</p></li>
+<li><p><strong>losers</strong> – All the outcomes which will be collected as winners for this Throw.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Adds outcomes to the one-roll winners and
+one-roll losers Sets.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Throw.addHardways">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">addHardways</code><span class="sig-paren">(</span><em class="sig-param">self, winners: Set[Outcome], losers: Set[Outcome]</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Throw.addHardways" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>winners</strong> (Set[<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>]) – All the outcomes which will be paid as winners for this Throw.</p></li>
+<li><p><strong>losers</strong> – All the outcomes which will be collected as winners for this Throw.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Adds outcomes to the hardways winners and hardways losers Sets.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Throw.hard">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">hard</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#Throw.hard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
+if <a class="reference internal" href="#Throw.d1" title="Throw.d1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d1</span></code></a> is equal to <a class="reference internal" href="#Throw.d2" title="Throw.d2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d2</span></code></a>.</p>
+<p>This helps determine if
+hardways bets have been won or lost.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Throw.updateGame">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">updateGame</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">game: CrapsGame</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Throw.updateGame" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>game</strong> (<a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>) – CrapsGame instance to be updated with the results of this throw</p>
+</dd>
+</dl>
+<p>Calls one of the state change methods: <a class="reference internal" href="throw.html#CrapsGame.craps" title="CrapsGame.craps"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CrapsGame.craps()</span></code></a>, <a class="reference internal" href="throw.html#CrapsGame.natural" title="CrapsGame.natural"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CrapsGame.natural()</span></code></a>,
+<a class="reference internal" href="throw.html#CrapsGame.eleven" title="CrapsGame.eleven"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CrapsGame.eleven()</span></code></a>, <a class="reference internal" href="throw.html#CrapsGame.point" title="CrapsGame.point"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CrapsGame.point()</span></code></a>. This may change the
+game state and resolve bets.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Throw.resolveOneRoll">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">resolveOneRoll</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Throw.resolveOneRoll" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet to to be resolved</p>
+</dd>
+</dl>
+<p>If this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is in the set of one-roll winners,
+pay the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+that created the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>. Return <code class="docutils literal notranslate"><span class="pre">True</span></code> so this
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> can be removed.</p>
+<p>If this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is in the set of
+one-roll losers, return <code class="docutils literal notranslate"><span class="pre">True</span></code> so that this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object
+is removed.</p>
+<p>Otherwise, return <code class="docutils literal notranslate"><span class="pre">False</span></code> to leave this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object on
+the table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Throw.resolveHardways">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">resolveHardways</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Throw.resolveHardways" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet to to be resolved</p>
+</dd>
+</dl>
+<p>If this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is in the set of hardways winners,
+pay the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+that created the bet. Return <code class="docutils literal notranslate"><span class="pre">True</span></code> so that this
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> is removed.</p>
+<p>If this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is in the set of
+hardways losers, return <code class="docutils literal notranslate"><span class="pre">True</span></code> so that this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance
+is removed.</p>
+<p>Otherwise, return <code class="docutils literal notranslate"><span class="pre">False</span></code> to leave this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance on
+the table.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Throw.__str__">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#Throw.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>This should
+return a string representation of the dice modeled by this <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance.
+A form that looks like <code class="docutils literal notranslate"><span class="pre">&quot;1,2&quot;</span></code> works nicely.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="throwbuilder-rework">
+<h2>ThrowBuilder Rework<a class="headerlink" href="#throwbuilder-rework" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="throw_builder.html#ThrowBuilder" title="ThrowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThrowBuilder</span></code></a> class initializes the 36 <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances, each
+initialized with the appropriate <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. Subclasses can
+override this to reflect different casino-specific rules for the variations of odds on
+Field bets.</p>
+<div class="section" id="id1">
+<h3>Methods<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="ThrowBuilder.buildThrows">
+<code class="sig-prename descclassname">ThrowBuilder.</code><code class="sig-name descname">buildThrows</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">dice: Dice</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#ThrowBuilder.buildThrows" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Para dice</dt>
+<dd class="field-odd"><p>The Dice to initialize</p>
+</dd>
+</dl>
+<p>Creates the 8 one-roll <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+instances (2, 3, 7, 11, 12, Field, Horn, Any Craps), as well as the
+8 hardways <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances (easy 4, hard 4, easy 6,
+hard 6, easy 8, hard 8, easy 10, hard 10).</p>
+<p>It then creates each of
+the 36 <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances, each of which has the appropriate
+combination of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances for one-roll and hardways.
+The various <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances are assigned to <code class="xref py py-obj docutils literal notranslate"><span class="pre">dice</span></code>.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="bet-rework">
+<h2>Bet Rework<a class="headerlink" href="#bet-rework" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class associates an amount, an <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance and a <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance.
+The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class may move a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance to a different <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance
+to reflect a change in the odds used to resolve the final bet.</p>
+<p>This will change the underlying definition of the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class
+from immutable to mutable. The initial definition of this class relied
+on either <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.NamedTuple</span></code> to <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=True)</span></code>.
+This revision is mutable, and <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=False)</span></code> is an appropriate
+decoration for the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class.</p>
+<p>This can lead to rework in the Roulette definitions to add the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+reference to each <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance that’s created. We can avoid the rework
+if we make the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> reference optional, this isn’t a good idea in the
+long run because it can become confusing.</p>
+<div class="section" id="id2">
+<h3>Constructors<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Bet.__init__">
+<code class="sig-prename descclassname">Bet.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">amount: int</em>, <em class="sig-param">outcome: Outcome</em>, <em class="sig-param">player: CrapsPlayer</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Bet.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>This replaces the existing constructor and adds
+an optional parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>amount</strong> (<em>int</em>) – The amount being wagered.</p></li>
+<li><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – The specific outcome on which the wager is placed.</p></li>
+<li><p><strong>player</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code>) – The player who will pay a losing bet or be paid by a winning bet.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initialize the instance variables of this bet.  This works by saving
+the additional player information.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="crapsplayer-class-stub">
+<span id="craps-game-playerstub"></span><h2>CrapsPlayer Class Stub<a class="headerlink" href="#crapsplayer-class-stub" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class constructs a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance based on the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance
+named <code class="docutils literal notranslate"><span class="pre">&quot;Pass</span> <span class="pre">Line&quot;</span></code>. This is a very persistent player.</p>
+<div class="section" id="id3">
+<h3>Fields<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="CrapsPlayer.passLine">
+<code class="sig-prename descclassname">CrapsPlayer.</code><code class="sig-name descname">passLine</code><a class="headerlink" href="#CrapsPlayer.passLine" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> on which this player focuses their betting. It
+will be an instance of the <code class="docutils literal notranslate"><span class="pre">&quot;Pass</span> <span class="pre">Line&quot;</span></code> <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>,
+with 1:1 odds.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="CrapsPlayer.workingBet">
+<code class="sig-prename descclassname">CrapsPlayer.</code><code class="sig-name descname">workingBet</code><a class="headerlink" href="#CrapsPlayer.workingBet" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the current Pass Line <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>.</p>
+<p>Initially this is <code class="docutils literal notranslate"><span class="pre">None</span></code>.
+Each time the bet is resolved, this is reset to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>This assures that only one bet is working at a time.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="CrapsPlayer.table">
+<code class="sig-prename descclassname">CrapsPlayer.</code><code class="sig-name descname">table</code><a class="headerlink" href="#CrapsPlayer.table" title="Permalink to this definition">¶</a></dt>
+<dd><p>That <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>  which collects all bets.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id4">
+<h3>Constructors<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="CrapsPlayer.__init__">
+<code class="sig-prename descclassname">CrapsPlayer.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">table: Table</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsPlayer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table</strong> (<a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>) – The <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> for placing bets</p>
+</dd>
+</dl>
+<p>Constructs the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> instance with a specific table for
+placing bets. The player creates a single <code class="docutils literal notranslate"><span class="pre">&quot;Pass</span> <span class="pre">Line&quot;</span></code> <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object,
+which is saved in the <a class="reference internal" href="#CrapsPlayer.passLine" title="CrapsPlayer.passLine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">passLine</span></code></a> variable for use in creating
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id5">
+<h3>Methods<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="crapsgamestate-class">
+<h2>CrapsGameState Class<a class="headerlink" href="#crapsgamestate-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="CrapsGameState">
+<em class="property">class </em><code class="sig-name descname">CrapsGameState</code><a class="headerlink" href="#CrapsGameState" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> class defines the state-specific behavior of a
+Craps game. Individual subclasses provide methods used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> class
+to validate bets and determine the active bets. Subclasses provide
+state-specific methods used by a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object to possibly change
+the state and resolve bets.</p>
+</dd></dl>
+
+<div class="section" id="id6">
+<h3>Fields<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="CrapsGameState.game">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">game</code><a class="headerlink" href="#CrapsGameState.game" title="Permalink to this definition">¶</a></dt>
+<dd><p>The overall <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object for which this is a specific state.
+From this object, the various next
+state-change methods can get the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> instance and an <code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>
+over the active <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id7">
+<h3>Constructors<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="CrapsGameState.__init__">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">game: Game</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGameState.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>game</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code>) – The game to which this state applies</p>
+</dd>
+</dl>
+<p>Saves the overall <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object to which this state applies.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id8">
+<h3>Methods<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="CrapsGameState.isValid">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">isValid</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#CrapsGameState.isValid" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – The outcome to be tested for validity</p>
+</dd>
+</dl>
+<p>Returns true if this is a valid outcome for creating bets in the current game state.</p>
+<p>Each  subclass provides a unique definition of valid bets for their game state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGameState.isWorking">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">isWorking</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#CrapsGameState.isWorking" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – The outcome to be tested for if it’s working</p>
+</dd>
+</dl>
+<p>Returns true if this is a working outcome for existing bets in the current game state.</p>
+<p>Each subclass provides a unique definition of active bets for their game state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGameState.craps">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">craps</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; CrapsGameState<a class="headerlink" href="#CrapsGameState.craps" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with craps.</p>
+</dd>
+</dl>
+<p>Return an appropriate state when a 2, 3 or 12 is
+rolled. It then resolves any game bets.</p>
+<p>Each subclass provides a unique definition of what new state
+and what bet resolution happens.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGameState.natural">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">natural</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; CrapsGameState<a class="headerlink" href="#CrapsGameState.natural" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with a natural seven.</p>
+</dd>
+</dl>
+<p>Returns an appropriate state when a 7 is
+rolled. It then resolves any game bets.</p>
+<p>Each subclass provides a unique definition of what new state
+and what bet resolution happens.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGameState.eleven">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">eleven</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; CrapsGameState<a class="headerlink" href="#CrapsGameState.eleven" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated an eleven.</p>
+</dd>
+</dl>
+<p>Returns an appropriate state when an 11 is rolled. It
+then resolves any game bets.</p>
+<p>Each subclass provides a unique definition of what new state
+and what bet resolution happens.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGameState.point">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">point</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; CrapsGameState<a class="headerlink" href="#CrapsGameState.point" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with a point number.</p>
+</dd>
+</dl>
+<p>Returns an appropriate state when the given point number is rolled.
+It then resolves any game bets.</p>
+<p>Each subclass provides a unique definition of what new state
+and what bet resolution happens.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGameState.pointOutcome">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">pointOutcome</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Outcome<a class="headerlink" href="#CrapsGameState.pointOutcome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object based on the current point. This is
+used to create Pass Line Odds or Don’t Pass Odds bets. This
+delegates the real work to the current <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGameState.moveToThrow">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">moveToThrow</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGameState.moveToThrow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bet</strong> (<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The Bet to update based on the current Throw</p></li>
+<li><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The Throw to which the outcome is changed</p></li>
+</ul>
+</dd>
+</dl>
+<p>Moves a Come Line or Don’t Come Line bet
+to a new <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance based on the current <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance.
+If the value of the <code class="xref py py-obj docutils literal notranslate"><span class="pre">theThrow</span></code> instance is 4, 5, 6, 8, 9 or 10, this delegates
+the move to the current <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> object. For
+values of 4 and 10, the odds are 2:1. For values of 5 and 9, the
+odds are 3:2. For values of 6 and 8, the odds are 6:5. For other
+values of the <code class="xref py py-obj docutils literal notranslate"><span class="pre">theThrow</span></code> object, this method does nothing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGameState.__str__">
+<code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#CrapsGameState.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>In the superclass, this doesn’t do anything. Each subclass, however,
+should display something useful.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="crapsgamepointoff-class">
+<h2>CrapsGamePointOff Class<a class="headerlink" href="#crapsgamepointoff-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="CrapsGamePointOff">
+<em class="property">class </em><code class="sig-name descname">CrapsGamePointOff</code><a class="headerlink" href="#CrapsGamePointOff" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#CrapsGamePointOff" title="CrapsGamePointOff"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGamePointOff</span></code></a> class defines the unique behavior of the Craps game
+when the point is off. It defines the allowed bets and the active bets.
+It provides methods used by a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance to change the state and
+resolve bets.</p>
+<p>All four of the game update methods (craps, natural, eleven and point)
+use the same basic algorithm. The method will get the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> object
+from <code class="xref py py-obj docutils literal notranslate"><span class="pre">theGame</span></code>. From the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> object, the method
+gets an <code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code> over the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances. It can then
+match each <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object’s <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> against the various <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+of the current <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object which win and lose, and resolve the bets.</p>
+</dd></dl>
+
+<div class="section" id="id9">
+<h3>Constructors<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="CrapsGamePointOff.__init__">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">game: CrapsGame</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGamePointOff.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>game</strong> (<a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>) – The game to which this state applies.</p>
+</dd>
+</dl>
+<p>Uses the superclass constructor to save the overall <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id10">
+<h3>Methods<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="CrapsGamePointOff.isValid">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">isValid</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#CrapsGamePointOff.isValid" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – The outcome to be tested for validity</p>
+</dd>
+</dl>
+<p>There are
+two valid <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances: Pass Line, Don’t Pass Line. All other
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are invalid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGamePointOff.isWorking">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">isWorking</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#CrapsGamePointOff.isWorking" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – The outcome to be tested to see if it’s working</p>
+</dd>
+</dl>
+<p>There are six non-working <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances: “Come Odds 4”,
+“Come Odds 5”, “Come Odds 6”, “Come Odds 8”,
+“Come Odds 9” and “Come Odds 10”. All other <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+are working.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGamePointOff.craps">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">craps</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGamePointOff.craps" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with craps.</p>
+</dd>
+</dl>
+<p>When the
+point is off, a roll of 2, 3 or 12 means the game is an immediate
+loser. The Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a loser. If the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>
+value is 12, a Don’t Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a push,
+otherwise the Don’t Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a winner. The
+next state is the same as this state, and the method should return <code class="docutils literal notranslate"><span class="pre">this</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGamePointOff.natural">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">natural</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGamePointOff.natural" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with a natural seven.</p>
+</dd>
+</dl>
+<p>When the point is off, 7 means the game is an immediate
+winner. The Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a winner, the Don’t
+Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a loser. The next state is the
+same as this state, and the method should return <code class="docutils literal notranslate"><span class="pre">this</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGamePointOff.eleven">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">eleven</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGamePointOff.eleven" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated an eleven.</p>
+</dd>
+</dl>
+<p>When the point is off, 11 means the game is an immediate winner. The
+Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a winner, the Don’t Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+is a loser. The next state is the same as this state, and the method
+should return <code class="docutils literal notranslate"><span class="pre">this</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGamePointOff.point">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">point</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGamePointOff.point" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with a point number.</p>
+</dd>
+</dl>
+<p>When the point
+is off, a new point is established. This method should return a new
+instance of <a class="reference internal" href="#CrapsGamePointOn" title="CrapsGamePointOn"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGamePointOn</span></code></a> created with the given <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>’s value.
+Note that any Come Point bets or Don’t Come Point bets
+that may be on this point are pushed to player: they can’t be legal
+bets in the next game state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGamePointOff.pointOutcome">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">pointOutcome</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Outcome<a class="headerlink" href="#CrapsGamePointOff.pointOutcome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> based on the current point. This is
+used to create Pass Line Odds or Don’t Pass Odds bets. This
+delegates the real work to the current <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a>
+object. Since no point has been established, this returns <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGamePointOff.__str__">
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#CrapsGamePointOff.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>The point-off state should simply report that the point is off, or
+that this is the come out roll.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="crapsgamepointon-class">
+<h2>CrapsGamePointOn Class<a class="headerlink" href="#crapsgamepointon-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="CrapsGamePointOn">
+<em class="property">class </em><code class="sig-name descname">CrapsGamePointOn</code><a class="headerlink" href="#CrapsGamePointOn" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#CrapsGamePointOn" title="CrapsGamePointOn"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGamePointOn</span></code></a> class defines the behavior of the Craps game
+when the point is on. It defines the allowed bets and the active bets.
+It provides methods used by a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object to change the state and
+resolve bets.</p>
+</dd></dl>
+
+<div class="section" id="id11">
+<h3>Fields<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="CrapsGamePointOn.point">
+<code class="sig-prename descclassname">CrapsGamePointOn.</code><code class="sig-name descname">point</code><a class="headerlink" href="#CrapsGamePointOn.point" title="Permalink to this definition">¶</a></dt>
+<dd><p>The point value.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id12">
+<h3>Constructors<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">point: Outcome</em>, <em class="sig-param">game: CrapsGame</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><p>Saves the given     point value.
+Uses the superclass constructor to save the overall <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point</strong> – the outcome which defines the point set but the current <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance.</p></li>
+<li><p><strong>game</strong> (<a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>) – the current CrapsGame instance</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="id13">
+<h3>Methods<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">isValid</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; bool</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – The outcome to be tested for validity</p>
+</dd>
+</dl>
+<p>It is
+invalid to Buy or Lay the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances that match the
+point. If the point is 6, for example, it is invalid to buy the
+“Come Point 6” <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>. All other <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+are valid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">isWorking</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; bool</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – The outcome to be tested to see if it’s working</p>
+</dd>
+</dl>
+<p>All <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are working.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">craps</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Outcome</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with craps.</p>
+</dd>
+</dl>
+<p>When the
+point is on, 2, 3 and 12 do not change the game state. The Come Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+is a loser, the Don’t Come Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a winner.
+The next state is the same as this state, and the method should return
+<code class="docutils literal notranslate"><span class="pre">this</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">natural</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with a natural seven.</p>
+</dd>
+</dl>
+<p>When the point is on, 7 means the game is a loss. Pass Line
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances lose, as do the pass-line odds <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+s based on the point. Don’t Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances win, as
+do all Don’t Pass odds <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> based on the point. The
+Come Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a winner, the Don’t Come Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+is a loser. However, all Come Point number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+and Come Point Number odds <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> are all losers. All
+Don’t Come Point number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances and Don’t Come Point odds
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are all winners. The next state is a new
+instance of the <a class="reference internal" href="#CrapsGamePointOff" title="CrapsGamePointOff"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGamePointOff</span></code></a> state.</p>
+<p>Also note that the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> of 7 also resolved all
+hardways bets. A consequence of this is that all <code class="xref py py-class docutils literal notranslate"><span class="pre">Bets</span></code>
+on the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> are resolved.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">eleven</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated an eleven.</p>
+</dd>
+</dl>
+<p>When the point is on, 11 does not change the game state. The Come Line
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is a winner, and the Don’t Come Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+is a loser. The next state is the same as this state, and the method
+should return <code class="docutils literal notranslate"><span class="pre">this</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">point</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The throw that is associated with a point number.</p>
+</dd>
+</dl>
+<p>When the point
+is on and the value of <code class="xref py py-obj docutils literal notranslate"><span class="pre">throw</span></code> doesn’t match <a class="reference internal" href="#CrapsGamePointOff.point" title="CrapsGamePointOff.point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">point</span></code></a>,
+then the various Come Line bets can be resolved. Come Point <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+s for this number (and their odds) are winners. Don’t Come Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+s for this number (and their odds) are losers. Other Come Point
+number and Don’t Come Point numbers remain, unresolved. Any Come
+Line bets are moved to the Come Point number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+For example, a throw of 6 moves the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> of the Come Line
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> to Come Point 6. Don’t Come Line bets are moved to
+be Don’t Come number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. The method should return
+<code class="docutils literal notranslate"><span class="pre">this</span></code>.</p>
+<p>When the point is on and the value of <code class="xref py py-obj docutils literal notranslate"><span class="pre">throw</span></code> matches <a class="reference internal" href="#CrapsGamePointOff.point" title="CrapsGamePointOff.point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">point</span></code></a>,
+the game is a winner. Pass Line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are all
+winners, as are the behind the line odds <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+Don’t Pass line <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are all losers, as are the
+Don’t Pass Odds <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. Come Line bets are moved to
+thee Come Point number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. Don’t Come Line bets
+are moved to be Don’t Come number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. The next
+state is a new instance of the <a class="reference internal" href="#CrapsGamePointOff" title="CrapsGamePointOff"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGamePointOff</span></code></a> state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">pointOutcome</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Outcome</dt>
+<dd><p>Returns the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> based on the current point. This is
+used to create Pass Line Odds or Don’t Pass Odds bets. This
+delegates the real work to the current <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a>
+object. For points of 4 and 10, the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> odds are
+2:1. For points of 5 and 9, the odds are 3:2. For points of 6 and 8,
+the odds are 6:5.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGamePointOff.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str</dt>
+<dd><p>The point-off state should simply report that the point is off, or
+that this is the come out roll.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="crapsgame-design">
+<h2>CrapsGame Design<a class="headerlink" href="#crapsgame-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="CrapsGame">
+<em class="property">class </em><code class="sig-name descname">CrapsGame</code><a class="headerlink" href="#CrapsGame" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class manages the sequence of actions that defines the
+game of Craps. This includes notifying the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> to place
+bets, throwing the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> instance and resolving the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> objects
+actually present in the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object’s collection of bets.</p>
+<p>Note that a single cycle of play is one throw of the dice, not a
+complete craps game. The state of the game may or may not change
+with each throw of the dice.</p>
+</dd></dl>
+
+<div class="section" id="id14">
+<h3>Fields<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="CrapsGame.dice">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">dice</code><a class="headerlink" href="#CrapsGame.dice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains the dice that returns a randomly selected <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>
+with winning and losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.  This is an instance
+of the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="CrapsGame.table">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">table</code><a class="headerlink" href="#CrapsGame.table" title="Permalink to this definition">¶</a></dt>
+<dd><p>The  <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> instance contains the bets placed by the player.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="CrapsGame.player">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">player</code><a class="headerlink" href="#CrapsGame.player" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> instance to place bets on the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> instance.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id15">
+<h3>Constructors<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p>We based this constructor on an design that allows any of these
+objects to be replaced. This is the <strong>Strategy</strong> design
+pattern. Each of these objects is a replaceable strategy, and can be
+changed by the client that uses this game.</p>
+<p>Additionally, we specifically do not include the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+instance in the constructor. The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object exists
+independently of any particular <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance, and we defer
+binding the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance and <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object until we are
+gathering statistical samples.</p>
+<dl class="method">
+<dt id="CrapsGame.__init__">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">dice: Dice</em>, <em class="sig-param">table: CrapsTable</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGame.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dice</strong> (<a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a>) – The dice to use</p></li>
+<li><p><strong>table</strong> – The table to use for collecting bets</p></li>
+<li><p><strong>table</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<p>Constructs a new <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> instance, using a given <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> instance
+and <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> instance.</p>
+<p>The player is not defined at this time, since we may
+want to run several simulations with different players.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id16">
+<h3>Methods<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">player: CrapsPlayer</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>player</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code>) – The player who will place bets on this game</p>
+</dd>
+</dl>
+<p>This will execute a single cycle of play
+with a given <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code>.</p>
+<ol class="arabic">
+<li><p>It will call <a class="reference internal" href="craps_player.html#CrapsPlayer.placeBets" title="CrapsPlayer.placeBets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CrapsPlayer.placeBets()</span></code></a> to get
+bets. It will validate the bets, both individually, based on the
+game state, and collectively to see that the table limits are met.</p></li>
+<li><p>It will call <code class="xref py py-meth docutils literal notranslate"><span class="pre">Dice.roll()</span></code> to get the
+next winning <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance.</p></li>
+<li><p>It will use the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">updateGame()</span></code>
+to advance the game state.</p></li>
+<li><p>It will then call <code class="xref py py-meth docutils literal notranslate"><span class="pre">CrapsTable.bets()</span></code> to get an
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code> over individual <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> objects.</p>
+<ul class="simple">
+<li><p>It will use the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">resolveOneRoll()</span></code>
+method to check one-roll propositions. If the method returns
+true, the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance is resolved and should be deleted.</p></li>
+<li><p>It will use the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">resolveHardways()</span></code>
+method to check the hardways bets. If the method returns
+true, the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance is resolved and should be deleted.</p></li>
+</ul>
+<p>Note we can’t delete from a simple iterator over a list. If we make
+a copy of the list, we can iterate over the copy and delete from the
+original list.</p>
+</li>
+</ol>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGame.pointOutcome">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">pointOutcome</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Outcome<a class="headerlink" href="#CrapsGame.pointOutcome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+based on the current point. This is used to create Pass Line Odds or
+Don’t Pass Odds bets. This delegates the real work to the current <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a>
+object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGame.moveToThrow">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">moveToThrow</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGame.moveToThrow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bet</strong> (<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The Bet to move based on the current throw</p></li>
+<li><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The Throw to which to move the Bet’s Outcome</p></li>
+</ul>
+</dd>
+</dl>
+<p>Moves a Come Line or Don’t Come Line bet
+to a new <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance based on the current throw. This delegates
+the move to the current <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> object.</p>
+<p>This method should – just as a precaution – assert that the
+value of <code class="xref py py-obj docutils literal notranslate"><span class="pre">theThrow</span></code> is 4, 5, 6, 8, 9 or 10.  These
+point values indicate that a Line bet can be moved.
+For other values of <code class="xref py py-obj docutils literal notranslate"><span class="pre">theThrow</span></code>, this method should raise an
+exception, since there’s no reason for attempting to move a line bet
+on anything but a point throw.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGame.reset">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGame.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>This will reset the game
+by setting the state to a new instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">GamePointOff</span></code>.
+It will also tell the table to clear all bets.
+This can be used during the overall simulation or unit testing to reset the object.</p>
+<p>This method is optional. In many cases, it’s easier to simply delete the object and create
+a fresh, new copy.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="craps-game-deliverables">
+<h2>Craps Game Deliverables<a class="headerlink" href="#craps-game-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are over a dozen deliverables for this exercise. This includes
+significant rework for the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> and <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> classes. It
+also includes development of a stub <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class, the <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> class
+hierarchy and the first version of the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class. We will
+break the deliverables down into two groups.</p>
+<p><strong>Rework</strong>. The first group of deliverables includes the rework for the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>
+and <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> classes, and all of the associated unit testing.</p>
+<ul class="simple">
+<li><p>The revised and expanded <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class. This will ripple
+through the constructors for all four subclasses, <a class="reference internal" href="throw.html#NaturalThrow" title="NaturalThrow"><code class="xref py py-class docutils literal notranslate"><span class="pre">NaturalThrow</span></code></a>,
+<a class="reference internal" href="throw.html#CrapsThrow" title="CrapsThrow"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsThrow</span></code></a>, <a class="reference internal" href="throw.html#ElevenThrow" title="ElevenThrow"><code class="xref py py-class docutils literal notranslate"><span class="pre">ElevenThrow</span></code></a>, <a class="reference internal" href="throw.html#PointThrow" title="PointThrow"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointThrow</span></code></a>.</p></li>
+<li><p>Five updated unit tests for the classes in the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>
+class hierarchy. This will confirm the new functionality for holding
+winning as well as losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p></li>
+<li><p>The revised and expanded <a class="reference internal" href="throw_builder.html#ThrowBuilder" title="ThrowBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThrowBuilder</span></code></a> class. This will construct
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances with winning as well as losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p></li>
+<li><p>A unit test for the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class that confirms the new
+initializer that creates winning as well as losing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p></li>
+</ul>
+<p><strong>New Development</strong>. The second group of deliverables includes development
+of a stub <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class, the <a class="reference internal" href="#CrapsGameState" title="CrapsGameState"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGameState</span></code></a> class
+hierarchy and the first version of the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class. This
+also includes significant unit testing.</p>
+<ul class="simple">
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> class stub. We will rework this design
+later. This class places a bet on the Pass Line when there is no
+Pass Line <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> on the table. One consequence of this is
+that the player will be given some opportunities to place bets, but
+will decline. Since this is simply used to test <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class,
+it doesn’t deserve a very sophisticated unit test of its own. It
+will be replaced in a future exercise.</p></li>
+<li><p>A revised <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class, which carries a reference to the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+who created the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance. This will ripple through all
+subclasses of the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class, forcing them to all add the <code class="docutils literal notranslate"><span class="pre">self</span></code>
+parameter when constructing a new <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance.</p></li>
+<li><p>This will lead to rework in the Roulette definitions to add the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+reference to each <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance that’s created.</p></li>
+<li><p>The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class.</p></li>
+<li><p>A class which performs a demonstration of the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>
+class. This demo program creates the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> object, the stub <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> object,
+and the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> object. It creates the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>
+object and cycles a few times. Note that we will need to configure the
+<a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> object to return non-random results.</p></li>
+</ul>
+<p>We could, with some care, refactor our design to create some common
+superclasses between Roulette and Craps to extract features of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class
+so they can be shared by the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> and <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> classes.
+Similarly, there may be more common features between the <a class="reference internal" href="../roulette/roulette_game.html#RouletteGame" title="RouletteGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">RouletteGame</span></code></a>
+and <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> classes. We’ll leave that as an exercise for more
+advanced students.</p>
+</div>
+<div class="section" id="optional-working-bets">
+<h2>Optional Working Bets<a class="headerlink" href="#optional-working-bets" title="Permalink to this headline">¶</a></h2>
+<p>Some casinos may give the player an option to declare the odds
+bet behind a come point as “on” or “off”. This is
+should not be particularly complex to implement.
+There are a number of
+simple changes required if we want to add this interaction between
+the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code> and <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> classes.</p>
+<ol class="arabic simple">
+<li><p>We must add a method to the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsPlayer</span></code>  class to respond to
+a query from the <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> instance that determines if the
+player wants their come point odds bet on or off.</p></li>
+<li><p>We need to update <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance to store the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
+who created the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object.</p></li>
+<li><p>The <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> instance must get the relevant <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances
+from the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object,
+and interrogates the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object for the disposition
+of the bet.</p></li>
+</ol>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>This was a lot of work. The craps game, and the stateful behavior is an important
+OO design exercise. Coping with state change is central to all programming, and
+OO design uses class encapsulation to isolate the responsibilities, leading to
+more reliable and robust application software.</p>
+<p>The craps player has two kinds of decisions. They can place bets, and they
+can use various strategies to adjust the amounts of the bets. This double-layer
+of decision-making will lead to rather complex player class definitions.
+In the next section, we’ll address the craps player in some depth.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CrapsGame Class</a><ul>
+<li><a class="reference internal" href="#craps-game-analysis">Craps Game Analysis</a><ul>
+<li><a class="reference internal" href="#game-state">Game State</a></li>
+<li><a class="reference internal" href="#the-game-state-class-hierarchy">The Game State Class Hierarchy</a></li>
+<li><a class="reference internal" href="#resolving-bets">Resolving Bets</a></li>
+<li><a class="reference internal" href="#movable-bets">Movable Bets</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#design-decision-win-lose-wait">Design Decision – Win, Lose, Wait</a></li>
+<li><a class="reference internal" href="#additional-craps-design">Additional Craps Design</a></li>
+<li><a class="reference internal" href="#craps-game-implementation-steps">Craps Game Implementation Steps</a></li>
+<li><a class="reference internal" href="#throw-rework">Throw Rework</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#throwbuilder-rework">ThrowBuilder Rework</a><ul>
+<li><a class="reference internal" href="#id1">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bet-rework">Bet Rework</a><ul>
+<li><a class="reference internal" href="#id2">Constructors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#crapsplayer-class-stub">CrapsPlayer Class Stub</a><ul>
+<li><a class="reference internal" href="#id3">Fields</a></li>
+<li><a class="reference internal" href="#id4">Constructors</a></li>
+<li><a class="reference internal" href="#id5">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#crapsgamestate-class">CrapsGameState Class</a><ul>
+<li><a class="reference internal" href="#id6">Fields</a></li>
+<li><a class="reference internal" href="#id7">Constructors</a></li>
+<li><a class="reference internal" href="#id8">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#crapsgamepointoff-class">CrapsGamePointOff Class</a><ul>
+<li><a class="reference internal" href="#id9">Constructors</a></li>
+<li><a class="reference internal" href="#id10">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#crapsgamepointon-class">CrapsGamePointOn Class</a><ul>
+<li><a class="reference internal" href="#id11">Fields</a></li>
+<li><a class="reference internal" href="#id12">Constructors</a></li>
+<li><a class="reference internal" href="#id13">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#crapsgame-design">CrapsGame Design</a><ul>
+<li><a class="reference internal" href="#id14">Fields</a></li>
+<li><a class="reference internal" href="#id15">Constructors</a></li>
+<li><a class="reference internal" href="#id16">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#craps-game-deliverables">Craps Game Deliverables</a></li>
+<li><a class="reference internal" href="#optional-working-bets">Optional Working Bets</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="craps_table.html" title="previous chapter">Craps Table Class</a></li>
+      <li>Next: <a href="craps_player.html" title="next chapter">CrapsPlayer Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

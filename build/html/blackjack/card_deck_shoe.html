@@ -1,0 +1,1184 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Card, Deck and Shoe Classes &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Hand and Outcome Classes" href="hand.html" />
+    <link rel="prev" title="Blackjack Solution Overview" href="solution.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="card-deck-and-shoe-classes">
+<h1>Card, Deck and Shoe Classes<a class="headerlink" href="#card-deck-and-shoe-classes" title="Permalink to this headline">¶</a></h1>
+<p>This chapter introduces a number of simple classes for modeling card games.
+In <a class="reference internal" href="#card-deck-and-shoe-analysis">Card, Deck and Shoe Analysis</a> we’ll look at a number of issues
+related to cards. This includes <a class="reference internal" href="#points">points</a>, <a class="reference internal" href="#ordering">ordering</a>, <a class="reference internal" href="#suits">suits</a>,
+and <a class="reference internal" href="#identity">identity</a>. We’ll also look at <a class="reference internal" href="#card-subclass-factory">Card Subclass Factory</a>,
+<a class="reference internal" href="#unicode-images">Unicode Images</a>, <a class="reference internal" href="#deck">Deck</a>, and <a class="reference internal" href="#shoe">Shoe</a>.</p>
+<p>We’ll follow this with <a class="reference internal" href="#card-deck-shoe-questions-and-answers">Card-Deck-Shoe Questions and Answers</a> to address
+any lingering doubts or minor issues.</p>
+<p>In <a class="reference internal" href="#card-superclass">Card Superclass</a> we’ll present the overall design for <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>.
+This is followed by face cards in <a class="reference internal" href="#facecard-class">FaceCard Class</a>, and the special
+cases for aces in <a class="reference internal" href="#acecard-class">AceCard Class</a>.</p>
+<p>We’ll look at the need for a factory function in <a class="reference internal" href="#card-factory-function">Card Factory Function</a>.</p>
+<p>We’ll also design containers for cards including <a class="reference internal" href="#deck-class">Deck class</a> and <a class="reference internal" href="#shoe-class">Shoe class</a>.</p>
+<p>We’ll enumerate the deliverables in <a class="reference internal" href="#card-deck-shoe-deliverables">Card-Deck-Shoe Deliverables</a>.</p>
+<p>This chapter will review the structure of the unit tests in <a class="reference internal" href="#testing-examples">Testing Examples</a>.</p>
+<div class="section" id="card-deck-and-shoe-analysis">
+<h2>Card, Deck and Shoe Analysis<a class="headerlink" href="#card-deck-and-shoe-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The standard playing card has two attributes: a rank (Ace, 2
+through 10, Jack, Queen, or King) and a suit (♣, ♢, ♡, or
+♠). The set of all 52 combinations comprises a full deck.</p>
+<p>The basic set of responsibilities of the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>
+class include keeping the rank and suit of a single
+standard playing card.
+It turns out, however, that these objects are fairly complex.</p>
+<p>We’ll look at several topics:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#points">Points</a>. A card has a point value, which is a number
+from 1 to 11, and is based on the rank. In the case of an Ace, it is
+also based on the hand in which the card is evaluated. This
+collaboration with a hand complicates the responsibilities for a single
+card.</p></li>
+<li><p><a class="reference internal" href="#ordering">Ordering</a>. An Ace has a complex life. What order do we put the cards in?</p></li>
+<li><p><a class="reference internal" href="#suits">Suits</a>. Suit doesn’t matter, right? What about the name of the game,
+“black jack”?</p></li>
+<li><p><a class="reference internal" href="#identity">Identity</a>. How do we compare cards?</p></li>
+<li><p><a class="reference internal" href="#card-subclass-factory">Card Subclass Factory</a>. How do we create card objects that are in
+their correct subclass?</p></li>
+<li><p><a class="reference internal" href="#unicode-images">Unicode Images</a>. Since Unicode offers us images of cards, we can
+use these.</p></li>
+<li><p><a class="reference internal" href="#deck">Deck</a>. Cards come in a standard deck of 52 cards.</p></li>
+<li><p><a class="reference internal" href="#shoe">Shoe</a>. Blackjack dealers often use a shoe with up to eight decks.</p></li>
+</ul>
+<p>We’ll start by looking at points.</p>
+<div class="section" id="points">
+<h3>Points<a class="headerlink" href="#points" title="Permalink to this headline">¶</a></h3>
+<p>We have three different rules for establishing the point value of a
+card. This is a big hint that we have three subclasses.</p>
+<ul class="simple">
+<li><p>One subclass includes the Aces, which are either 1 or 11 points.</p></li>
+<li><p>Another subclass includes the number cards from 2 to 10, where the rank is the point
+value.</p></li>
+<li><p>Finally, the third subclass includes the face cards, where the
+point value is fixed at 10.</p></li>
+</ul>
+<p>These three subclasses implement slightly
+different versions of a method to return the point value of the card.
+For more discussion on this, see <a class="reference internal" href="#blackjack-card-qanda"><span class="std std-ref">Card-Deck-Shoe Questions and Answers</span></a>
+FAQ for more discussion.</p>
+<p>The problem of determining the value of aces is something we will have
+to defer until after we create the <a class="reference internal" href="hand.html#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class. First, we’ll implement
+the basic <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class, then we’ll develop the <a class="reference internal" href="hand.html#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class, and decide how the <a class="reference internal" href="hand.html#Hand" title="Hand"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hand</span></code></a> class
+computes its number of points from the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances.</p>
+<p>The terminology used gives us some hint as to how to structure our design.
+Players refer to a <em>soft</em> total and a <em>hard</em> total.
+An A-6 hand is called a soft 17, and a hard 7. A soft hand has some
+flexibility in how it is played. If you hit a soft 17, and get a face
+card (for example, a Jack), you now have an A-J-6, totalling hard 17.</p>
+<p>For now, we’ll consider two methods: <code class="xref py py-meth docutils literal notranslate"><span class="pre">softValue()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">hardValue()</span></code> to
+return the various values of each card. For ordinary cards, the values are both the rank.
+For face cards, the values are both 10. For aces, however, the hard value is 1 and
+the soft value is 11.</p>
+<p>While this design does have some potential problems in dealing with
+multiple aces in a single hand, we’ll let it stand until we have more
+design in place.</p>
+</div>
+<div class="section" id="ordering">
+<h3>Ordering<a class="headerlink" href="#ordering" title="Permalink to this headline">¶</a></h3>
+<p>Another exasperating detail of standard playing cards is the ordering
+of the various ranks.</p>
+<p>In many games the ordering of cards is 2-10, J, Q, K, A. The Ace (rank of 1) is
+placed after the King.</p>
+<p>In Blackjack, Ace is both 1 and 11, leading to a variable ranking,
+depending on other cards in the hand.</p>
+<p>For games like Poker and Bridge, we need to distinguish the ordering
+and the rank because the ordering of the cards doesn’t depend on the
+simplistic rank value.</p>
+<p>In Blackjack, this doesn’t matter, and we can ignore it.</p>
+</div>
+<div class="section" id="suits">
+<h3>Suits<a class="headerlink" href="#suits" title="Permalink to this headline">¶</a></h3>
+<p>The issue of suit requires some care. In the game of Blackjack, suits
+don’t matter. Indeed, for the purposes of simulation, we could
+discard the notion of suit entirely. However, for the purposes of making a
+reasonably complete model of real-world objects, it makes sense to
+implement the suit of a card, even if we do nothing with it.</p>
+<p>Also, suits have two colors: red and black. Even though the name of the
+game includes a color and rank (“black”, “jack”) these are both
+irrelevant to the modern game. Historically, an ace of spades
+and either of the black jacks had a special <img class="math" src="../_images/math/d2656d16b8678f9b4b289ed1724165c2cd622d0e.png" alt="10:1"/> payout. Since
+this is no longer the case, color and suit no longer matter.</p>
+<p>We’d like to provide symbolic variable names for the suits. In Python we have
+a number of choices.</p>
+<ul class="simple">
+<li><p>We can create an <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code> class for the suits.</p></li>
+<li><p>We can use class-level variables to define four named constants.</p></li>
+</ul>
+<p>We would also like to provide named constants for the face cards: Jack, Queen, and King,
+as well as the Ace. This does not appear to be a perfectly sensible use of the <code class="xref py py-mod docutils literal notranslate"><span class="pre">enum.Enum</span></code> class
+definitions, since these labels are co-mingled with integer ranks.</p>
+<p>For this reason, we’ll suggest class-level variables for all of these symbolic
+constants. We can then say <code class="code docutils literal notranslate"><span class="pre">Card.Spades</span></code> to reference the
+unicode character <code class="code docutils literal notranslate"><span class="pre">u'\N{BLACK</span> <span class="pre">SPADE</span> <span class="pre">SUIT}'</span></code>.</p>
+<p>There’s a compelling case to be made for defining an <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code>
+for the suits. While the examples will assume class level variables,
+the student may want to pursue the <code class="xref py py-mod docutils literal notranslate"><span class="pre">enum</span></code> solution.</p>
+</div>
+<div class="section" id="identity">
+<h3>Identity<a class="headerlink" href="#identity" title="Permalink to this headline">¶</a></h3>
+<p>Cards need to be compared. We need a rich set of comparisons for cards.
+All of these are build automatically by <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.NamedTuple`</span></code> and the <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator.</p>
+<ul>
+<li><p><strong>Hash Value</strong>. We must implement a proper hash function, <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> that includes
+both rank and suit.</p>
+<p>The definition for <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> in section 3.3.1 of the <em>Language Reference Manual</em>
+tells us to do the calculation using a modulus value.
+The modulus is based on <code class="samp docutils literal notranslate"><span class="pre">sys.hash_info.width</span></code>, which is the number of bits.
+The actual value we want to use is <code class="samp docutils literal notranslate"><span class="pre">sys.hash_info.modulus</span></code>.</p>
+<div class="math">
+<p><img src="../_images/math/20d66e6f538adac8c6727b321747e97fecc7f484.png" alt="h(c) = (h(c_r)+h(c_s)) \mod 2^{61}-1"/></p>
+</div><p>The hash for a card, <img class="math" src="../_images/math/4b959625052e86000cb2da441dfb51850453849a.png" alt="h(c)"/>, is equal to the sum of the hash for the card’s
+rank, <img class="math" src="../_images/math/440c7e526525873ff9dbc9979e96da394922afae.png" alt="h(c_r)"/> plus the hash for the card’s suit <img class="math" src="../_images/math/76c519a46c9d4face4ddc7846fd8bf5cef07be5a.png" alt="h(c_s)"/>.
+The sum is taken modulus <code class="code docutils literal notranslate"><span class="pre">sys.hash_info.modulus</span></code>. The value shown, <img class="math" src="../_images/math/f9ac1ff1fead89d818c88d89a270e083fae99628.png" alt="2^{61}-1"/>
+is typical, but not the only value used. This is based on <code class="samp docutils literal notranslate"><span class="pre">sys.hash_info.width</span></code>.</p>
+</li>
+<li><p><strong>Equality</strong>. We must implement <code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">__ne__()</span></code> so that
+we can compare cards to each other. This is a subtle issue because –
+in Blackjack – suits don’t matter. A 10 of Clubs is essentially equal
+to a 10 of Spades.</p></li>
+<li><p><strong>Rank</strong>. We might want to implement <code class="xref py py-meth docutils literal notranslate"><span class="pre">__gt__()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">__lt__()</span></code>,
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__ge__()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">__le__()</span></code> so that cards can be properly ordered.</p></li>
+</ul>
+<p>These features are best provided through a <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=True,</span> <span class="pre">order=True)</span></code> decorator.</p>
+</div>
+<div class="section" id="card-subclass-factory">
+<h3>Card Subclass Factory<a class="headerlink" href="#card-subclass-factory" title="Permalink to this headline">¶</a></h3>
+<p>We need to be able to create a <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instance without being deeply concerned about
+which specific subclass it belongs to. This is where a <strong>Factory</strong>
+or <strong>Builder</strong> design pattern is essential.</p>
+<p>Ideally, we’ll have a <a class="reference internal" href="#card_factory" title="card_factory"><code class="xref py py-func docutils literal notranslate"><span class="pre">card_factory()</span></code></a> function that emits
+an object of the appropriate subclass of the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class.</p>
+<p>We can then do things like this:</p>
+<p class="rubric">Creating Cards</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">suit</span> <span class="ow">in</span> <span class="n">Card</span><span class="o">.</span><span class="n">Spades</span><span class="p">,</span> <span class="n">Card</span><span class="p">:</span><span class="n">Hearts</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">rank</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">14</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">card_factory</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">card</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This kind of nested loop will properly create all 52 distinct cards.</p>
+<p>We have an interesting implementation question around this factory.
+There are two common ways to implement this in Python:</p>
+<ul class="simple">
+<li><p><strong>Stand-Alone Function</strong>.</p></li>
+<li><p><strong>Static Method of the Card class</strong>.</p></li>
+</ul>
+<p>The stand-alone function is widely used because it’s simple.
+A card instance is created with <code class="docutils literal notranslate"><span class="pre">card_factory(Card.Ace,</span> <span class="pre">Card.Spades)</span></code>.</p>
+<p>The static method of the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class involves pushing the function
+into the definition of the class.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Card</span><span class="p">:</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">card_factory</span><span class="p">(</span><span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">suit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Card&#39;</span><span class="p">:</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p>A card instance is created with <code class="docutils literal notranslate"><span class="pre">Card.card_factory(Card.Ace,</span> <span class="pre">Card.Spades)</span></code>.</p>
+<p>Some developers like the static method because it’s bound into the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>
+class hierarchy. It doesn’t offer any other advantages. It can promote
+readability.</p>
+</div>
+<div class="section" id="unicode-images">
+<h3>Unicode Images<a class="headerlink" href="#unicode-images" title="Permalink to this headline">¶</a></h3>
+<p>The Unicode character set has individual card images available
+as characters. There are a number of images available for each
+suit.</p>
+<p>The mapping works like this:</p>
+<dl class="field-list simple">
+<dt class="field-odd">spades</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">0x1F0A0</span></code> to <code class="docutils literal notranslate"><span class="pre">0x1F0AE</span></code></p>
+</dd>
+<dt class="field-even">hearts</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">0x1F0B0</span></code> to <code class="docutils literal notranslate"><span class="pre">0x1F0BE</span></code></p>
+</dd>
+<dt class="field-odd">diamonds</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">0x1F0C0</span></code> to <code class="docutils literal notranslate"><span class="pre">0x1F0CE</span></code></p>
+</dd>
+<dt class="field-even">clubs</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">0x1F0D0</span></code> to <code class="docutils literal notranslate"><span class="pre">0x1F0DE</span></code></p>
+</dd>
+</dl>
+<p>The Ace of Spades numeric value is <code class="docutils literal notranslate"><span class="pre">0x1F0A0</span></code>. In Python, the string Unicode escape needs leading zeroes to make
+it a full eight hexadecimal digits. It looks like this: <code class="docutils literal notranslate"><span class="pre">`&quot;\u0001f0a0&quot;</span></code>.
+The built-in <code class="xref py py-func docutils literal notranslate"><span class="pre">chr()</span></code> function doesn’t need all the leading digits.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;</span><span class="se">\U0001f0a0</span><span class="s2">&quot;</span>
+<span class="go">&#39;🂠&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">chr</span><span class="p">(</span><span class="mh">0x1f0a0</span><span class="p">)</span>
+<span class="go">&#39;🂠&#39;</span>
+</pre></div>
+</div>
+<p>There’s an interesting wrinkle in this mapping.
+Unicode includes a fourteenth “knight” rank. We need to skip this rank to map
+the thirteen conventional ranks and four suits to a Unicode character.</p>
+<p>Ranks 1 to 11 (Ace to Jack) are simple additions to the base
+value for the suit.</p>
+<blockquote>
+<div><p>5 Diamonds = 0x1F0C0 + 5 = 🃅</p>
+</div></blockquote>
+<p>Ranks 12 and 13 (Queen and King) are after the knight and therefore off by one: we add 13 and 14 (0xD and 0xE)</p>
+<blockquote>
+<div><p>Queen Spades = 0x1F0A0 + 13 = 🂭</p>
+</div></blockquote>
+<p>The images are only legible if we use a fairly large font.</p>
+</div>
+<div class="section" id="deck">
+<h3>Deck<a class="headerlink" href="#deck" title="Permalink to this headline">¶</a></h3>
+<p>A deck of cards has responsibility for shuffling and dealing the
+various cards. Additionally, it should constuct the complete set of 52
+cards. We note that shuffling uses a random number generator, but a deck
+isn’t the same kind of random event factory that a Wheel or pair of Dice
+is. In the case of Wheel and Dice, the random events were based on
+random selection with replacement: an individual event can be
+regenerated any number of times. In the case of a deck, however, once a
+card has been dealt, it will not show up until the deck is shuffled.</p>
+<p>In Roulette and Craps, the payout odds depended on the <a class="reference internal" href="../craps/throw_builder.html#RandomEvent" title="RandomEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomEvent</span></code></a> class:
+either the the <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> or <a class="reference internal" href="../craps/throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> subclass. In Blackjack, the
+ante’s win amount depends on the player’s entire hand. This means that
+being dealt an individual card isn’t the same kind of thing that a throw
+of the dice is. It suggests that the dealer’s shoe is the random
+event factory, and the entire hand is a complex random event created by
+dealing cards. Continuing this line of thought, an <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance’s
+win amount could depend on a  <a class="reference internal" href="../craps/throw_builder.html#RandomEvent" title="RandomEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">RandomEvent</span></code></a> instance, if we
+consider the entire hand to be a single, complex random event.</p>
+<p>Considering an entire hand to be a single random event is skating on
+pretty thin ice, so we won’t force-fit the <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class into the
+random event factory  of our framework. Instead, we will let the <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class
+stand alone. We’ll design a simple initialization for a deck that
+constructs the 52 cards. Beyond that, the notions of shuffling and
+dealing can be assigned to the shoe.</p>
+<p>There’s a <strong>Wrap v. Extend</strong> question regarding the <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class implementation.
+We could consider it a wrapper around a Python collection
+or we could extend an existing collection.</p>
+<p>In this case, the initialization of a <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> instance is distict
+from the way any of the built-in collections work. For that reason,
+it seems best for this collection to wrap an existing collection.</p>
+<p>Since the <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class is a container, we have to examine the
+available collection classes to determine which concrete class we need.
+Interestingly, we only need two features of <code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code>:
+the <code class="xref py py-meth docutils literal notranslate"><span class="pre">add()</span></code> method and the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__iter__()</span></code> method. These
+methods are implemented for all of the variations of <code class="xref py py-class docutils literal notranslate"><span class="pre">Set</span></code>
+and <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>.</p>
+</div>
+<div class="section" id="shoe">
+<h3>Shoe<a class="headerlink" href="#shoe" title="Permalink to this headline">¶</a></h3>
+<p>The dealer’s shoe is where <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances are shuffled and
+dealt to create individual hands. A shoe will be built from some number of
+<a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> instances. More properly, the shoe will contain the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances
+from those <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> instances. The <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> objects aren’t
+really used for much more than constructing batches of individual <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>
+objects. The <a class="reference internal" href="#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> class responsibilities include proper
+initialization using a given number of decks, periodic shuffling and
+proper dealing.</p>
+<p>In a casino, the shuffling involves a ritual of spreading the cards on
+the table and stirring them around thoroughly, then stacking them back
+into the shoe. The top-most card is extracted, shown to the players,
+discarded, and a marker card is cut into the shoe at least two decks
+from the end, leaving about 100 cards unplayable after the marker. While
+most of the ritual does not require careful modeling, the presence of
+undealt cards at the end of the shoe is important as a way to defeat
+card-counting strategies.</p>
+<p>Since a <a class="reference internal" href="#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> instance is a container, we have to examine the
+available collection classes to determine which concrete class we need.
+Interestingly, we only need two features of <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>:
+the <code class="xref py py-meth docutils literal notranslate"><span class="pre">extend()</span></code> method to put another deck into the shoe and the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__iter__()</span></code>.</p>
+<p>A simple shuffling algorithm iterates through all of the positions
+in the <a class="reference internal" href="#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> collection, exchanging the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instance in that position
+with a <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instance in a randomly-selection position.
+The <code class="xref py py-mod docutils literal notranslate"><span class="pre">random</span></code> module has a function to shuffle, which may be a better
+choice than creating yet another shuffling algorithm.
+See <a class="reference internal" href="#blackjack-card-qanda"><span class="std std-ref">Card-Deck-Shoe Questions and Answers</span></a> for more discussion on shuffling.</p>
+</div>
+</div>
+<div class="section" id="card-deck-shoe-questions-and-answers">
+<span id="blackjack-card-qanda"></span><h2>Card-Deck-Shoe Questions and Answers<a class="headerlink" href="#card-deck-shoe-questions-and-answers" title="Permalink to this headline">¶</a></h2>
+<p>Why are there three subclasses of Card? Isn’t it simpler to have one
+class and use an if-statement to sort out the point values?</p>
+<blockquote>
+<div><p>Primarily, there are three classes because they have different
+behaviors. Merging them into a single class and sorting out the
+behaviors with an if-statement is often a problem.</p>
+<p>First, and most important, if-statements add complexity. The question
+“wouldn’t it be simpler to use an if-statement” is a kind of oxymoron.</p>
+<p>Second, and almost as important, if-statements dilute responsibility
+assignments. Combining all three subclasses into one puts three slightly
+different responsibilities into one place, making it more difficult to
+debug problems. Further, we could wind up repeating or other reusing the
+if-statement in inappropriate ways. If we create separate subclasses,
+the clear separation of responsibility becomes a matter of definition,
+not a matter of following a complex thread of programming logic.</p>
+<p>Third, if-statements limit growth, adaptation and change. If we have a
+modification to the rules, for example, making 1-eyed Jacks wild, we
+would prefer to simply introduce another subclass. We find that chasing
+down one or more related if-statements to assure ourselves that we are
+correctly handling the new subtlety rapidly gets out of hand.</p>
+</div></blockquote>
+<p>What about getter methods for rank and suit of the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class?</p>
+<blockquote>
+<div><p>Below, we’ll excplicitly avoid writing getter methods for these
+attributes.</p>
+<p>Generally, getters and setters are atypical Python programming.
+In the event of a design change, we can replace an attribute with
+a property to preserve the syntax but add features.</p>
+<p>The notion of encapsulation does not require all attributes
+be wrapped with method functions. The use of getter and setter methods is an implementation choice
+used in Java to permit ready introspection of classes.</p>
+<p>A narrow definition of responsibilities is all that’s required
+to have a properly encapsulated design. Collaborators can allowed
+to examine attributes. In Python, we know that attributes are part
+of the public interface of a class.</p>
+</div></blockquote>
+<p>Is that the best shuffling algorithm?  Won’t it move each card
+twice? Won’t it sometimes put a card back into the original spot?</p>
+<blockquote>
+<div><p>Yes, it may move some cards twice and it may leave a card in position.
+This is part of random behavior. This algorithm touches every card,
+swapping it with a randomly selected card. We are assured that every
+card was put into a random position. Sometimes a card will have been
+moved more than once, but the minimum criteria is that every card has
+been moved.</p>
+<p>While a shuffling algorithm that models the real world is tempting, this
+adds complexity for no actual improvement in the randomization. A
+popular technique in the real world is to cut the deck in half and then
+riffle the cards into a single pile. If done with the kind of perfection
+that software provides (cutting the deck exactly in half and exactly
+alternating the cards) this shuffle leads to a perfectly predictable
+cycle of orders. What makes this shuffle work in the real world is the
+random inaccuracies in cutting and riffling. We don’t see any value in
+modeling these physical phenomenon.</p>
+<p>A similar analysis holds for the kind of shuffle done in the casino. In
+essence, they do a shallow copy if the original <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>
+object, and then rebuild the shoe’s <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code> by picking cards
+at random from the copy. This produces a result that is statistically
+indistinguishable from our algorithm, which uses an element-by-element swap.</p>
+<p>An apparently interesting alternative is to generate a
+random index value for each <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> and then sort by this index.
+We note that sorting is <img class="math" src="../_images/math/29627622df0bca3d74e88dff31b3fdbfb7942cf5.png" alt="\mathbf{O}(n \log n)"/>,
+where our algorithm is <img class="math" src="../_images/math/f5a7ba72fabe8a11726303451b773da573ee1370.png" alt="\mathbf{O}( n )"/>,
+running much faster than any sort.</p>
+</div></blockquote>
+</div>
+<div class="section" id="card-superclass">
+<h2>Card Superclass<a class="headerlink" href="#card-superclass" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Card">
+<em class="property">class </em><code class="sig-name descname">Card</code><a class="headerlink" href="#Card" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class defines a basic playing card. It has a rank, a suit, a
+hard point value and a soft point value. The point value methods are
+defined for the number cards from 2 to 10. Two subclasses handle face
+cards, where the point values are both 10, and aces, where the soft
+point value is 1, and the hard point value is 11.</p>
+<p>This class also defines symbolic names for the suits (Clubs, Diamonds, Hearts and
+Spades) and face cards (Jack, Queen and King).</p>
+<p>This is best done with either a <code class="docutils literal notranslate"><span class="pre">typing.NamedTuple</span></code> or a <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=True)</span></code>.
+Note that the order of the attributes matter a great deal for these two
+built-in class definitions – the rank <strong>must</strong> be listed first to provide
+the right kind of behavior.</p>
+<p>It’s helpful for these objects to be immutable. In the rare case of a programming
+problem, it can help to have an exception raised a faulty attempt to set an attribute
+of an other-immutable <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> object.</p>
+</dd></dl>
+
+<p>Here are Unicode characters for the suits.</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 50%" />
+<col style="width: 17%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Unicode</p></td>
+<td><p>Number</p></td>
+<td><p>Name</p></td>
+<td><p>Symbol</p></td>
+</tr>
+<tr class="row-even"><td><p>U+02660</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">u'\u2660'</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">u'\N{BLACK</span> <span class="pre">SPADE</span> <span class="pre">SUIT}'</span></code></p></td>
+<td><p>♠</p></td>
+</tr>
+<tr class="row-odd"><td><p>U+02661</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">u'\u2661'</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">u'\N{WHITE</span> <span class="pre">HEART</span> <span class="pre">SUIT}'</span></code></p></td>
+<td><p>♡</p></td>
+</tr>
+<tr class="row-even"><td><p>U+02662</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">u'\u2662'</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">u'\N{WHITE</span> <span class="pre">DIAMOND</span> <span class="pre">SUIT}'</span></code></p></td>
+<td><p>♢</p></td>
+</tr>
+<tr class="row-odd"><td><p>U+02663</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">u'\u2663'</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">u'\N{BLACK</span> <span class="pre">CLUB</span> <span class="pre">SUIT}'</span></code></p></td>
+<td><p>♣</p></td>
+</tr>
+</tbody>
+</table>
+<p>Note that Unicode officially includes “RED HEART SUIT” and “RED DIAMOND SUIT”.
+Python, however, may not recognize these. It seems necessary to use Unicode names shown
+above.</p>
+<p>Python makes a small distinction between <code class="docutils literal notranslate"><span class="pre">&quot;\uxxxx&quot;</span></code>  with four digits,
+and <code class="docutils literal notranslate"><span class="pre">&quot;\Uxxxxxxxx&quot;</span></code> with eight digits. The card images are 8-digits,
+with <code class="docutils literal notranslate"><span class="pre">\U</span></code>. The suits are four digits with <code class="docutils literal notranslate"><span class="pre">\u</span></code>.</p>
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<p>In Python, symbolic names are often declared within the class,
+not within the initialization method function.</p>
+<p class="rubric">Class-Level Names</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Card</span><span class="p">:</span>
+    <span class="n">Clubs</span><span class="p">,</span> <span class="n">Diamonds</span><span class="p">,</span> <span class="n">Hearts</span><span class="p">,</span> <span class="n">Spades</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;</span><span class="se">\u2663</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;</span><span class="se">\u2662</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;</span><span class="se">\u2661</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;</span><span class="se">\u2660</span><span class="s1">&#39;</span>
+    <span class="n">Ace</span><span class="p">,</span> <span class="n">Jack</span><span class="p">,</span> <span class="n">Queen</span><span class="p">,</span> <span class="n">King</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span>
+    <span class="o">...</span>
+
+<span class="n">oneEyedJack</span><span class="o">=</span> <span class="n">Card</span><span class="p">(</span><span class="n">Card</span><span class="o">.</span><span class="n">Jack</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Hearts</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="Card.rank">
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">rank</code><a class="headerlink" href="#Card.rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>The rank of the card. This is a number from 1 (Ace) to 13 (King).
+When using <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=True)</span></code> this must be defined first.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Card.suit">
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">suit</code><a class="headerlink" href="#Card.suit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The suit of the card. This is a character code for Clubs, Diamonds,
+Hearts or Spades.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Card.__init___">
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">__init___</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">rank: int</em>, <em class="sig-param">suit: str</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Card.__init___" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rank</strong> (<em>int</em>) – rank of this card.</p></li>
+<li><p><strong>suit</strong> (str from the set <code class="code docutils literal notranslate"><span class="pre">{u'\u2663',</span> <span class="pre">u'\u2662',</span> <span class="pre">u'\u2661',</span> <span class="pre">u'\u2660'}</span></code>
+Ideally based on a class-level variable.) – string for this card.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initializes the attributes of this <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instance.</p>
+<p>If a <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=True)</span></code> is used, this is provided automatically.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<p>Note that “getters” are something we don’t bother with in Python.
+In other languages, e.g., Java, this class would need to have
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">getRank()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">getSuit()</span></code> methods. This is atypical for
+Python.</p>
+<dl class="method">
+<dt id="Card.softValue">
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">softValue</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#Card.softValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the soft value of this card. The superclass simply returns
+the rank. Subclasses can override this. Face cards will return 10,
+Aces will return 11.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Card.hardValue">
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">hardValue</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#Card.hardValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the hard value of this card. The superclass simply returns
+the rank. Subclasses can override this. Face cards will return 10,
+Aces will return 1.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Card.__str__">
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#Card.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the rank and suit of this card.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="facecard-class">
+<h2>FaceCard Class<a class="headerlink" href="#facecard-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="FaceCard">
+<em class="property">class </em><code class="sig-name descname">FaceCard</code><a class="headerlink" href="#FaceCard" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#FaceCard" title="FaceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceCard</span></code></a> subclass extends the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class with a point value of 10.
+This defines jack, queens and kings.</p>
+</dd></dl>
+
+<div class="section" id="id1">
+<h3>Methods<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">softValue</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int</dt>
+<dd><p>Returns the soft value of this card, 10.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">hardValue</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int</dt>
+<dd><p>Returns the hard value of this card, 10.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str</dt>
+<dd><p>Returns a short String displaying the rank and suit of this card.
+The ranks should be translated to single letters: 11 to <code class="docutils literal notranslate"><span class="pre">'J'</span></code>, 12 to <code class="docutils literal notranslate"><span class="pre">'Q'</span></code> and
+13 to <code class="docutils literal notranslate"><span class="pre">'K'</span></code>.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="acecard-class">
+<h2>AceCard Class<a class="headerlink" href="#acecard-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="AceCard">
+<em class="property">class </em><code class="sig-name descname">AceCard</code><a class="headerlink" href="#AceCard" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#AceCard" title="AceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">AceCard</span></code></a> class extends the  <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class with a soft point value of
+11 and a hard point value of 1. This definces Aces.</p>
+</dd></dl>
+
+<div class="section" id="id2">
+<h3>Methods<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">softValue</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int</dt>
+<dd><p>Returns the soft value of this card, 11.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">hardValue</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int</dt>
+<dd><p>Returns the hard value of this card, 1.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Card.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str</dt>
+<dd><p>Returns a short String displaying the rank and suit of this card.
+The rank is always <code class="docutils literal notranslate"><span class="pre">'A'</span></code>.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="card-factory-function">
+<h2>Card Factory Function<a class="headerlink" href="#card-factory-function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="card_factory">
+<code class="sig-name descname">card_factory</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#card_factory" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rank</strong> (<em>int</em>) – Numeric rank</p></li>
+<li><p><strong>suit</strong> (<em>str</em>) – Symbolic suit string from the set <code class="code docutils literal notranslate"><span class="pre">{u'\u2663',</span> <span class="pre">u'\u2662',</span> <span class="pre">u'\u2661',</span> <span class="pre">u'\u2660'}</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This function creates the proper subclass of card based on the rank.</p>
+<ul class="simple">
+<li><p>1 maps to <a class="reference internal" href="#AceCard" title="AceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">AceCard</span></code></a>.</p></li>
+<li><p>2 to 10 maps to <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>.</p></li>
+<li><p>11, 12, and 13 map to <a class="reference internal" href="#FaceCard" title="FaceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceCard</span></code></a>.</p></li>
+</ul>
+</dd></dl>
+
+<p>In some cases</p>
+</div>
+<div class="section" id="deck-class">
+<h2>Deck class<a class="headerlink" href="#deck-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Deck">
+<em class="property">class </em><code class="sig-name descname">Deck</code><a class="headerlink" href="#Deck" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class defines the standard deck of 52 cards. It both
+constructs the deck and acts as a container for one instance of a deck.</p>
+</dd></dl>
+
+<div class="section" id="id3">
+<h3>Fields<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="cards">
+<code class="sig-name descname">cards</code><a class="headerlink" href="#cards" title="Permalink to this definition">¶</a></dt>
+<dd><p>The collection of individual cards. The internal collection
+needs to be shuffled, so a <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> makes the most sense.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rng">
+<code class="sig-name descname">rng</code><a class="headerlink" href="#rng" title="Permalink to this definition">¶</a></dt>
+<dd><p>The random number generator used when shuffling.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id4">
+<h3>Constructors<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Deck.__init__">
+<code class="sig-prename descclassname">Deck.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Deck.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the Collection, <a class="reference internal" href="#cards" title="cards"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cards</span></code></a>, and then creates the 52
+cards. The <a class="reference internal" href="#card_factory" title="card_factory"><code class="xref py py-func docutils literal notranslate"><span class="pre">card_factory()</span></code></a> helps a lot with this.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id5">
+<h3>Methods<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Deck.__iter__">
+<code class="sig-prename descclassname">Deck.</code><code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Iterator[Card]<a class="headerlink" href="#Deck.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the an iterator over the collection of cards in <a class="reference internal" href="#cards" title="cards"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cards</span></code></a>.
+A client can deal cards like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deck</span> <span class="o">=</span> <span class="n">Deck</span><span class="p">()</span>
+<span class="n">dealer</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">deck</span><span class="p">)</span>
+<span class="n">card1</span><span class="p">,</span> <span class="n">card2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dealer</span><span class="p">),</span> <span class="nb">next</span><span class="p">(</span><span class="n">dealer</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Deck.shuffle">
+<code class="sig-prename descclassname">Deck.</code><code class="sig-name descname">shuffle</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Deck.shuffle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuffles the deck by swapping every element in the <a class="reference internal" href="#Shoe.cards" title="Shoe.cards"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Shoe.cards</span></code></a> <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>
+with a random element.</p>
+<p>This invalidates any iterator that had been in use.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="shoe-class">
+<h2>Shoe class<a class="headerlink" href="#shoe-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Shoe">
+<em class="property">class </em><code class="sig-name descname">Shoe</code><a class="headerlink" href="#Shoe" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> class defines the dealer’s shoe, which contains from 1 to 8
+decks of cards. For one deck shoes, one card is reserved as undealable.
+For multiple deck shoes from 1 to 3 decks can be left undealt. The exact
+number is selected at random within 6 cards of the expected number of decks.</p>
+<p>This can be considered a subclass of <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a>. This allows it to
+inherit the shuffling algorithm.</p>
+</dd></dl>
+
+<div class="section" id="id6">
+<h3>Fields<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">rng</code></dt>
+<dd><p>The random number generator used when shuffling.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Shoe.cards">
+<code class="sig-prename descclassname">Shoe.</code><code class="sig-name descname">cards</code><a class="headerlink" href="#Shoe.cards" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> that is a collection of the cards from a number
+(up to 8) <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> instances.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Shoe.stopDeal">
+<code class="sig-prename descclassname">Shoe.</code><code class="sig-name descname">stopDeal</code><a class="headerlink" href="#Shoe.stopDeal" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of decks to be left undealt in the shoe.
+When dealing starts, and small random offset will adjust this value.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id7">
+<h3>Constructors<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Shoe.__init__">
+<code class="sig-prename descclassname">Shoe.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">decks: int</em>, <em class="sig-param">stopDeal: int=1</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Shoe.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>decks</strong> (<em>int</em>) – A number of decks to create</p></li>
+<li><p><strong>stopDeal</strong> (<em>int</em>) – An approximate number of decks left undealt in the shoe.
+The default is to leave approximately one full deck undealt.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This creates a random number generator from <code class="xref py py-class docutils literal notranslate"><span class="pre">random.Random</span></code>.</p>
+<p>It initializes the Shoe by creating the required number of decks and
+building the <a class="reference internal" href="#cards" title="cards"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cards</span></code></a> <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> instance.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id8">
+<h3>Methods<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Shoe.shuffle">
+<code class="sig-prename descclassname">Shoe.</code><code class="sig-name descname">shuffle</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Shoe.shuffle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuffles all of the cards in the shoe. This will invalidate any previously-used
+iterators.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Shoe.__iter__">
+<code class="sig-prename descclassname">Shoe.</code><code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Iterator[Card]<a class="headerlink" href="#Shoe.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Picks a random adjustment value in the range -6 to +6.
+This offsets the number of decks, <a class="reference internal" href="#Shoe.stopDeal" title="Shoe.stopDeal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stopDeal</span></code></a> value, to create a beginning
+value, <img class="math" src="../_images/math/68c7c8c65602677ab56cf7fd88002023f0edc575.png" alt="b"/>, for the iterator. Given a number of decks, <img class="math" src="../_images/math/106b04b320e75010b1d8029e59244f234f75e6f9.png" alt="s"/>,
+and an adjustment, <img class="math" src="../_images/math/b3e65e3b6408fcfa00452530b73f55d1755f9965.png" alt="a"/>, such that :math:-6 leq a leq 6`, <img class="math" src="../_images/math/0fada78427a45e6d77ee26553ffca567bfa308cd.png" alt="b = s*52 + a"/>.</p>
+<p>Returns the an iterator over a slice the collection of cards in <a class="reference internal" href="#cards" title="cards"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cards</span></code></a>,
+<code class="docutils literal notranslate"><span class="pre">cards[s:]</span></code>. A client can deal cards like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">deck</span> <span class="o">=</span> <span class="n">Shoe</span><span class="p">(</span><span class="n">decks</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">dealer</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">deck</span><span class="p">)</span>
+<span class="n">card1</span><span class="p">,</span> <span class="n">card2</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">dealer</span><span class="p">),</span> <span class="nb">next</span><span class="p">(</span><span class="n">dealer</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="card-deck-shoe-deliverables">
+<h2>Card-Deck-Shoe Deliverables<a class="headerlink" href="#card-deck-shoe-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are many deliverables for this exercise.</p>
+<ul class="simple">
+<li><p>The three classes of the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class hierarchy, including
+<a class="reference internal" href="#FaceCard" title="FaceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceCard</span></code></a> and <a class="reference internal" href="#AceCard" title="AceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">AceCard</span></code></a>.</p></li>
+<li><p>A class which performs a unit tests of the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class
+hierarchy. The unit test should create several instances of <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>,
+<a class="reference internal" href="#FaceCard" title="FaceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceCard</span></code></a> and <a class="reference internal" href="#AceCard" title="AceCard"><code class="xref py py-class docutils literal notranslate"><span class="pre">AceCard</span></code></a>.</p></li>
+<li><p>The <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class.</p></li>
+<li><p>A class which performs a unit test of the <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class.
+This simply creates a <a class="reference internal" href="#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> object and confirms the
+total number of cards. A thorough test would also check some individual
+<a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> objects in the cards collection.</p></li>
+<li><p>The <a class="reference internal" href="#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> class.</p></li>
+<li><p>A class which performs a unit test of the <a class="reference internal" href="#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> class.
+This simply creates a <a class="reference internal" href="#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> object and confirms that it
+deals cards. In order to test the <code class="xref py py-meth docutils literal notranslate"><span class="pre">shuffle()</span></code> method, you
+will need to construct the <a class="reference internal" href="#Shoe" title="Shoe"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shoe</span></code></a> with a random number
+generator that has a fixed seed and produces cards in a known sequence.</p></li>
+</ul>
+</div>
+<div class="section" id="testing-examples">
+<h2>Testing Examples<a class="headerlink" href="#testing-examples" title="Permalink to this headline">¶</a></h2>
+<p>Unit tests can become fairly complex for some of these classes. This section includes
+some concrete examples of unit tests for cards adn decks.</p>
+<div class="section" id="example-class-definition">
+<h3>Example Class Definition<a class="headerlink" href="#example-class-definition" title="Permalink to this headline">¶</a></h3>
+<p>Here is a potential <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class definition.
+This is done “the hard way” without relying on <code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code>
+or <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.NamedTuple</span></code>.  This is quite complex and
+requires a number of unit tests to be sure it works.</p>
+<p class="rubric">blackjack.py</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Since</span> <span class="n">we</span> <span class="n">use</span> <span class="mi">13</span> <span class="n">ranks</span><span class="p">,</span> <span class="n">we</span><span class="s1">&#39;ll skip the knight.</span>
+
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">from typing import Any, cast</span>
+<span class="s2">import sys</span>
+
+
+<span class="s2">class Card:</span>
+<span class="s2">    Clubs = u&quot;</span><span class="se">\N{BLACK CLUB SUIT}</span><span class="s2">&quot;</span>
+<span class="s2">    Diamonds = u&quot;</span><span class="se">\N{WHITE DIAMOND SUIT}</span><span class="s2">&quot;</span>
+<span class="s2">    Hearts = u&quot;</span><span class="se">\N{WHITE HEART SUIT}</span><span class="s2">&quot;</span>
+<span class="s2">    Spades = u&quot;</span><span class="se">\N{BLACK SPADE SUIT}</span><span class="s2">&quot;</span>
+<span class="s2">    Jack = 11</span>
+<span class="s2">    Queen = 12</span>
+<span class="s2">    King = 13</span>
+<span class="s2">    Ace = 1</span>
+
+<span class="s2">    def __init__(self, rank: int, suit: str) -&gt; None:</span>
+<span class="s2">        assert suit in (Card.Clubs, Card.Diamonds, Card.Hearts, Card.Spades)</span>
+<span class="s2">        assert 1 &lt;= rank &lt; 14</span>
+<span class="s2">        self.rank = rank</span>
+<span class="s2">        self.suit = suit</span>
+<span class="s2">        self.order = rank</span>
+
+<span class="s2">    @property</span>
+<span class="s2">    def hardValue(self) -&gt; int:</span>
+<span class="s2">        return self.rank</span>
+
+<span class="s2">    @property</span>
+<span class="s2">    def softValue(self) -&gt; int:</span>
+<span class="s2">        return self.rank</span>
+
+<span class="s2">    def __repr__(self) -&gt; str:</span>
+<span class="s2">        return f&quot;</span><span class="si">{self.__class__.__name__}</span><span class="s2">(rank=</span><span class="si">{self.rank!r}</span><span class="s2">, suit=</span><span class="si">{self.suit!r}</span><span class="s2">)&quot;</span>
+
+<span class="s2">    def __str__(self) -&gt; str:</span>
+<span class="s2">        return f&quot;</span><span class="si">{self.rank:2d}{self.suit}</span><span class="s2">&quot;</span>
+
+<span class="s2">    @property</span>
+<span class="s2">    def image(self) -&gt; str:</span>
+<span class="s2">        s = {</span>
+<span class="s2">            Card.Spades: 0x1F0A0,</span>
+<span class="s2">            Card.Hearts: 0x1F0B0,</span>
+<span class="s2">            Card.Diamonds: 0x1F0C0,</span>
+<span class="s2">            Card.Clubs: 0x1F0D0,</span>
+<span class="s2">        }[self.suit]</span>
+<span class="s2">        r = self.rank if self.rank &lt; 12 else self.rank + 1</span>
+<span class="s2">        return chr(s + r)</span>
+
+<span class="s2">    def __le__(self, other: Any) -&gt; bool:</span>
+<span class="s2">        return self.order &lt;= cast(Card, other).order</span>
+
+<span class="s2">    def __lt__(self, other: Any) -&gt; bool:</span>
+<span class="s2">        return self.order &lt; cast(Card, other).order</span>
+
+<span class="s2">    def __ge__(self, other: Any) -&gt; bool:</span>
+<span class="s2">        return self.order &gt;= cast(Card, other).order</span>
+
+<span class="s2">    def __gt__(self, other: Any) -&gt; bool:</span>
+<span class="s2">        return self.order &gt; cast(Card, other).order</span>
+
+<span class="s2">    def __eq__(self, other: Any) -&gt; bool:</span>
+<span class="s2">        return self.order == cast(Card, other).order</span>
+
+<span class="s2">    def __ne__(self, other: Any) -&gt; bool:</span>
+<span class="s2">        return self.order != cast(Card, other).order</span>
+
+<span class="s2">    def __hash__(self) -&gt; int:</span>
+<span class="s2">        return (hash(self.rank) + hash(self.suit)) </span><span class="si">% s</span><span class="s2">ys.hash_info.width</span>
+</pre></div>
+</div>
+<p>This class defines the initialization of a <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instance.
+It includes the <code class="xref py py-meth docutils literal notranslate"><span class="pre">hardValue()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">softValue()</span></code> methods
+as well as the detailed representationa and summary string values.</p>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">image()</span></code> method computes the Unicode character with an
+image of the card. All of the comparisons operators, plus the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code>
+method are provided.</p>
+</div>
+<div class="section" id="example-testcase-class">
+<h3>Example TestCase class<a class="headerlink" href="#example-testcase-class" title="Permalink to this headline">¶</a></h3>
+<p>Often, our tests parallel the structure of our application.
+We might have a directory with a structure like the following example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">src</span>
+    <span class="n">__main__</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">common</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">roulette</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">craps</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">blackjack</span><span class="o">.</span><span class="n">py</span>
+<span class="n">tests</span>
+    <span class="n">test_common</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">test_roulette</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">test_craps</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">test_blackjack</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The tests are in a <code class="file docutils literal notranslate"><span class="pre">tests</span></code> folder, and the module names also
+begin with <code class="docutils literal notranslate"><span class="pre">test_</span></code>. This pattern makes the tests easy to discover
+with tools like <strong>pytest</strong>.</p>
+<p>Here’s an example of <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> class definition
+to tetst the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class, shown above in the <a class="reference internal" href="#example-class-definition">Example Class Definition</a> section.</p>
+<p class="rubric">test_card.py</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Building Skills in Object-Oriented Design V4</span>
+
+<span class="sd">test_card with :class:`unittest.TestCase`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">blackjack</span> <span class="k">import</span> <span class="n">Card</span><span class="p">,</span> <span class="n">AceCard</span><span class="p">,</span> <span class="n">FaceCard</span>
+
+
+<span class="k">class</span> <span class="nc">TestCard</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aceClubs</span> <span class="o">=</span> <span class="n">AceCard</span><span class="p">(</span><span class="n">Card</span><span class="o">.</span><span class="n">Ace</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">twoClubs</span> <span class="o">=</span> <span class="n">Card</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tenClubs</span> <span class="o">=</span> <span class="n">Card</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kingClubs</span> <span class="o">=</span> <span class="n">FaceCard</span><span class="p">(</span><span class="n">Card</span><span class="o">.</span><span class="n">King</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aceDiamonds</span> <span class="o">=</span> <span class="n">AceCard</span><span class="p">(</span><span class="n">Card</span><span class="o">.</span><span class="n">Ace</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">testString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot; A♣&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aceClubs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot; 2♣&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">twoClubs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;10♣&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tenClubs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot; K♣&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kingClubs</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot; A♢&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aceDiamonds</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">testOrder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tenClubs</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">kingClubs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tenClubs</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kingClubs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kingClubs</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">aceClubs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aceClubs</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">aceDiamonds</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">testImage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;🃑&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aceClubs</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;🃒&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">twoClubs</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;🃚&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tenClubs</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;🃞&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kingClubs</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;🃁&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aceDiamonds</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic">
+<li><p>We create a number of object instances in the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">setUp()</span></code> method of the case. In this example, we created five distinct
+<a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances. These object constructors
+imply several things in our <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>
+class.</p>
+<ol class="loweralpha simple">
+<li><p>There will be a set of manifest constants for the suits:
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Clubs</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Diamonds</span></code>,
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Hearts</span></code> and
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Spades</span></code>.</p></li>
+<li><p>The constructor (<code class="xref py py-meth docutils literal notranslate"><span class="pre">Card.__init__()</span></code>) will accept a rank and a suit
+constant.</p></li>
+</ol>
+<p>Note that we didn’t write tests to create all suits or all
+ranks. This example only created valid cards.  A more complex
+test will include edge cases like invalid ranks or invalid suits.</p>
+</li>
+<li><p>In <code class="xref py py-meth docutils literal notranslate"><span class="pre">testString()</span></code>, we exercise the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__str__()</span></code> method of the
+<a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class to be sure that it formats cards
+correctly. These tests tell us what the formatting algorithm will
+look like.</p></li>
+<li><p>In <code class="xref py py-meth docutils literal notranslate"><span class="pre">testOrder()</span></code>, we exercise some comparison methods of the
+<a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class to be sure that it compares card
+ranks correctly. Note that we have explicitly claimed that the
+equality test only checks the rank and ignores the suit; this is
+typical for Blackjack, but won’t work well for Bridge or
+Solitaire.</p>
+<p>Note that we didn’t exhaustively test all possible
+comparisons among the four cards we defined. We tested enough
+to be sure we had an implementation that worked.</p>
+</li>
+<li><p>In <code class="xref py py-meth docutils literal notranslate"><span class="pre">testImage()</span></code>, the test exercises the <code class="xref py py-meth docutils literal notranslate"><span class="pre">image()</span></code> method of the
+cards created. This confirms that proper Unicode images are found.
+There should be interesting edge cases on either
+side of the rank that’s skipped in the mapping from thirteen ranks
+to the fourteen images in each suit.</p></li>
+</ol>
+</div>
+<div class="section" id="example-test-function">
+<h3>Example Test Function<a class="headerlink" href="#example-test-function" title="Permalink to this headline">¶</a></h3>
+<p>Here’s an example of a pytest function definition to test
+the <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class, shown above in the <a class="reference internal" href="#example-class-definition">Example Class Definition</a> section.</p>
+<p class="rubric">test_card.py</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Building Skills in Object-Oriented Design V4</span>
+
+<span class="sd">test_card with :mod:`pytest`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">blackjack</span> <span class="k">import</span> <span class="n">Card</span><span class="p">,</span> <span class="n">AceCard</span><span class="p">,</span> <span class="n">FaceCard</span>
+
+<span class="k">def</span> <span class="nf">test_card</span><span class="p">():</span>
+    <span class="n">aceClubs</span> <span class="o">=</span> <span class="n">AceCard</span><span class="p">(</span><span class="n">Card</span><span class="o">.</span><span class="n">Ace</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">)</span>
+    <span class="n">twoClubs</span> <span class="o">=</span> <span class="n">Card</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">)</span>
+    <span class="n">tenClubs</span> <span class="o">=</span> <span class="n">Card</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">)</span>
+    <span class="n">kingClubs</span> <span class="o">=</span> <span class="n">FaceCard</span><span class="p">(</span><span class="n">Card</span><span class="o">.</span><span class="n">King</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">)</span>
+    <span class="n">aceDiamonds</span> <span class="o">=</span> <span class="n">AceCard</span><span class="p">(</span><span class="n">Card</span><span class="o">.</span><span class="n">Ace</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="s2">&quot; A♣&quot;</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">aceClubs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s2">&quot; 2♣&quot;</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">twoClubs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s2">&quot;10♣&quot;</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">tenClubs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s2">&quot; K♣&quot;</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">kingClubs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s2">&quot; A♢&quot;</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">aceDiamonds</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">tenClubs</span> <span class="o">&lt;</span> <span class="n">kingClubs</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">tenClubs</span> <span class="o">&gt;=</span> <span class="n">kingClubs</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">kingClubs</span> <span class="o">&lt;</span> <span class="n">aceClubs</span>
+    <span class="k">assert</span> <span class="n">aceClubs</span> <span class="o">==</span> <span class="n">aceDiamonds</span>
+
+    <span class="k">assert</span> <span class="s2">&quot;🃑&quot;</span> <span class="o">==</span> <span class="n">aceClubs</span><span class="o">.</span><span class="n">image</span>
+    <span class="k">assert</span> <span class="s2">&quot;🃒&quot;</span> <span class="o">==</span> <span class="n">twoClubs</span><span class="o">.</span><span class="n">image</span>
+    <span class="k">assert</span> <span class="s2">&quot;🃚&quot;</span> <span class="o">==</span> <span class="n">tenClubs</span><span class="o">.</span><span class="n">image</span>
+    <span class="k">assert</span> <span class="s2">&quot;🃞&quot;</span> <span class="o">==</span> <span class="n">kingClubs</span><span class="o">.</span><span class="n">image</span>
+    <span class="k">assert</span> <span class="s2">&quot;🃁&quot;</span> <span class="o">==</span> <span class="n">aceDiamonds</span><span class="o">.</span><span class="n">image</span>
+</pre></div>
+</div>
+<p>The essential ingredients of the test are the same as the <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code>
+definition.</p>
+<ol class="arabic">
+<li><p>We created five distinct
+<a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances. These object constructors
+require several things in our <a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>
+class.</p>
+<ol class="loweralpha simple">
+<li><p>There will be a set of manifest constants for the suits:
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Clubs</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Diamonds</span></code>,
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Hearts</span></code> and
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Spades</span></code>.</p></li>
+<li><p>The constructor (<code class="xref py py-meth docutils literal notranslate"><span class="pre">Card.__init__()</span></code>) will accept a rank and a suit
+constant.</p></li>
+</ol>
+<p>Note that we didn’t write tests to create all suits or all
+ranks. This example only created valid cards.  A more complex
+test will include edge cases like invalid ranks or invalid suits.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">pytest.raises</span></code> context manager makes it particularly easy to
+also test invalid cases.</p>
+</li>
+<li><p>The test exercises the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__str__()</span></code> method of the
+<a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class to be sure that it formats cards
+correctly. These tests tell us what the formatting algorithm will
+look like.</p></li>
+<li><p>The test also exercise some comparison methods of the
+<a class="reference internal" href="#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class to be sure that it compares card
+ranks correctly. Note that we have explicitly claimed that the
+equality test only checks the rank and ignores the suit; this is
+typical for Blackjack, but won’t work well for Bridge or
+Solitaire.</p></li>
+<li><p>Additionally, the test exercises the <code class="xref py py-meth docutils literal notranslate"><span class="pre">image()</span></code> method of the
+cards created.</p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have a model of the essential cards and decks of cards, we can
+look more deeply at how these are used in Blackjack. The next chapter considers
+the way cards are combined into hands and how hand point values relate to the
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class we’ve been using to resolve bets.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Card, Deck and Shoe Classes</a><ul>
+<li><a class="reference internal" href="#card-deck-and-shoe-analysis">Card, Deck and Shoe Analysis</a><ul>
+<li><a class="reference internal" href="#points">Points</a></li>
+<li><a class="reference internal" href="#ordering">Ordering</a></li>
+<li><a class="reference internal" href="#suits">Suits</a></li>
+<li><a class="reference internal" href="#identity">Identity</a></li>
+<li><a class="reference internal" href="#card-subclass-factory">Card Subclass Factory</a></li>
+<li><a class="reference internal" href="#unicode-images">Unicode Images</a></li>
+<li><a class="reference internal" href="#deck">Deck</a></li>
+<li><a class="reference internal" href="#shoe">Shoe</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#card-deck-shoe-questions-and-answers">Card-Deck-Shoe Questions and Answers</a></li>
+<li><a class="reference internal" href="#card-superclass">Card Superclass</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#facecard-class">FaceCard Class</a><ul>
+<li><a class="reference internal" href="#id1">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#acecard-class">AceCard Class</a><ul>
+<li><a class="reference internal" href="#id2">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#card-factory-function">Card Factory Function</a></li>
+<li><a class="reference internal" href="#deck-class">Deck class</a><ul>
+<li><a class="reference internal" href="#id3">Fields</a></li>
+<li><a class="reference internal" href="#id4">Constructors</a></li>
+<li><a class="reference internal" href="#id5">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#shoe-class">Shoe class</a><ul>
+<li><a class="reference internal" href="#id6">Fields</a></li>
+<li><a class="reference internal" href="#id7">Constructors</a></li>
+<li><a class="reference internal" href="#id8">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#card-deck-shoe-deliverables">Card-Deck-Shoe Deliverables</a></li>
+<li><a class="reference internal" href="#testing-examples">Testing Examples</a><ul>
+<li><a class="reference internal" href="#example-class-definition">Example Class Definition</a></li>
+<li><a class="reference internal" href="#example-testcase-class">Example TestCase class</a></li>
+<li><a class="reference internal" href="#example-test-function">Example Test Function</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="solution.html" title="previous chapter">Blackjack Solution Overview</a></li>
+      <li>Next: <a href="hand.html" title="next chapter">Hand and Outcome Classes</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

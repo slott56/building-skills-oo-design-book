@@ -1,0 +1,456 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Overall Simulation Control &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SevenReds Player Class" href="sevenreds.html" />
+    <link rel="prev" title="Player Class" href="player.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="overall-simulation-control">
+<span id="roul-control"></span><h1>Overall Simulation Control<a class="headerlink" href="#overall-simulation-control" title="Permalink to this headline">¶</a></h1>
+<p>We can now use our collection of classes to generate some more usable results. We
+can perform a number of simulation runs and evaluate the long-term
+prospects for the Martingale betting system. We want to know a few
+things about the game:</p>
+<ul class="simple">
+<li><p>How long can we play with a given budget? In other words, how many
+spins before we’ve lost our stake. The expected value is 38, based
+on an analysis of the payouts for simple outside (“even money”) bets.</p></li>
+<li><p>How much we can realistically hope to win? How large a streak can we
+hope for? How far ahead can we hope to get before we should quit?</p></li>
+</ul>
+<p>In the <a class="reference internal" href="#simulation-analysis">Simulation Analysis</a> section, we’ll look at general features
+of simulation.</p>
+<p>We’ll look at the resulting statistical data in <a class="reference internal" href="#statistical-summary">Statistical Summary</a>.</p>
+<p>This will lead us to the details in <a class="reference internal" href="#simulator-design">Simulator Design</a>. We’ll note that
+the details of the simulator require some changes to the definition
+of the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class.</p>
+<p>We’ll enumerate all of this chapter’s deliverables in <a class="reference internal" href="#simulation-control-deliverables">Simulation Control Deliverables</a>.</p>
+<div class="section" id="simulation-analysis">
+<h2>Simulation Analysis<a class="headerlink" href="#simulation-analysis" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class will be allocated a number of responsibilities:</p>
+<ul class="simple">
+<li><p>Create the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>, <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>, and :class: <cite>Game</cite>
+objects.</p></li>
+<li><p>Simulate a number of sessions of play, saving the maximum
+stake and length of each session.</p></li>
+<li><p>For each session: initialize the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> and :class: <cite>Game</cite> objects,
+cycle the game a number of times, collect the size of the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object’s
+stake after each cycle.</p></li>
+<li><p>Write a final summary of the results.</p></li>
+</ul>
+<p>We’ll look at several topics:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#simulation-terms">Simulation Terms</a> will formalize some definitions.</p></li>
+<li><p><a class="reference internal" href="#simulation-control">Simulation Control</a> will look at the overall simulation process.</p></li>
+<li><p>We’ll look at how we create a new player in <a class="reference internal" href="#player-initialization">Player Initialization</a>.</p></li>
+<li><p>The most important thing is gather performance data. We’ll look
+at this in <a class="reference internal" href="#player-interrogation">Player Interrogation</a>.</p></li>
+</ul>
+<div class="section" id="simulation-terms">
+<h3>Simulation Terms<a class="headerlink" href="#simulation-terms" title="Permalink to this headline">¶</a></h3>
+<p>We’ll try to stick to the following definitions. This will help structure
+our data gathering and analysis.</p>
+<p>cycle</p>
+<blockquote>
+<div><p>A single cycle of betting and bet
+resolution. This depends on a single random event: a spin of the
+wheel or a throw of the dice. Also known as a round of play.</p>
+</div></blockquote>
+<p>session</p>
+<blockquote>
+<div><p>One or more cycles. The session begins
+with a player having their full stake. A session ends when the play
+elects to leave or can no longer participate. A player may elect to
+leave because of elapsed time (typically 250 cycles), or they have
+won a statistically significant amount. A player can no longer
+participate when their stake is too small to make the minimum bet
+for the table.</p>
+</div></blockquote>
+<p>game</p>
+<blockquote>
+<div><p>Some games have intermediate groupings of
+events between an individual cycles and an entire session. As cards
+are dealt in Blackjack, some additional betting opportunities can appear.
+Similarly, a single game of Craps can involve an indefinite number of
+dice rolls, each of which offers new betting opportunities.</p>
+</div></blockquote>
+</div>
+<div class="section" id="simulation-control">
+<h3>Simulation Control<a class="headerlink" href="#simulation-control" title="Permalink to this headline">¶</a></h3>
+<p>The sequence of operations for this game simulator looks like this.</p>
+<p class="rubric">Controlling the Simulation</p>
+<ol class="arabic">
+<li><p><strong>Empty List of Maxima</strong>. Create an empty maxima list. This is the maximum
+stake at the end of each session.</p></li>
+<li><p><strong>Empty List of Durations</strong>. Create an empty durations list. This is the
+duration of each session, measured in the number of cycles of play
+before the player withdrew or ran out of money.</p></li>
+<li><p><strong>For All Sessions</strong>. For each of simulated sessions:</p>
+<blockquote>
+<div><p><strong>Empty List of Stake Details</strong>. Create an empty list to hold the history
+of stake values for this session. This is raw data that we will
+summarize into two metrics for the session: maximum stake and duration.
+We could also have two simple variables to record the maximum stake and
+count the number of spins for the duration. However, the list allows us
+to gather other statistics, like maximum win or maximum loss.</p>
+<p><strong>While The Player Is Active</strong>.</p>
+<blockquote>
+<div><p><strong>Play One Cycle</strong>. Play one cycle of the game. See the definition in <a class="reference internal" href="roulette_game.html#roul-game"><span class="std std-ref">Roulette Game Class</span></a>.</p>
+<p><strong>Save Outcomes</strong>. Save the player’s current stake in the list of stake
+values for this session. An alternative is to update the maximum to be
+the larger of the current stake and the maximum, and increment the duration.</p>
+</div></blockquote>
+<p><strong>Get Maximum</strong>. Get the maximum stake from the list of stake values. Save
+the maximum stake metric in the maxima list.</p>
+<p><strong>Get Duration</strong>. Get the length of the list of stake values. Save the
+duration metric in the durations list.  Durations less than the maximum
+mean the strategy went bust.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Statistical Description of Maxima</strong>. Compute the average and standard
+deviation of the values in the maxima list.</p></li>
+<li><p><strong>Statistical Description of Durations</strong>. Compute the average and standard
+deviation of values in the durations list.</p></li>
+</ol>
+<p>Both this overall <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> and the :class: <cite>Game</cite> classes
+collaborate with the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class. The <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> object’s
+collaboration, however, initializes the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object and then
+monitors the changes to the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object’s stake. We have to
+design two interfaces for this collaboration.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance initialization.</p></li>
+<li><p><a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance interrogation.</p></li>
+</ul>
+<p>We’ll look at each of these in separate sections.</p>
+</div>
+<div class="section" id="player-initialization">
+<h3>Player Initialization<a class="headerlink" href="#player-initialization" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class will initialize a <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
+for 250 cycles of play, assuming about one cycle each minute, and about
+four hours of patience. We will also initialize the player with a
+generous budget of the table limit, 100 betting units. For a $10 table,
+this is $1,000 bankroll.</p>
+<p>Currently, the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class is designed to play one session
+and stop when their duration is reached or their stake is reduced to
+zero. We have two alternatives for reinitializing the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+at the beginning of each session.</p>
+<ol class="arabic simple">
+<li><p>The
+overall simulator control will reset the <code class="xref py py-obj docutils literal notranslate"><span class="pre">stake</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">roundsToGo</span></code>
+values of a <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance. This is a matter
+of setting variables inside the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object, so there’s
+nothing to implement here.</p></li>
+<li><p>Provide a <strong>Factory</strong> that allows a client class to create
+new, freshly initialized instances of the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class.</p></li>
+</ol>
+<p>While the first solution is quite simple, there are some advantages to
+creating a <code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerFactory</span></code> class. If we create an
+<strong>Abstract Factory</strong>, we have a single place that creates all <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instances.</p>
+<p>Further, when we add new player subclasses, we introduce these new
+subclasses by creating a new subclass of the factory. In this case,
+however, only the main program creates instances of the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class,
+reducing the value of the factory. While design of a <strong>Factory</strong> is a
+good exercise, we can scrape by setting attribute values of a <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+instance.</p>
+</div>
+<div class="section" id="player-interrogation">
+<h3>Player Interrogation<a class="headerlink" href="#player-interrogation" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> object will interrogate the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+after each cycle and capture the current stake. An easy way to manage
+this detailed data is to create a <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> that contains
+the stake at the end of each cycle. The length of this list and the
+maximum value in this list are the two metrics the <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a>
+gathers for each session.</p>
+<p>Our list of maxima and durations are created sequentially during the
+session and summarized at the end of the session. A <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>
+will do everything we need. For a deeper discussion on the alternatives
+available in the collections framework, see <a class="reference internal" href="bin.html#roul-bin-collections"><span class="std std-ref">Design Decision – Choosing A Collection</span></a>.</p>
+</div>
+</div>
+<div class="section" id="statistical-summary">
+<h2>Statistical Summary<a class="headerlink" href="#statistical-summary" title="Permalink to this headline">¶</a></h2>
+<p>While the <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class can interrogate the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+after each cycle to capture the current stake, we don’t want the
+sequence of values for each cycle. We want a summary of all the
+cycles in the session. We can save the length of the sequence as well as
+the maximum of the sequence. We can then calculate aggregate performance
+parameters for each session.</p>
+<p>Our objective is to run several session
+simulations to get averages and a standard deviations for duration and
+maximum stake. This means that the <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class needs to
+retain these statistical samples. We will defer the detailed design of
+the statistical processing, and simply keep the duration and maximum
+values in lists for this first round of design.</p>
+</div>
+<div class="section" id="simulator-design">
+<h2>Simulator Design<a class="headerlink" href="#simulator-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Simulator">
+<em class="property">class </em><code class="sig-name descname">Simulator</code><a class="headerlink" href="#Simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> exercises the Roulette simulation with a given <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+placing bets. It reports raw statistics on a number of sessions of play.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="Simulator.initDuration">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">initDuration</code><a class="headerlink" href="#Simulator.initDuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>The duration value to use when initializing a <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
+for a session.  A default value of 250 is a good choice here.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Simulator.initStake">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">initStake</code><a class="headerlink" href="#Simulator.initStake" title="Permalink to this definition">¶</a></dt>
+<dd><p>The stake value to use when initializing a <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance for a session.
+This is a count of the number of bets placed; i.e., 100 $10 bets is $1000 stake.
+A default value of 100 is sensible.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Simulator.samples">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">samples</code><a class="headerlink" href="#Simulator.samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of game cycles to simulate. A default value of 50 makes sense.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Simulator.durations">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">durations</code><a class="headerlink" href="#Simulator.durations" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> of lengths of time the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object remained in the
+game. Each session of play produces a duration metric, which are
+collected into this list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Simulator.maxima">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">maxima</code><a class="headerlink" href="#Simulator.maxima" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> of maximum stakes for the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object. Each session
+of play produces a maximum stake metric, which are collected into
+this list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Simulator.player">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">player</code><a class="headerlink" href="#Simulator.player" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance; essentially, the betting strategy we are simulating.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Simulator.game">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">game</code><a class="headerlink" href="#Simulator.game" title="Permalink to this definition">¶</a></dt>
+<dd><p>The casino game we are simulating.  This is an instance
+of the <a class="reference internal" href="roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> class, which
+embodies the various rules, the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object and the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Simulator.__init__">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">game: Game</em>, <em class="sig-param">player: Player</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Simulator.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> and :class: <cite>Game</cite> instances so we
+can gather statistics on the performance of the player’s betting strategy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>game</strong> (<a class="reference internal" href="roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a>) – The game we’re simulating.  This includes the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> and <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>.</p></li>
+<li><p><strong>player</strong> (<a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>) – The player.  This encapsulates the betting strategy.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Simulator.session">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">session</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; List[int]<a class="headerlink" href="#Simulator.session" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> of stake values.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+<p>Executes a single
+game session. The <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance is initialized with their
+initial stake and initial cycles to go. An empty <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>
+of stake values is created. The session loop executes until the
+<a class="reference internal" href="../craps/refactoring.html#Player.playing" title="Player.playing"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.playing()</span></code></a> method returns false. This loop executes the
+<a class="reference internal" href="roulette_game.html#Game.cycle" title="Game.cycle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Game.cycle()</span></code></a> method; then it gets the stake from the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+and appends this amount to the <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> of stake
+values. The <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> of individual stake values is
+returned as the result of the session of play.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Simulator.gather">
+<code class="sig-prename descclassname">Simulator.</code><code class="sig-name descname">gather</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Simulator.gather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the number of games
+sessions in <a class="reference internal" href="#Simulator.samples" title="Simulator.samples"><code class="xref py py-obj docutils literal notranslate"><span class="pre">samples</span></code></a>. Each game session returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>
+of stake values. When the session is over (either the play reached
+their time limit or their stake was spent), then the length of the session
+<code class="xref py py-class docutils literal notranslate"><span class="pre">;ist</span></code> and the maximum value in the session <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>
+are the resulting duration and maximum metrics. These two metrics
+are appended to the <a class="reference internal" href="#Simulator.durations" title="Simulator.durations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">durations</span></code></a> list and the
+<a class="reference internal" href="#Simulator.maxima" title="Simulator.maxima"><code class="xref py py-obj docutils literal notranslate"><span class="pre">maxima</span></code></a> list.</p>
+<p>A client class will either display the durations and maxima raw
+metrics or produce statistical summaries.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="simulation-control-deliverables">
+<h2>Simulation Control Deliverables<a class="headerlink" href="#simulation-control-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are five deliverables for this exercise. Each of these classes
+needs complete Python docstring comments.</p>
+<ul class="simple">
+<li><p>Revision to the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class.  Don’t forget to update unit tests.</p></li>
+<li><p>The <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class.</p></li>
+<li><p>The expected outcomes from the non-random wheel can be rather
+complex to predict. Because of this, one of the deliverables is a
+demonstration program that enumerates the actual sequence of
+non-random spins. From this we can derive the sequence of wins and
+losses, and the sequence of <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> bets. This will
+allow us to predict the final outcome from a single session.</p></li>
+<li><p>A unit test of the <a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class that uses the
+non-random generator to produce the predictable sequence of spins
+and bets.</p></li>
+<li><p>A main application function that creates the necessary objects, runs the
+<a class="reference internal" href="#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a>’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">gather()</span></code> method, and writes
+the available outputs to <code class="xref py py-obj docutils literal notranslate"><span class="pre">sys.stdout</span></code></p></li>
+</ul>
+<p>For this initial demonstration program, it should simply
+print the list of maxima, and the list of session lengths. This raw
+data can be redirected to a file, loaded into a spreadsheet and analyzed.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>We can now, comfortably, add subclasses to the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> superclass.
+We’ll start with a player betting on a fallacious notion of a color being
+“due”. This player waits for seven reds in a row, then bets black.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overall Simulation Control</a><ul>
+<li><a class="reference internal" href="#simulation-analysis">Simulation Analysis</a><ul>
+<li><a class="reference internal" href="#simulation-terms">Simulation Terms</a></li>
+<li><a class="reference internal" href="#simulation-control">Simulation Control</a></li>
+<li><a class="reference internal" href="#player-initialization">Player Initialization</a></li>
+<li><a class="reference internal" href="#player-interrogation">Player Interrogation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#statistical-summary">Statistical Summary</a></li>
+<li><a class="reference internal" href="#simulator-design">Simulator Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#simulation-control-deliverables">Simulation Control Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="player.html" title="previous chapter">Player Class</a></li>
+      <li>Next: <a href="sevenreds.html" title="next chapter">SevenReds Player Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

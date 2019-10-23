@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Quality Assurance &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Command-Line Interface (CLI)" href="command_line_interface.html" />
+    <link rel="prev" title="Conclusion" href="../blackjack/conclusion.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="quality-assurance">
+<h1>Quality Assurance<a class="headerlink" href="#quality-assurance" title="Permalink to this headline">¶</a></h1>
+<p>Back in <a class="reference internal" href="../starting/initial_setup.html#found-starting"><span class="std std-ref">Development Environment</span></a> we suggested a common kind of project organization.
+There can be a <code class="file docutils literal notranslate"><span class="pre">src</span></code> directory with the final application and a <code class="file docutils literal notranslate"><span class="pre">tests</span></code> directory
+with the unit test cases.</p>
+<p>This works out extremely well because a lot of Python tools expect a structure similar
+to this.</p>
+<p>Because there are some variations, we need to include</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">PYTHONPATH</span><span class="o">=</span><span class="n">src</span>
+<span class="n">pytest</span>
+</pre></div>
+</div>
+<p>Or, as an alternative, we can set this each time we execute the tests.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PYTHONPATH</span><span class="o">=</span><span class="n">src</span> <span class="n">pytest</span>
+</pre></div>
+</div>
+<p>We don’t need to provide very many options to the <strong>pytest</strong> program because the default directory for
+tests, <code class="file docutils literal notranslate"><span class="pre">tests</span></code> is what we set up for outselves.</p>
+<p>In this chapter, we’ll look at several other parts of test automation:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#static-type-checking">Static Type Checking</a> with <strong>mypy</strong>.</p></li>
+<li><p><a class="reference internal" href="#static-code-quality-checks">Static Code Quality Checks</a> with <strong>pylint</strong>.</p></li>
+<li><p><a class="reference internal" href="#code-formatting">Code Formatting</a> with <strong>black</strong>.</p></li>
+<li><p><a class="reference internal" href="#test-coverage-analysis">Test Coverage Analysis</a> with <strong>coverage</strong>.</p></li>
+<li><p><a class="reference internal" href="#test-automation">Test Automation</a> suite with <strong>tox</strong>.</p></li>
+</ol>
+<p>The idea behind this suite of tools it to show a number of common practices that can be applied to this
+application.</p>
+<div class="section" id="static-type-checking">
+<h2>Static Type Checking<a class="headerlink" href="#static-type-checking" title="Permalink to this headline">¶</a></h2>
+<p>We’ve annotated all of the descriptions of classes and methods with type hints. These are relatively
+new to Python. The hints have no run-time impact; they’re used for static analysis of the code
+to provide confidence it’s likely to work. See <a class="reference external" href="http://mypy-lang.org">http://mypy-lang.org</a> for more information
+on this tool.</p>
+<p>If it’s not already installed, the <strong>mypy</strong> tool can be installed with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">mypy</span>
+</pre></div>
+</div>
+<p>The tool is used like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mypy</span> <span class="n">src</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The output will often include numerous nuanced issues where the type hints on a parameter
+to a method don’t precisely match the type hints on the return type of another method.</p>
+<div class="section" id="some-common-problems">
+<h3>Some Common Problems<a class="headerlink" href="#some-common-problems" title="Permalink to this headline">¶</a></h3>
+<p>One of the more common problems is reconciling the subclass-superclass features
+with methods actually used. Python duck typing rules mean any object will be searched
+for the expected attribute, either instance variable or method. The <strong>mypy</strong> tool
+looks for evidence the attribute or method is likely to be present.</p>
+<p>Consider the following class definition</p>
+<pre class="code python literal-block"><code><span class="ln">11 </span><span class="keyword">class</span> <span class="name class">Wheel_RNG</span><span class="punctuation">:</span>
+<span class="ln">12 </span>    <span class="keyword">def</span> <span class="name function magic">__init__</span><span class="punctuation">(</span><span class="name builtin pseudo">self</span><span class="punctuation">,</span> <span class="name">bins</span><span class="punctuation">:</span> <span class="name">List</span><span class="punctuation">[</span><span class="name">Bin</span><span class="punctuation">],</span> <span class="name">rng</span><span class="punctuation">:</span> <span class="name">random</span><span class="operator">.</span><span class="name">Random</span><span class="operator">=</span><span class="name builtin pseudo">None</span><span class="punctuation">)</span> <span class="operator">-&gt;</span> <span class="name builtin pseudo">None</span><span class="punctuation">:</span>
+<span class="ln">13 </span>        <span class="name builtin pseudo">self</span><span class="operator">.</span><span class="name">bins</span> <span class="operator">=</span> <span class="name">bins</span>
+<span class="ln">14 </span>        <span class="name builtin pseudo">self</span><span class="operator">.</span><span class="name">rng</span> <span class="operator">=</span> <span class="name">rng</span> <span class="operator word">or</span> <span class="name">random</span><span class="operator">.</span><span class="name">Random</span><span class="punctuation">()</span>
+<span class="ln">15 </span>
+<span class="ln">16 </span>    <span class="keyword">def</span> <span class="name function">choose</span><span class="punctuation">(</span><span class="name builtin pseudo">self</span><span class="punctuation">)</span> <span class="operator">-&gt;</span> <span class="name">Bin</span><span class="punctuation">:</span>
+<span class="ln">17 </span>        <span class="keyword">return</span> <span class="name builtin pseudo">self</span><span class="operator">.</span><span class="name">rng</span><span class="operator">.</span><span class="name">choice</span><span class="punctuation">(</span><span class="name builtin pseudo">self</span><span class="operator">.</span><span class="name">bins</span><span class="punctuation">)</span></code></pre>
+<p>We’ve defined the second parameter, <code class="docutils literal notranslate"><span class="pre">rng</span></code>, to be an instance
+of <code class="xref py py-class docutils literal notranslate"><span class="pre">random.Random</span></code>. The default value, however, is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>We’ll get the following kind of error:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">code</span><span class="o">/</span><span class="n">wheel_examples</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span> <span class="n">error</span><span class="p">:</span> <span class="n">Incompatible</span> <span class="n">default</span> <span class="k">for</span> <span class="n">argument</span> <span class="s2">&quot;rng&quot;</span> <span class="p">(</span><span class="n">default</span> <span class="n">has</span> <span class="nb">type</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">argument</span> <span class="n">has</span> <span class="nb">type</span> <span class="s2">&quot;Random&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This kind of thing requires us to be much more explicit in our statements of what the data type is.</p>
+<p>We need to change the type hint of <code class="docutils literal notranslate"><span class="pre">rng:</span> <span class="pre">random.Random=None</span></code>.
+This needs to be <code class="docutils literal notranslate"><span class="pre">rng:</span> <span class="pre">Optional[random.Random]=None</span></code> to more correctly state
+what we expect for the parameter to this method.</p>
+<p>Additionally, some assignment statements can be ambiguous. In this cases, we may need to add a type hint
+to an assignment statement.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">some_dict</span><span class="p">:</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">collections.defaultdict()</span></code> function only includes a function to create a value to be created when a key
+is not found. It doesn’t describe the type of the value or the type of the keys. The <strong>mypy</strong> tool can
+examine the <code class="xref py py-func docutils literal notranslate"><span class="pre">int()</span></code> function to determine the type of value returned. There’s no suggestion
+about what the keys are, and Python doesn’t really need any suggestion.</p>
+<p>In order to be confident, we need to provide a hint, using the <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.DefaultDict</span></code> type definition.
+This definition lets us provide a key type and a value type. With this additional information,
+the <strong>mypy</strong> tool can confirm that the <code class="docutils literal notranslate"><span class="pre">some_dict</span></code> variable is used properly.</p>
+</div>
+</div>
+<div class="section" id="static-code-quality-checks">
+<h2>Static Code Quality Checks<a class="headerlink" href="#static-code-quality-checks" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>pylint</strong> tool does some checks for  “style” issues. It can also check a number of programming
+techniques that – while legal – are likely to be a code smell. See <a class="reference external" href="https://www.pylint.org">https://www.pylint.org</a>
+for the complete list of checks that can be performed.</p>
+<p>We install this with conda, also.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">pylint</span>
+</pre></div>
+</div>
+<p>We run this to get a list of possible problems with the source code of the module.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="n">pylint</span> <span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span>
+<span class="o">*************</span> <span class="n">Module</span> <span class="n">code</span><span class="o">.</span><span class="n">blackjack</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">17</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span> <span class="n">C0115</span><span class="p">:</span> <span class="n">Missing</span> <span class="k">class</span> <span class="nc">docstring</span> <span class="p">(</span><span class="n">missing</span><span class="o">-</span><span class="n">class</span><span class="o">-</span><span class="n">docstring</span><span class="p">)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">35</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span> <span class="n">C0103</span><span class="p">:</span> <span class="n">Attribute</span> <span class="n">name</span> <span class="s2">&quot;hardValue&quot;</span> <span class="n">doesn</span><span class="s1">&#39;t conform to snake_case naming style (invalid-name)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">35</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span> <span class="n">C0116</span><span class="p">:</span> <span class="n">Missing</span> <span class="n">function</span> <span class="ow">or</span> <span class="n">method</span> <span class="n">docstring</span> <span class="p">(</span><span class="n">missing</span><span class="o">-</span><span class="n">function</span><span class="o">-</span><span class="n">docstring</span><span class="p">)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span> <span class="n">C0103</span><span class="p">:</span> <span class="n">Attribute</span> <span class="n">name</span> <span class="s2">&quot;softValue&quot;</span> <span class="n">doesn</span><span class="s1">&#39;t conform to snake_case naming style (invalid-name)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span> <span class="n">C0116</span><span class="p">:</span> <span class="n">Missing</span> <span class="n">function</span> <span class="ow">or</span> <span class="n">method</span> <span class="n">docstring</span> <span class="p">(</span><span class="n">missing</span><span class="o">-</span><span class="n">function</span><span class="o">-</span><span class="n">docstring</span><span class="p">)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span> <span class="n">C0116</span><span class="p">:</span> <span class="n">Missing</span> <span class="n">function</span> <span class="ow">or</span> <span class="n">method</span> <span class="n">docstring</span> <span class="p">(</span><span class="n">missing</span><span class="o">-</span><span class="n">function</span><span class="o">-</span><span class="n">docstring</span><span class="p">)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">50</span><span class="p">:</span><span class="mi">8</span><span class="p">:</span> <span class="n">C0103</span><span class="p">:</span> <span class="n">Variable</span> <span class="n">name</span> <span class="s2">&quot;s&quot;</span> <span class="n">doesn</span><span class="s1">&#39;t conform to snake_case naming style (invalid-name)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">56</span><span class="p">:</span><span class="mi">8</span><span class="p">:</span> <span class="n">C0103</span><span class="p">:</span> <span class="n">Variable</span> <span class="n">name</span> <span class="s2">&quot;r&quot;</span> <span class="n">doesn</span><span class="s1">&#39;t conform to snake_case naming style (invalid-name)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">81</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span> <span class="n">C0115</span><span class="p">:</span> <span class="n">Missing</span> <span class="k">class</span> <span class="nc">docstring</span> <span class="p">(</span><span class="n">missing</span><span class="o">-</span><span class="n">class</span><span class="o">-</span><span class="n">docstring</span><span class="p">)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">99</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span> <span class="n">C0115</span><span class="p">:</span> <span class="n">Missing</span> <span class="k">class</span> <span class="nc">docstring</span> <span class="p">(</span><span class="n">missing</span><span class="o">-</span><span class="n">class</span><span class="o">-</span><span class="n">docstring</span><span class="p">)</span>
+<span class="n">code</span><span class="o">/</span><span class="n">blackjack</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">117</span><span class="p">:</span><span class="mi">0</span><span class="p">:</span> <span class="n">C0116</span><span class="p">:</span> <span class="n">Missing</span> <span class="n">function</span> <span class="ow">or</span> <span class="n">method</span> <span class="n">docstring</span> <span class="p">(</span><span class="n">missing</span><span class="o">-</span><span class="n">function</span><span class="o">-</span><span class="n">docstring</span><span class="p">)</span>
+
+<span class="o">-----------------------------------</span>
+<span class="n">Your</span> <span class="n">code</span> <span class="n">has</span> <span class="n">been</span> <span class="n">rated</span> <span class="n">at</span> <span class="mf">8.38</span><span class="o">/</span><span class="mi">10</span>
+</pre></div>
+</div>
+<p>This outout lists a number of problems that are either omissions of docstrings or variables
+with names that don’t follow the typical Python style, called “snake_case”. The names <code class="docutils literal notranslate"><span class="pre">hardValue</span></code>
+and <code class="docutils literal notranslate"><span class="pre">softValue</span></code> should be <code class="docutils literal notranslate"><span class="pre">hard_value</span></code> and <code class="docutils literal notranslate"><span class="pre">soft_value</span></code>.</p>
+<p>This a pervasive change to the code examples throughout this book. We haven’t made the change, but
+the reader can consider revising their own code to reduce the number of pylint problems.</p>
+<p>The rating, <code class="docutils literal notranslate"><span class="pre">8.38/10</span></code>, clearly shows room for improvement. Adding the required docstrings, for example,
+would lead to a dramatic improvement in the quality metric.</p>
+</div>
+<div class="section" id="code-formatting">
+<h2>Code Formatting<a class="headerlink" href="#code-formatting" title="Permalink to this headline">¶</a></h2>
+<p>One way to achieve consistent and easy-to-read code is to use a code formatting tool.
+One of the more popular tools is <strong>black</strong>. This tool is described as “uncompromising.”
+It has relatively few options and produces consistent, easy-to-read code.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">black</span>
+</pre></div>
+</div>
+<p>The tool will simply reformat any valid Python to fit the recommended style. The <strong>black</strong> tool
+can also be used to confirm that a module is already formatted correctly. This becomes
+a kind of testing tool to confirm the formatting before doing a Git checkin, or starting
+a long integration and deployment process.</p>
+<p>We can use it to reformat an entire directory tree like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">black</span> <span class="n">src</span>
+</pre></div>
+</div>
+<p>That’s all there is to it. It provides a very small summary of what it did.
+This is delightfully simple and creates consistent-looking source files.</p>
+</div>
+<div class="section" id="test-coverage-analysis">
+<h2>Test Coverage Analysis<a class="headerlink" href="#test-coverage-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Generally, we want test cases to confirm the application under test will work. It’s difficult writing
+a good application, and it’s difficult writing good test cases. One of the key questions is how much of
+the software is covered by test cases.  Ideally, a vague “all of the software” has been tested. The
+difficult problem is defining what “all” means.</p>
+<p>There are a number of ways to measure software and decide if “all” of it has been tested.</p>
+<ul class="simple">
+<li><p>Tests execute code in all of the modules.</p></li>
+<li><p>Tests execute code in all of the classes.</p></li>
+<li><p>Tests execute code in all of the methods of all of the classes.</p></li>
+<li><p>Test execute all of the statements.</p></li>
+<li><p>Tests evaluate both true and false for each condition expressed in an <code class="docutils literal notranslate"><span class="pre">if</span></code>, <code class="docutils literal notranslate"><span class="pre">elif</span></code>, or <code class="docutils literal notranslate"><span class="pre">while</span></code> statement;
+the implicit condition of each <code class="docutils literal notranslate"><span class="pre">else</span></code>,
+so each each exception in a <code class="docutils literal notranslate"><span class="pre">try</span></code> statement; also a test for each <code class="docutils literal notranslate"><span class="pre">for</span></code> statement.
+These are the places were there’s a choice among statements to be executed.</p></li>
+<li><p>Tests exercise each possible combination of the conditional processing choices (<code class="docutils literal notranslate"><span class="pre">if</span></code>, <code class="docutils literal notranslate"><span class="pre">elif</span></code>, <code class="docutils literal notranslate"><span class="pre">else</span></code>, etc.)</p></li>
+</ul>
+<p>Clearly, some of these don’t test very much, and some are quite complex to design.</p>
+<p>It’s very easy to measure whether or not a test touches all of the statements. We’ll focus on this.</p>
+<div class="section" id="the-test-coverage-tool">
+<h3>The Test Coverage Tool<a class="headerlink" href="#the-test-coverage-tool" title="Permalink to this headline">¶</a></h3>
+<p>Since we’re using <code class="docutils literal notranslate"><span class="pre">pytest</span></code>, we can install the <code class="docutils literal notranslate"><span class="pre">pytest-cov</span></code> plug-in. This will, in turn, install the <code class="docutils literal notranslate"><span class="pre">coverage</span></code>
+tool.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">pytest</span><span class="o">-</span><span class="n">cov</span>
+</pre></div>
+</div>
+<p>To use the coverage tool, we need to provide a top-level module (or package of modules) for which we’d like
+coverage metrics.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PYTHONPATH</span><span class="o">=</span><span class="n">src</span> <span class="n">pytest</span> <span class="o">--</span><span class="n">cov</span><span class="o">=</span><span class="n">src</span>
+</pre></div>
+</div>
+<p>Here’s what the output looks like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">=================================</span> <span class="n">test</span> <span class="n">session</span> <span class="n">starts</span> <span class="o">=================================</span>
+<span class="n">platform</span> <span class="n">darwin</span> <span class="o">--</span> <span class="n">Python</span> <span class="mf">3.7</span><span class="o">.</span><span class="mi">4</span><span class="p">,</span> <span class="n">pytest</span><span class="o">-</span><span class="mf">5.0</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="n">py</span><span class="o">-</span><span class="mf">1.8</span><span class="o">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">pluggy</span><span class="o">-</span><span class="mf">0.13</span><span class="o">.</span><span class="mi">0</span>
+<span class="n">rootdir</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">slott</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">Writing</span><span class="o">/</span><span class="n">Technical</span><span class="o">/</span><span class="n">building</span><span class="o">-</span><span class="n">skills</span><span class="o">-</span><span class="n">oo</span><span class="o">-</span><span class="n">design</span><span class="o">-</span><span class="n">book</span><span class="o">/</span><span class="n">demo</span>
+<span class="n">plugins</span><span class="p">:</span> <span class="n">cov</span><span class="o">-</span><span class="mf">2.7</span><span class="o">.</span><span class="mi">1</span>
+<span class="n">collected</span> <span class="mi">4</span> <span class="n">items</span>
+
+<span class="n">tests</span><span class="o">/</span><span class="n">test_hw_1</span><span class="o">.</span><span class="n">py</span> <span class="o">..</span>                                                           <span class="p">[</span> <span class="mi">50</span><span class="o">%</span><span class="p">]</span>
+<span class="n">tests</span><span class="o">/</span><span class="n">test_hw_2</span><span class="o">.</span><span class="n">py</span> <span class="o">..</span>                                                           <span class="p">[</span><span class="mi">100</span><span class="o">%</span><span class="p">]</span>
+
+<span class="o">----------</span> <span class="n">coverage</span><span class="p">:</span> <span class="n">platform</span> <span class="n">darwin</span><span class="p">,</span> <span class="n">python</span> <span class="mf">3.7</span><span class="o">.</span><span class="mi">4</span><span class="o">-</span><span class="n">final</span><span class="o">-</span><span class="mi">0</span> <span class="o">-----------</span>
+<span class="n">Name</span>        <span class="n">Stmts</span>   <span class="n">Miss</span>  <span class="n">Cover</span>
+<span class="o">-------------------------------</span>
+<span class="n">src</span><span class="o">/</span><span class="n">hw</span><span class="o">.</span><span class="n">py</span>      <span class="mi">11</span>      <span class="mi">1</span>    <span class="mi">91</span><span class="o">%</span>
+
+
+<span class="o">==============================</span> <span class="mi">4</span> <span class="n">passed</span> <span class="ow">in</span> <span class="mf">0.06</span> <span class="n">seconds</span> <span class="o">===============================</span>
+</pre></div>
+</div>
+<p>The pytest tool tells us it’s running two tests, <code class="docutils literal notranslate"><span class="pre">test_hw_1.py</span></code> and <code class="docutils literal notranslate"><span class="pre">test_hw_2.py</span></code>.
+The final coverage report says the 91% of the code has been exercised.</p>
+<p>What’s missing?</p>
+<p>We an add the <code class="docutils literal notranslate"><span class="pre">--cov-report=term-missing</span></code> option to see which lines were not tested.
+Here’s the revised command.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PYTHONPATH</span><span class="o">=</span><span class="n">src</span> <span class="n">pytest</span> <span class="o">--</span><span class="n">cov</span><span class="o">=</span><span class="n">src</span> <span class="o">--</span><span class="n">cov</span><span class="o">-</span><span class="n">report</span><span class="o">=</span><span class="n">term</span><span class="o">-</span><span class="n">missing</span>
+</pre></div>
+</div>
+<p>Here’s the revised coverage report</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">----------</span> <span class="n">coverage</span><span class="p">:</span> <span class="n">platform</span> <span class="n">darwin</span><span class="p">,</span> <span class="n">python</span> <span class="mf">3.7</span><span class="o">.</span><span class="mi">4</span><span class="o">-</span><span class="n">final</span><span class="o">-</span><span class="mi">0</span> <span class="o">-----------</span>
+<span class="n">Name</span>        <span class="n">Stmts</span>   <span class="n">Miss</span>  <span class="n">Cover</span>   <span class="n">Missing</span>
+<span class="o">-----------------------------------------</span>
+<span class="n">src</span><span class="o">/</span><span class="n">hw</span><span class="o">.</span><span class="n">py</span>      <span class="mi">11</span>      <span class="mi">1</span>    <span class="mi">91</span><span class="o">%</span>   <span class="mi">25</span>
+</pre></div>
+</div>
+<p>Line 25 is not exercised by the test. What is this difficult-to-test line?</p>
+<pre class="code python literal-block"><code><span class="ln">24 </span><span class="keyword">if</span> <span class="name variable magic">__name__</span> <span class="operator">==</span> <span class="literal string double">&quot;__main__&quot;</span><span class="punctuation">:</span>
+<span class="ln">25 </span>    <span class="name">main</span><span class="punctuation">()</span></code></pre>
+<p>Line 25 is very hard to test with conventional unit testing approaches.
+It’s not impossible, but it’s difficult and the extra effort doesn’t create
+a lot of value.</p>
+<p>We can add a special <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">pragma:</span> <span class="pre">no</span> <span class="pre">cover</span></code> comment to tell the coverage
+tool to apply this “fact” or “pragma” to the line in question. This improves
+the coverage score and adds a comment informing everyone of what line was
+skipped.</p>
+</div>
+</div>
+<div class="section" id="test-automation">
+<h2>Test Automation<a class="headerlink" href="#test-automation" title="Permalink to this headline">¶</a></h2>
+<p>We have a large suite of testing tools to provide real confidence in the quality
+of the application programming. It can seem daunting to keep all of the tools straight.
+The <strong>tox</strong> tool, however, gives us a path forward. We can use <strong>tox</strong> to run our
+suite of static and dynamic tests.</p>
+<p>We’ll use <strong>pip</strong> to install tox.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">tox</span>
+</pre></div>
+</div>
+<p>This is required because <strong>tox</strong> is not in any of the common respositories
+searched by <strong>conda</strong>.</p>
+<p>Once we have <strong>tox</strong> installed, we need to create a configuration file.
+This can be called <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> or <code class="docutils literal notranslate"><span class="pre">tox.ini</span></code>. The content of the
+file will look like the following example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tox</span><span class="p">]</span>
+<span class="n">skipsdist</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">requires</span> <span class="o">=</span>
+    <span class="n">tox</span><span class="o">==</span><span class="mf">3.14</span><span class="o">.</span><span class="mi">0</span>
+
+<span class="p">[</span><span class="n">testenv</span><span class="p">]</span>
+<span class="n">ignore_errors</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">deps</span> <span class="o">=</span>
+    <span class="n">mypy</span><span class="o">==</span><span class="mf">0.720</span>
+    <span class="n">pylint</span><span class="o">==</span><span class="mf">2.4</span><span class="o">.</span><span class="mi">2</span>
+    <span class="n">black</span><span class="o">==</span><span class="mf">19.3</span><span class="n">b0</span>
+    <span class="n">pytest</span><span class="o">==</span><span class="mf">5.0</span><span class="o">.</span><span class="mi">1</span>
+    <span class="n">pytest</span><span class="o">-</span><span class="n">cov</span><span class="o">==</span><span class="mf">2.7</span><span class="o">.</span><span class="mi">1</span>
+<span class="n">setenv</span> <span class="o">=</span>
+    <span class="n">PYTHONPATH</span><span class="o">=</span><span class="n">src</span>
+<span class="n">commands</span> <span class="o">=</span>
+    <span class="n">mypy</span> <span class="n">src</span>
+    <span class="n">pylint</span> <span class="n">src</span>
+    <span class="n">black</span> <span class="n">src</span>
+    <span class="n">pytest</span> <span class="o">--</span><span class="n">doctest</span><span class="o">-</span><span class="n">modules</span> <span class="n">src</span>
+    <span class="n">pytest</span> <span class="o">--</span><span class="n">cov</span><span class="o">=</span><span class="n">src</span>
+</pre></div>
+</div>
+<p>The first section, <code class="docutils literal notranslate"><span class="pre">[tox]</span></code> is general information about <strong>tox</strong>. The <code class="docutils literal notranslate"><span class="pre">skipsdist</span></code> avoids
+building a source distribution kit. We’re  not going to upload this code to
+the Python Package Index (<a class="reference external" href="https://pypi.org">https://pypi.org</a>) sometimes called the “Cheese Shop.” Since
+we’re not building a source distribution, we don’t need some of the overheads associated
+with that step.</p>
+<p>The main section, <code class="docutils literal notranslate"><span class="pre">[testenv]</span></code> is repeated for each distinct test environment.
+In this case, we only need one test environment, so we don’t have a complex configuration.
+We’ve provided four distinct configuration values:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">ignore_errors</span></code> makes sure the testing continues even if an error in one step
+has been found. This lets us run the whole suite of tests, then fix all of the problems.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">deps</span></code> defines the dependencies required to run the tests. We’ve listed
+specific versions of each tool.</p></li>
+<li><p>THe <code class="docutils literal notranslate"><span class="pre">setenv</span></code> defines the environment variables to provide when running the tests.
+The default setup provides very few environment settings. Because our application
+is located in a <code class="docutils literal notranslate"><span class="pre">src</span></code> directory, we need this to be on the <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>
+environment variable.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">commands</span></code> is a sequence of commands to execute. There are strict limitations
+on these commands. This allows the <code class="docutils literal notranslate"><span class="pre">tox</span></code> tool to run in a wide variety of
+environments and remain perfectly consistent.</p></li>
+</ul>
+<p>To run tox, we use the command</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tox</span>
+</pre></div>
+</div>
+<p>If we’re in the same working directy as the <code class="docutils literal notranslate"><span class="pre">tox.ini</span></code> (or <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>) file, then
+<strong>tox</strong> will execute each of the commands, giving us a detailed view of how well our application
+passes the suite of quality assurance tests.</p>
+<p>The use of a tool like <strong>tox</strong> makes test execution simple and consistent. It gives us
+a lot of help in producing useful, trustworthy, reliable software.</p>
+<div class="section" id="looking-forward">
+<h3>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h3>
+<p>In the next chapter we’ll look at what’s required to create a final,
+command line interface (CLI) to run the simulation command
+with various options and arguments.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Quality Assurance</a><ul>
+<li><a class="reference internal" href="#static-type-checking">Static Type Checking</a><ul>
+<li><a class="reference internal" href="#some-common-problems">Some Common Problems</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#static-code-quality-checks">Static Code Quality Checks</a></li>
+<li><a class="reference internal" href="#code-formatting">Code Formatting</a></li>
+<li><a class="reference internal" href="#test-coverage-analysis">Test Coverage Analysis</a><ul>
+<li><a class="reference internal" href="#the-test-coverage-tool">The Test Coverage Tool</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#test-automation">Test Automation</a><ul>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../blackjack/conclusion.html" title="previous chapter">Conclusion</a></li>
+      <li>Next: <a href="command_line_interface.html" title="next chapter">Command-Line Interface (CLI)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

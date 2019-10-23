@@ -1,0 +1,527 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bin Builder Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Roulette Bet Class" href="bet.html" />
+    <link rel="prev" title="Wheel Class" href="wheel.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="bin-builder-class">
+<h1>Bin Builder Class<a class="headerlink" href="#bin-builder-class" title="Permalink to this headline">¶</a></h1>
+<p>We’ll look at the question of filling in the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects
+in each <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> container of
+the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> collection. The <a class="reference internal" href="#bin-builder-analysis">Bin Builder Analysis</a> section will address the
+various outcomes in details.</p>
+<p>In <a class="reference internal" href="#bin-builder-algorithms">Bin Builder Algorithms</a> we’ll look at eight algorithms for allocating
+appropriate outcomes to appropriate bins of the wheel.</p>
+<p>The <a class="reference internal" href="#binbuilder-design">BinBuilder Design</a> section will present the detailed design
+for this class. In <a class="reference internal" href="#bin-builder-deliverables">Bin Builder Deliverables</a> we’ll define the specific
+deliverables.</p>
+<p>In <a class="reference internal" href="#internationalization-and-localization">Internationalization and Localization</a> we’ll identify some considerations
+for providing local language names for the outcomes.</p>
+<div class="section" id="bin-builder-analysis">
+<h2>Bin Builder Analysis<a class="headerlink" href="#bin-builder-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Enumerating each <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> in the 38 <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances
+by hand is a tedious undertaking. Most <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances contain about
+fourteen individual <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. An algorithm seems like
+a better, less error-prone way to do this job.</p>
+<p>It is often helpful to create a class that is used to build an instance of another class. This
+is a design pattern sometimes called a <strong>Builder</strong>. We’ll
+design an object that builds the various <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances and assigns
+them to a <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> object. This will fill the need left open in the
+<a class="reference internal" href="wheel.html#roul-wheel"><span class="std std-ref">Wheel Class</span></a>.</p>
+<p>Additionally, we note that the complex algorithms to construct the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances
+are only tangential to the operation of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> object.
+Because these are not essential to the design of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class, we
+find it helpful to segregate the builder methods into a separate class.</p>
+<p>The <a class="reference internal" href="#BinBuilder" title="BinBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinBuilder</span></code></a> class will have a method that enumerates the
+contents of each of the 36 number <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances, building the individual
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects. We can then assign these <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+objects to the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances of a <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance. We
+will use a number of steps to create the various types of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances,
+and depend on the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> to assign each <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+object to the correct <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>.</p>
+<div class="section" id="the-roulette-outcomes">
+<h3>The Roulette Outcomes<a class="headerlink" href="#the-roulette-outcomes" title="Permalink to this headline">¶</a></h3>
+<p>Looking at the <a class="reference internal" href="details.html#roul-details-bets"><span class="std std-ref">Available Bets in Roulette</span></a> gives us a number of
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances that
+are combinations of individual numbers on the Roulette table.
+These combinations apply to the numbers
+from one to thirty-six. A different – and much simpler – set of rules
+applies to 0 and 00.</p>
+<p>First, we’ll survey the table geometry and the profusion of bets
+based on locations of the numbers. Then we’ll
+develop specific algorithms for each kind of bet.</p>
+<ul class="simple">
+<li><p><strong>Split Bets</strong>.
+Each numbered square on the layout is adjacent to two, three or four other
+numbers. There are horizontal (left-right( splits and vertical (up-down) splits.
+For example, “5” is part of “4-5”, “5-6”, “2-5”, and “5-8”. Around the
+edges of the layout, a number will be part of fewer splits.</p></li>
+<li><p><strong>Street Bets</strong>.
+Each number is a member of one of the twelve street bets.
+For example “9” is part of the “7-8-9” street.</p></li>
+<li><p><strong>Corner Bets</strong>.
+Each number is a member of one, two or four corner
+bets.
+A number in the center column (5, 8, 11, …, 32) is a member of
+four corners. For example, “8” is part of “5-6-8-9”, “4-5-7-8”,
+“7-8-11-12”, and “8-9-11-12”. At the edges, a number is part of
+fewer corners.</p></li>
+<li><p><strong>Line Bets</strong>.
+Six adjacent numbers comprise a line. A line is two adjacent street bets.
+Each number will be part of one or two lines.
+For example “9” is part of the “7-8-9-10-11-12” line as well
+as the “4-5-6-7-8-9” line.</p></li>
+<li><p><strong>Dozen Bets</strong>.
+Each number is a member of one of available dozen bets.
+The three ranges are from 1 to 12, 13 to 24 and 25 to 36, making it
+very easy to associate a numbers with one of the dozens.</p></li>
+<li><p><strong>Column Bets</strong>.
+Each number is a member of one of the three columns.
+Each of the columns has a number numeric relationship. The values
+are <img class="math" src="../_images/math/ab9e3ab71aaae9398cf7135837e73b18e6788067.png" alt="3c+1"/>, <img class="math" src="../_images/math/08de9ecef5039b668f10b53e9eae321e17d105b0.png" alt="3c+2"/>, and <img class="math" src="../_images/math/42a5bbb554c1e54838bc21c088e79d8c5ee6c109.png" alt="3c+3"/>, where
+<img class="math" src="../_images/math/309dc87bb43bfd9e5acc499bbba8239f8d21c783.png" alt="0 \leq c &lt; 12"/>.</p></li>
+<li><p><strong>The Even-Money or “Outside” Bets</strong>.
+These include Red, Black, Even, Odd, High,
+Low. Each number on the layout will be associated with
+three of the six possible even money <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p></li>
+<li><p><strong>The Five Bet</strong>.
+The <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances for zero and double zero are special cases.
+Each of these <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances has a straight number bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>,
+plus the “Five Bet” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object. This is a bet on (00-0-1-2-3, which pays <img class="math" src="../_images/math/feaf52403db10ec31d0608467f7df8311fcbb473.png" alt="6:1"/>).</p></li>
+</ul>
+<p>One other thing we’ll probably want are handy names for the various
+kinds of odds. We might want to define a collection of constants
+for this.</p>
+<p>While can define an <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> as
+<code class="samp docutils literal notranslate"><span class="pre">Outcome(&quot;Number</span> <span class="pre">1&quot;,</span> <span class="pre">35)</span></code> , this is a little opaque. A
+slightly nicer form is <code class="samp docutils literal notranslate"><span class="pre">Outcome(&quot;Number</span> <span class="pre">1&quot;,</span>
+<span class="pre">Game.StraightBet)</span></code>. Naming the odds makes it easier to
+make a consistent change to the odds to represent some localized
+change in house rules.</p>
+</div>
+</div>
+<div class="section" id="bin-builder-algorithms">
+<span id="roul-binbuilder-algorithms"></span><h2>Bin Builder Algorithms<a class="headerlink" href="#bin-builder-algorithms" title="Permalink to this headline">¶</a></h2>
+<p>This section provides the algorithms for nine kinds of bets.</p>
+<p>Note that we’re going to be accumulating sets (or lists) of individual
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects. These are interim objects that will be used
+to create the final <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> objects which are assigned to the
+<a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>.</p>
+<p>We’ll be happiest using the core Python <code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code> structure to accumulate
+these collections. The type hint will be <code class="docutils literal notranslate"><span class="pre">Set[Outcome]</span></code>.</p>
+<div class="section" id="generating-straight-bets">
+<h3>Generating Straight Bets<a class="headerlink" href="#generating-straight-bets" title="Permalink to this headline">¶</a></h3>
+<p>Straight bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are the easiest to generate.</p>
+<blockquote>
+<div><p><strong>For All Numbers</strong>. For each number, <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>, in the range <img class="math" src="../_images/math/b90542551cd4da0220644fc8931073fd0e11983a.png" alt="1 \leq n &lt; 37"/>:</p>
+<blockquote>
+<div><p><strong>Create Outcome</strong>. Create an <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object from the number, <em>n</em>,
+with straight bet odds of <img class="math" src="../_images/math/720c9750782c9e3b498cc3a5c3406e6900bfb444.png" alt="35:1"/>.</p>
+<p><strong>Assign to Bin</strong>. Append the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object to <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance
+<em>n</em>.</p>
+</div></blockquote>
+<p><strong>Zero</strong>.  Create an <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object from the “0” with straight bet odds of <img class="math" src="../_images/math/720c9750782c9e3b498cc3a5c3406e6900bfb444.png" alt="35:1"/>.
+Assign this to the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance at index 0 in the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>.</p>
+<p><strong>Double Zero</strong>.  Create an <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> from the “00” with odds of <img class="math" src="../_images/math/720c9750782c9e3b498cc3a5c3406e6900bfb444.png" alt="35:1"/>.
+Assign this to <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance at index 37 in the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>.</p>
+</div></blockquote>
+</div>
+<div class="section" id="generating-split-bets">
+<h3>Generating Split Bets<a class="headerlink" href="#generating-split-bets" title="Permalink to this headline">¶</a></h3>
+<p>Split bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are more complex because of the various
+edge and corner cases.</p>
+<p>The table geometry has two kinds of split bets:</p>
+<ul class="simple">
+<li><p><strong>left-right split</strong>.
+These pairs all have the form <img class="math" src="../_images/math/7c44ccaa20bb768008818e4ab946dfeb0d48f787.png" alt="\{n, n+1\}"/>.</p></li>
+<li><p><strong>up-down split</strong>.
+These pairs have the form <img class="math" src="../_images/math/691a7a5e0810a422d12765509a2be680d9ed522f.png" alt="\{n, n+3\}"/> .</p></li>
+</ul>
+<p>We can look at the number 5 as being part of 4 different pairs:
+<img class="math" src="../_images/math/630835a6639ecdbaa26dc6ecb23c9f7d7cc5f8cc.png" alt="\{4,4+1\}, \{5,5+1\}, \{2,2+3\}, \{5,5+3\}"/>. The corner number 1 is part of 2
+split bets: <img class="math" src="../_images/math/4d64fbabc4c0e7ea4b8224642b3eb55fcd65d0b0.png" alt="\{1,1+1\}, \{1,1+3\}"/>.</p>
+<p>We can generate all of the “left-right” split bets by iterating through
+the left two columns; the numbers <img class="math" src="../_images/math/1c7c23540fd0b5f3814524e3df2c733ad103a012.png" alt="1, 4, 7, \dots, 34"/> and <img class="math" src="../_images/math/725ed73b1cc2844000194c3fb69b41fec079f409.png" alt="2, 5, 8, \dots, 35"/>.</p>
+<blockquote>
+<div><p><strong>For All Rows</strong>. For each row, <img class="math" src="../_images/math/79a3d439d28652c547386f39b555d90d3aaf102d.png" alt="r"/>, in the range <img class="math" src="../_images/math/a7f08b8699e03f903fa635f312ba0d8387aed59a.png" alt="0 \leq r &lt; 12"/>:</p>
+<blockquote>
+<div><p><strong>First Column Number</strong>. Set <img class="math" src="../_images/math/c5f674d094b6252728d74ba9e96f6baba14b2dfd.png" alt="n \gets 3r+1"/>.
+This will create values <img class="math" src="../_images/math/ba78522829b375a1082219a8b201f4c6b8e41263.png" alt="n \in \{1, 4, 7, \dots, 34\}"/>.</p>
+<p><strong>Column 1-2 Split</strong>. Create a <img class="math" src="../_images/math/7c44ccaa20bb768008818e4ab946dfeb0d48f787.png" alt="\{n, n+1\}"/> split <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object with split bet odds of <img class="math" src="../_images/math/1e0d49b455d8cb3acd6fe26f152319e65daba437.png" alt="17:1"/>.</p>
+<p><strong>Assign to Bins</strong>. Associate this object with two <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances: <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>
+and <img class="math" src="../_images/math/85f9a5bfa0dccf215f10e2a5005def3cbe2afc0d.png" alt="n+1"/>.</p>
+<p><strong>Second Column Number</strong>. Set <img class="math" src="../_images/math/c5bb91f825ff7baf7e42df7e43d630dd68e26cbe.png" alt="n \gets 3r+2"/>.
+This will create values <img class="math" src="../_images/math/9cbf1547a59790ef38c3f856b1f468f4ebe93a12.png" alt="n \in \{2, 5, 8, \dots, 35\}"/>.</p>
+<p><strong>Column 2-3 Split</strong>. Create a <img class="math" src="../_images/math/7c44ccaa20bb768008818e4ab946dfeb0d48f787.png" alt="\{n, n+1\}"/> split <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object.</p>
+<p><strong>Assign to Bins</strong>. Associate this object to two <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances: <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>
+and <img class="math" src="../_images/math/85f9a5bfa0dccf215f10e2a5005def3cbe2afc0d.png" alt="n+1"/>.</p>
+</div></blockquote>
+</div></blockquote>
+<p>A similar algorithm must be used for the numbers 1 through 33, to generate the “up-down”
+split bets. For each number, <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>, we generate a <img class="math" src="../_images/math/691a7a5e0810a422d12765509a2be680d9ed522f.png" alt="\{n, n+3\}"/> split bet.
+This <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object belongs to two <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances: <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/> and <img class="math" src="../_images/math/2cf2906499a1aea74883c84db4bd6fb52d9ef392.png" alt="n+3"/>.</p>
+</div>
+<div class="section" id="generating-street-bets">
+<h3>Generating Street Bets<a class="headerlink" href="#generating-street-bets" title="Permalink to this headline">¶</a></h3>
+<p>Street bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances follow a very regular pattern.</p>
+<p>We can generate the street bets by iterating through the twelve rows of
+the layout.</p>
+<blockquote>
+<div><p><strong>For All Rows</strong>. For each row, <img class="math" src="../_images/math/79a3d439d28652c547386f39b555d90d3aaf102d.png" alt="r"/>, in the range <img class="math" src="../_images/math/a7f08b8699e03f903fa635f312ba0d8387aed59a.png" alt="0 \leq r &lt; 12"/>:</p>
+<blockquote>
+<div><p><strong>First Column Number</strong>. Set <img class="math" src="../_images/math/c5f674d094b6252728d74ba9e96f6baba14b2dfd.png" alt="n \gets 3r+1"/>.
+This assure <img class="math" src="../_images/math/2947ef27048ed402105ff801adc28a726ac7c955.png" alt="n \in \{1, 4, 7, ..., 34\}"/>.</p>
+<p><strong>Street</strong>. Create a <img class="math" src="../_images/math/44b0ffabe99a0d4df4d4d84e318b93db95d9f3e6.png" alt="\{n, n+1, n+2\}"/> street <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> with street bet odds of <img class="math" src="../_images/math/0a342426c306114bf5302cc4ff186a171e45d816.png" alt="11:1"/>.</p>
+<p><strong>Assign to Bins</strong>. Associate this object to three <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances: <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>,
+<img class="math" src="../_images/math/85f9a5bfa0dccf215f10e2a5005def3cbe2afc0d.png" alt="n+1"/>, <img class="math" src="../_images/math/8e9eac5ec4406904fb53353e64264224d78612d5.png" alt="n+2"/>.</p>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="generating-corner-bets">
+<h3>Generating Corner Bets<a class="headerlink" href="#generating-corner-bets" title="Permalink to this headline">¶</a></h3>
+<p>Corner bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are as complex as split bets because of
+the various cases: corners, edges and down-the-middle.</p>
+<p>Each corner has four numbers, <img class="math" src="../_images/math/a553a55e224f655ef4dcb205830a54dc376388e7.png" alt="\{n, n+1, n+3, n+4\}"/>.
+This is two numbers in the same row, and two numbers in the next higher row.</p>
+<p>We can generate the corner bets by iterating
+through the numbers <img class="math" src="../_images/math/bef8c2614b6a5ab54cf6e8fb86fbe5fc68316cef.png" alt="1, 4, 7, \dots, 31"/> and <img class="math" src="../_images/math/9f6f7dd88b92c1bf1bb375e20bb6d41954a3816d.png" alt="2, 5, 8, \dots, 32"/>. For each number,
+<img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>, we generate a corner bet. This <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+object belongs to four <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances.</p>
+<p>We generate corner bets by iterating through the various corners based on rows and
+columns. There is room for two corners within the three columns of the layout:
+one corner starts at column 1 and the other corner starts at column 2.
+There is room for 11 corners within the 12 rows of the layout.</p>
+<blockquote>
+<div><p><strong>For All Lines Between Rows</strong>. For each row, <img class="math" src="../_images/math/79a3d439d28652c547386f39b555d90d3aaf102d.png" alt="r"/>, in the range <img class="math" src="../_images/math/b6f22d802d169fe5edba26cfaaadf9ed571195fe.png" alt="0 \leq r &lt; 11"/>:</p>
+<blockquote>
+<div><p><strong>First Column Number</strong>. Set <img class="math" src="../_images/math/c5f674d094b6252728d74ba9e96f6baba14b2dfd.png" alt="n \gets 3r+1"/>.
+This will assure <img class="math" src="../_images/math/07cb9df1991a7b89eef8ba582f2bf998f7fa625b.png" alt="n \in \{1, 4, 7, ..., 31\}"/>.</p>
+<p><strong>Column 1-2 Corner</strong>. Create a <img class="math" src="../_images/math/a553a55e224f655ef4dcb205830a54dc376388e7.png" alt="\{n, n+1, n+3, n+4\}"/> corner <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> with
+corner bet odds of <img class="math" src="../_images/math/e342128e9a64c26c7f9487fa2f25bc9a840aad6e.png" alt="8:1"/>.</p>
+<p><strong>Assign to Bins</strong>. Associate this object to four <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances: <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>,
+<img class="math" src="../_images/math/85f9a5bfa0dccf215f10e2a5005def3cbe2afc0d.png" alt="n+1"/>, <img class="math" src="../_images/math/2cf2906499a1aea74883c84db4bd6fb52d9ef392.png" alt="n+3"/>, <img class="math" src="../_images/math/58327ddd8283a5ce02b847eacd21f8fe9b84a089.png" alt="n+4"/>.</p>
+<p><strong>Second Column Number</strong>. Set <img class="math" src="../_images/math/c5bb91f825ff7baf7e42df7e43d630dd68e26cbe.png" alt="n \gets 3r+2"/>.
+This will assure <img class="math" src="../_images/math/52230f638bcdab158a389e95205c0e6f0e588e32.png" alt="n \in \{2, 5, 8, ..., 32\}"/>.</p>
+<p><strong>Column 2-3 Corner</strong>. Create a <img class="math" src="../_images/math/a553a55e224f655ef4dcb205830a54dc376388e7.png" alt="\{n, n+1, n+3, n+4\}"/> corner <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> with
+odds of <img class="math" src="../_images/math/e342128e9a64c26c7f9487fa2f25bc9a840aad6e.png" alt="8:1"/>.</p>
+<p><strong>Assign to Bins</strong>. Associate this object to four <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances: <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>,
+<img class="math" src="../_images/math/85f9a5bfa0dccf215f10e2a5005def3cbe2afc0d.png" alt="n+1"/>, <img class="math" src="../_images/math/2cf2906499a1aea74883c84db4bd6fb52d9ef392.png" alt="n+3"/>, <img class="math" src="../_images/math/58327ddd8283a5ce02b847eacd21f8fe9b84a089.png" alt="n+4"/>.</p>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="generating-line-bets">
+<h3>Generating Line Bets<a class="headerlink" href="#generating-line-bets" title="Permalink to this headline">¶</a></h3>
+<p>Line bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are similar to street bets. However,
+these are based around the 11 lines between the 12 rows.</p>
+<p>For lines <img class="math" src="../_images/math/106b04b320e75010b1d8029e59244f234f75e6f9.png" alt="s"/> numbered 0 to 10, the numbers on the line bet
+can be computed as follows: <img class="math" src="../_images/math/0e286daf332dd57224abc7cf739076058a9a5e21.png" alt="{3s+1, 3s+2, 3s+3, 3s+4, 3s+5, 3s+6}"/>. This <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+object belongs to six individual <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances.</p>
+<blockquote>
+<div><p><strong>For All Lines Between Rows</strong>. For each row, <img class="math" src="../_images/math/79a3d439d28652c547386f39b555d90d3aaf102d.png" alt="r"/>, in the range <img class="math" src="../_images/math/b6f22d802d169fe5edba26cfaaadf9ed571195fe.png" alt="0 \leq r &lt; 11"/>:</p>
+<blockquote>
+<div><p><strong>First Column Number</strong>. Set <img class="math" src="../_images/math/c5f674d094b6252728d74ba9e96f6baba14b2dfd.png" alt="n \gets 3r+1"/>.
+This will assure <img class="math" src="../_images/math/c57b7d45e7a3ba49692859d9626d7c1dc69c6cac.png" alt="n \in \{ 1, 4, 7, ..., 31\}"/>.</p>
+<p><strong>Line</strong>. Create a <img class="math" src="../_images/math/a8b6dec7cf5ab87606202c86b3b2232db1fbd8cd.png" alt="\{n, n+1, n+2, n+3, n+4, n+5\}"/> line <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+withs odds of <img class="math" src="../_images/math/3e354867258d1a46f70fcd3c0d93a79f2f5e0a47.png" alt="5:1"/>.</p>
+<p><strong>Assign to Bins</strong>. Associate this object to six <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances: <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>,
+<img class="math" src="../_images/math/85f9a5bfa0dccf215f10e2a5005def3cbe2afc0d.png" alt="n+1"/>, <img class="math" src="../_images/math/8e9eac5ec4406904fb53353e64264224d78612d5.png" alt="n+2"/>, <img class="math" src="../_images/math/2cf2906499a1aea74883c84db4bd6fb52d9ef392.png" alt="n+3"/>, <img class="math" src="../_images/math/58327ddd8283a5ce02b847eacd21f8fe9b84a089.png" alt="n+4"/>, <img class="math" src="../_images/math/e7423bb35c802b37003be87022be6919dc11c4ae.png" alt="n+5"/>.</p>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="generating-dozen-bets">
+<h3>Generating Dozen Bets<a class="headerlink" href="#generating-dozen-bets" title="Permalink to this headline">¶</a></h3>
+<p>Dozen bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances require enumerating all twelve numbers
+in each of three groups.</p>
+<blockquote>
+<div><p><strong>For All Dozens</strong>. For each dozen, <img class="math" src="../_images/math/badad346f6fbe2e237af99bfbd9a93a4da53a3da.png" alt="d"/>,  in the range <img class="math" src="../_images/math/1cdc9051e565c40153c36af53eab91e790da8abe.png" alt="0 \leq d &lt; 3"/>:</p>
+<blockquote>
+<div><p><strong>Create Dozen</strong>. Create an <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> for dozen <img class="math" src="../_images/math/3eaaaee3540c899a3d3fae6d3f49778d0b405c81.png" alt="d+1"/> with odds of <img class="math" src="../_images/math/2da4d58abd68781dcdd0b97ac1adbaaf01695038.png" alt="2:1"/>.</p>
+<p><strong>For All Numbers</strong>. For each number, <img class="math" src="../_images/math/e9bc7da808d33a16a8347f27a519bd067186aa66.png" alt="m"/>, in the range <img class="math" src="../_images/math/52a6b7c16c860fc215afe28d73baf9aa3ce6b1c8.png" alt="0 \leq m &lt; 12"/>:</p>
+<blockquote>
+<div><p><strong>Assign to Bin</strong>. Associate this object to <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> <img class="math" src="../_images/math/75ccdaba590aaf74526dec2d70248c4ded2e554e.png" alt="12d+m+1"/>.</p>
+</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="generating-column-bets">
+<h3>Generating Column Bets<a class="headerlink" href="#generating-column-bets" title="Permalink to this headline">¶</a></h3>
+<p>Column bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances require enumerating all twelve numbers
+in each of three groups. While the outline of the algorithm is the same
+as the dozen bets, the enumeration of the individual numbers in the
+inner loop is slightly different.</p>
+<blockquote>
+<div><p><strong>For All Columns</strong>. For each column, <img class="math" src="../_images/math/d520a12f1579170834c32ad5f656de081bbb36fe.png" alt="c"/>, in the range <img class="math" src="../_images/math/03ded123897a3681d5954f75a1f092c1682d9814.png" alt="0 \leq c &lt; 3"/>:</p>
+<blockquote>
+<div><p><strong>Create Column</strong>. Create an <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> for column <img class="math" src="../_images/math/21da072187047cb5126858beb458a661a960894e.png" alt="c+1"/> with odds of <img class="math" src="../_images/math/2da4d58abd68781dcdd0b97ac1adbaaf01695038.png" alt="2:1"/>.</p>
+<p><strong>For All Rows</strong>. For each row, <em>r</em>, in the range <img class="math" src="../_images/math/a7f08b8699e03f903fa635f312ba0d8387aed59a.png" alt="0 \leq r &lt; 12"/>:</p>
+<blockquote>
+<div><p><strong>Assign to Bin</strong>. Associate this object to <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> <img class="math" src="../_images/math/b9c1df726714b8772797fb516ac132836cb78d3e.png" alt="3r+c+1"/>.</p>
+</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="generating-even-money-bets">
+<h3>Generating Even-Money Bets<a class="headerlink" href="#generating-even-money-bets" title="Permalink to this headline">¶</a></h3>
+<p>The even money bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances are relatively easy to generate.</p>
+<blockquote>
+<div><p>Create the Red outcome, with odds of <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.</p>
+<p>Create the Black outcome, with odds of <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.</p>
+<p>Create the Even outcome, with odds of <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.</p>
+<p>Create the Odd outcome, with odds of <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.</p>
+<p>Create the High outcome, with odds of <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.</p>
+<p>Create the Low outcome, with odds of <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.</p>
+<p><strong>For All Numbers</strong>. For each number, <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>, in the range <img class="math" src="../_images/math/b90542551cd4da0220644fc8931073fd0e11983a.png" alt="1 \leq n &lt; 37"/>:</p>
+<blockquote>
+<div><p><strong>Low?</strong> If <img class="math" src="../_images/math/0d0ca9b8100e81c806782b5a014c5edac39722bc.png" alt="1 \leq n &lt; 19"/>, associate the <strong>Low</strong> <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+with <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>.</p>
+<p><strong>High?</strong> Otherwise, <img class="math" src="../_images/math/570e944c4ab6a711be0744be3a06329b16806d3a.png" alt="19 \leq n &lt; 37"/>, associate the <strong>High</strong> <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+with <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>.</p>
+<p><strong>Even?</strong> If <img class="math" src="../_images/math/ed020192b1064c2399c8d4c7b192a3f41306fece.png" alt="n \mod 2 = 0"/>, associate the <strong>Even</strong> <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+with <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>.</p>
+<p><strong>Odd?</strong> Otherwise, <img class="math" src="../_images/math/3a7cfd04ba6137374a88c629557fc140d371d209.png" alt="n \mod 2 \ne 0"/>, associate the <strong>Odd</strong> <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+with <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>.</p>
+<p><strong>Red?</strong> If <img class="math" src="../_images/math/cfb5d4f8f132d4c8b03609a5872abd6b925cefae.png" alt="n \in \{1, 3, 5, 7, 9, 12, 14, 16, 18, 19,
+21, 23, 25, 27, 30, 32, 34, 36\}"/>, associate the <strong>Red</strong> <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+with <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>. There’s no simplifying rule, it’s a list of
+seemingly arbitrary numbers.</p>
+<p><strong>Black?</strong> If it’s not <strong>Red</strong>, associate the <strong>Black</strong> <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> with <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>
+<img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>.</p>
+</div></blockquote>
+<p>Note that zero and double-zero are not included in any of these.</p>
+</div></blockquote>
+</div>
+<div class="section" id="generating-the-five-bet">
+<h3>Generating the Five Bet<a class="headerlink" href="#generating-the-five-bet" title="Permalink to this headline">¶</a></h3>
+<p>The Five bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance is relatively easy to generate.
+This has <img class="math" src="../_images/math/feaf52403db10ec31d0608467f7df8311fcbb473.png" alt="6:1"/> odds. It belongs to five separate bins: 0, 37, 1, 2, and 3.
+It’s a special case that has to be build separately.</p>
+</div>
+</div>
+<div class="section" id="binbuilder-design">
+<h2>BinBuilder Design<a class="headerlink" href="#binbuilder-design" title="Permalink to this headline">¶</a></h2>
+<p>We’ll show the <a class="reference internal" href="#BinBuilder" title="BinBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinBuilder</span></code></a> as a class definition.
+It’s not perfectly clear that a class is necessary for this.
+We could think of this is a collection of closely-related functions,
+instead of a single class.</p>
+<dl class="class">
+<dt id="BinBuilder">
+<em class="property">class </em><code class="sig-name descname">BinBuilder</code><a class="headerlink" href="#BinBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#BinBuilder" title="BinBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinBuilder</span></code></a> creates the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances for all of
+the 38 individual <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> on a Roulette wheel.</p>
+</dd></dl>
+
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="BinBuilder.__init__">
+<code class="sig-prename descclassname">BinBuilder.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#BinBuilder.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes the <a class="reference internal" href="#BinBuilder" title="BinBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinBuilder</span></code></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="BinBuilder.buildBins">
+<code class="sig-prename descclassname">BinBuilder.</code><code class="sig-name descname">buildBins</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">wheel: Wheel</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#BinBuilder.buildBins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+and uses the <code class="xref py py-meth docutils literal notranslate"><span class="pre">addOutcome()</span></code> method to place each <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+in the appropriate <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> of <a class="reference internal" href="roulette_game.html#wheel" title="wheel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wheel</span></code></a>.</p>
+<p>It’s then the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances responsibility to update the
+data structure used to store the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>wheel</strong> (<a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>) – The Wheel with Bins that must be populated with <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>There should be separate methods to generate the straight bets,
+split bets, street bets, corner bets, line bets, dozen bets and
+column bets, even money bets, and the special five bet.</p>
+</div>
+</div>
+<div class="section" id="bin-builder-deliverables">
+<h2>Bin Builder Deliverables<a class="headerlink" href="#bin-builder-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise. The new classes should have
+meaningful Python docstrings.</p>
+<ul class="simple">
+<li><p>The <a class="reference internal" href="#BinBuilder" title="BinBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinBuilder</span></code></a> class. This is part of the <code class="file docutils literal notranslate"><span class="pre">roulette.py</span></code> file.</p></li>
+<li><p>A class which performs a unit test of the <a class="reference internal" href="#BinBuilder" title="BinBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinBuilder</span></code></a>
+class. The unit test invoke each of the various methods that create <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+instances. There are a lot of potential <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances in various
+<a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> collections. We don’t need to check them all, we’ll use the idea of boundaries
+to check selected cases.</p>
+<ul>
+<li><p>Test straight bet <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances in the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> objects
+for positions 0, 00, 1, and 36 on the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>.</p></li>
+<li><p>Test split bets at positions 1 and 36.
+There will be “1-2” and “1-4” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+objects in the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance at position 1.
+Similarly, there will be
+“33-36” and “35-36” <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+objects in the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance at position 36.</p></li>
+<li><p>Test street bets at positions 1 and 36.</p></li>
+<li><p>Test corner bets around positions 1, 4, and 5. Since 1 is on the edge, it’s only part
+of one corner. 4, however, is part of two corners, and 5 will be part of 4 corner bets.</p></li>
+<li><p>Test line bets to be sure that 1 is only in a single line bet, where 4 is part of two
+separate line bets.</p></li>
+<li><p>Test dozens and columns by checking 1, 17, and 36 for membership in appropriate dozens
+and columns.</p></li>
+<li><p>Use 1, 17, 18, and 36 to check low, high, red, black, even, and odd outside bets.</p></li>
+<li><p>Finally. (Whew!) confirm that 0 and 00 participate in the five bet.</p></li>
+</ul>
+</li>
+<li><p>(Optional.) Extend the unit test of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class to create a more complex
+integration test. The test
+should create and initialize a <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>. It can use the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Wheel.getBin()</span></code>
+method to check selected <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances for the correct <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p></li>
+</ul>
+</div>
+<div class="section" id="internationalization-and-localization">
+<h2>Internationalization and Localization<a class="headerlink" href="#internationalization-and-localization" title="Permalink to this headline">¶</a></h2>
+<p>An an advanced topic, we would like to avoid using a lot of string literals
+the names of the bets. Python offers extensive
+tools for localization (l10n) of programs. Since Python
+works with Unicode strings, it supports non-Latin
+characters, supporting internationalization (i18n), also.</p>
+<p>This is an advanced topic. It’s tightly coupled with the names
+provided to the <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. This is a place
+to consider translating the labels for outcomes in the bins.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>Once we’ve populated the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance, we can move on to looking
+at how a player interacts with the game. In the case of Roulette, the
+player’s primary interaction is to place bets. We’ll start with a model
+for the <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Bin Builder Class</a><ul>
+<li><a class="reference internal" href="#bin-builder-analysis">Bin Builder Analysis</a><ul>
+<li><a class="reference internal" href="#the-roulette-outcomes">The Roulette Outcomes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bin-builder-algorithms">Bin Builder Algorithms</a><ul>
+<li><a class="reference internal" href="#generating-straight-bets">Generating Straight Bets</a></li>
+<li><a class="reference internal" href="#generating-split-bets">Generating Split Bets</a></li>
+<li><a class="reference internal" href="#generating-street-bets">Generating Street Bets</a></li>
+<li><a class="reference internal" href="#generating-corner-bets">Generating Corner Bets</a></li>
+<li><a class="reference internal" href="#generating-line-bets">Generating Line Bets</a></li>
+<li><a class="reference internal" href="#generating-dozen-bets">Generating Dozen Bets</a></li>
+<li><a class="reference internal" href="#generating-column-bets">Generating Column Bets</a></li>
+<li><a class="reference internal" href="#generating-even-money-bets">Generating Even-Money Bets</a></li>
+<li><a class="reference internal" href="#generating-the-five-bet">Generating the Five Bet</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#binbuilder-design">BinBuilder Design</a><ul>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bin-builder-deliverables">Bin Builder Deliverables</a></li>
+<li><a class="reference internal" href="#internationalization-and-localization">Internationalization and Localization</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="wheel.html" title="previous chapter">Wheel Class</a></li>
+      <li>Next: <a href="bet.html" title="next chapter">Roulette Bet Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

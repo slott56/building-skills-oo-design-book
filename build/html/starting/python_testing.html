@@ -1,0 +1,596 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Python Unit Testing &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Python Documentation" href="python_documentation.html" />
+    <link rel="prev" title="Development Environment" href="initial_setup.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="python-unit-testing">
+<span id="start-testing"></span><h1>Python Unit Testing<a class="headerlink" href="#python-unit-testing" title="Permalink to this headline">¶</a></h1>
+<p>Unit tests are absolutely essential. It’s very difficult
+to consider any feature as complete without automated unit tests.</p>
+<p>We have several ways to tackle unit tests for our application,
+shown below:</p>
+<ul class="simple">
+<li><p>We can create <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> class definitions.</p></li>
+<li><p>We can include examples in the docstrings. These are called
+doctest examples.</p></li>
+<li><p>We can write test functions. These tend to be simpler
+than the <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> classes.</p></li>
+</ul>
+<p>We have three sets of tools available, shown below:</p>
+<ul class="simple">
+<li><p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">unittest</span></code> tool can <em>only</em> process <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> class
+tests.</p></li>
+<li><p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">doctest</span></code> tool can <em>only</em> process doctest examples in docstrings.</p></li>
+<li><p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> tool can comfortably find and process all three kinds of of unit tests.</p></li>
+</ul>
+<p>We suggest always using <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> because it’s slightly easier and more comprehensive
+in what it can do. We’ll describe both kinds of tests. Some developers
+find it slightly easier to write test functions.</p>
+<p>In <a class="reference internal" href="#using-unit-tests">Using Unit Tests</a> we’ll look at an overall development process
+that leverages unit tests as a way to write testable specifications.</p>
+<p>We’ll show a small class which to be tested in <a class="reference internal" href="#example-class-definition">Example Class Definition</a>.
+We’ll look at a <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code>
+example in <a class="reference internal" href="#example-testcase-classes">Example TestCase classes</a>.
+We’ll also look at pytest functions in <a class="reference internal" href="#example-test-function">Example Test Function</a>.</p>
+<p>In <a class="reference internal" href="#python-doctest-testing">Python doctest Testing</a> we’ll look at how we can execute the test cases
+in the document strings of a module, class, function, or method.</p>
+<p>In <a class="reference internal" href="#building-doctest-examples">Building Doctest Examples</a> we’ll show how we can take
+interactive Python output and transform it into a doctest example.
+This will involve copy and paste. It’s not too challenging.</p>
+<p>In the next section we’ll overview how to structure our work
+around failing and passing test cases.</p>
+<div class="section" id="using-unit-tests">
+<h2>Using Unit Tests<a class="headerlink" href="#using-unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>One approach to unit testing is to build the tests first, then write a
+class which at least doesn’t crash, but may not pass all the tests. Once
+we have this in place, we can now debug the tests until everything looks
+right. This is called test-driven development. This is called “Test-Driven
+Development” (TDD) because testing drives everything.</p>
+<p>This can be difficult in practice. In many cases, we want to work
+back and forth between our target code and the unit tests for that
+code. When we’re learning a language or a design pattern, it can be
+difficult to write the tests first.</p>
+<p>Generally, the process for creating a class with the unit tests has the following outline.</p>
+<ol class="arabic simple">
+<li><p>Write a skeleton for the class that will be the unit under test.
+Initially, the class doesn’t really need to do anything. It only
+has to exist so the tests can run.</p></li>
+<li><p>Write the test case.  This will create instances of the class under test,
+exercise those instances, and make assertions about the state of those instances.
+The test class may create mocks for the various collaborators of the
+target class.</p></li>
+<li><p>Run the test, knowing that the first few attempts will fail.</p></li>
+<li><p>While at least one test is failing.</p>
+<ol class="loweralpha simple">
+<li><p>Fix the broken things.</p></li>
+<li><p>Run the test suite.</p></li>
+</ol>
+</li>
+<li><p>At this point, the  class under test passes the suite of tests.  However, it may still
+fail to meet other quality criteria.  For example, it may have a convoluted
+structure, or it may be inefficient, or it may lack appropriate documentation.
+In any case, we’re not really done with development.</p></li>
+<li><p>While our target class fails to meet our quality standards.</p>
+<ol class="loweralpha simple">
+<li><p>Refactor to correct the quality problems in our target class.</p></li>
+<li><p>Run the test suite.  If we have refactored properly, the tests still
+pass.  If we have introduced a problem, tests will fail.</p></li>
+</ol>
+</li>
+</ol>
+<p>The failing tests help us develop new code. Once the tests pass,
+we can refactor and fine-tune the application knowing that a change
+didn’t break anything that used to work.</p>
+<p>In the next section we’ll look at an example test using the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> definitions.</p>
+<div class="section" id="example-class-definition">
+<h3>Example Class Definition<a class="headerlink" href="#example-class-definition" title="Permalink to this headline">¶</a></h3>
+<p>As an example, we’ll rework  the <code class="file docutils literal notranslate"><span class="pre">hw.py</span></code>
+module in the <code class="file docutils literal notranslate"><span class="pre">src</span></code> directory. The revision
+will make a more complete application.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A hello world to be sure all our tools work.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="k">import</span> <span class="n">dataclass</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Greeting</span><span class="p">:</span>
+    <span class="n">greeting</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">audience</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.greeting}</span><span class="s2"> </span><span class="si">{self.audience}</span><span class="s2">&quot;</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">Greeting</span><span class="p">(</span><span class="s2">&quot;hello&quot;</span><span class="p">,</span> <span class="s2">&quot;world&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We’ve defined a class and a function.
+We’ve also put the top-most code into an <code class="docutils literal notranslate"><span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;</span></code> block.
+This block will only be executed when we run the module
+directly. If the module is imported, it won’t do anything
+automatically, making it much easier to test.</p>
+</div>
+<div class="section" id="example-testcase-classes">
+<h3>Example TestCase classes<a class="headerlink" href="#example-testcase-classes" title="Permalink to this headline">¶</a></h3>
+<p>This goes into a file called <code class="file docutils literal notranslate"><span class="pre">tests/test_hw_1.py</span></code>.  The
+<code class="docutils literal notranslate"><span class="pre">_1</span></code> suffix is a hint that we’ll write a second set of test
+cases below, and we’ll use a different suffix.</p>
+<p>The test module will have two test cases:</p>
+<ul class="simple">
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">TestGreeting</span></code> class will tet the <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code> class. This is
+is relatively clear because there are no dependencies in the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code> class.</p></li>
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">TestMain</span></code> class will test the <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function. This
+is more complex because the function depends on <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting.</span>
+<span class="pre">A</span> <span class="pre">unit</span> <span class="pre">test</span> <span class="pre">should</span> <span class="pre">isolated</span> <span class="pre">from</span> <span class="pre">dependencies,</span> <span class="pre">which</span> <span class="pre">means</span>
+<span class="pre">a</span> <span class="pre">patch</span> <span class="pre">and</span> <span class="pre">a</span> <span class="pre">mock</span> <span class="pre">object</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">used.</span> <span class="pre">Further,</span> <span class="pre">the</span> <span class="pre">:func:`main</span></code>
+function writes to stdout via the <code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code> function.</p></li>
+</ul>
+<p>We’ll decompose the example into three separate sections.
+First, the imports look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">TestCase</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="k">import</span> <span class="n">Mock</span><span class="p">,</span> <span class="n">patch</span>
+<span class="kn">import</span> <span class="nn">hw</span>
+</pre></div>
+</div>
+<p>The test for the <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code> class creates an instance of
+the class, and then confirms the value of the <code class="xref py py-func docutils literal notranslate"><span class="pre">str()</span></code> function
+uses the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Greeting.__str__()</span></code> method.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TestGreeting</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">hw</span><span class="o">.</span><span class="n">Greeting</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">g</span><span class="p">),</span> <span class="s2">&quot;x y&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The test for the <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function is a bit more complex. The
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">TestMain.setUp()</span></code> method creates a mock for the <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code>
+class. The top-level <code class="xref py py-class docutils literal notranslate"><span class="pre">Mock</span></code> instance behaves like a class
+definition. When it is called as a function it returns an mock
+object that behaves as an instance of the class; it’s named <code class="docutils literal notranslate"><span class="pre">&quot;Greeting</span> <span class="pre">instance&quot;</span></code>
+to clarify the role it plays.</p>
+<p>The instance mock provides an easy-to-spot response to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__str__()</span></code> method.
+This will make it easier to confirm that the <code class="xref py py-func docutils literal notranslate"><span class="pre">str()</span></code> was used appropriately.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TestMain</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mock_greeting</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Greeting&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">Mock</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Greeting instance&quot;</span><span class="p">,</span>
+                <span class="fm">__str__</span><span class="o">=</span><span class="n">Mock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="s2">&quot;mock str output&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mock_stdout</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s1">&#39;hw.Greeting&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mock_greeting</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s1">&#39;sys.stdout&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mock_stdout</span><span class="p">):</span>
+                <span class="n">hw</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mock_greeting</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mock_greeting</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="fm">__str__</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;mock str output</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mock_stdout</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">patch()</span></code> function is used to make two changes inside the <code class="xref py py-mod docutils literal notranslate"><span class="pre">hw</span></code> module.</p>
+<ul class="simple">
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">hw.Greeting</span></code> class is replaced with the <code class="docutils literal notranslate"><span class="pre">self.mock_greeting</span></code> object.
+This means the <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function will interact with the mock object,
+allowing the test to confirm the <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function made valid requests.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code> object is replaced with an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">io.StringIO</span></code>.
+This object will collect output destined to standard output so it can be
+examined in the test.</p></li>
+</ul>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">test()</span></code> method confirms the mock objects were all used properly
+by the <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function:</p>
+<ol class="arabic simple">
+<li><p>The mocked <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code> class was called with the expected arguments.</p></li>
+<li><p>The mocked <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code> instance had the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Greeting.__str__()</span></code> method
+called with no arguments.</p></li>
+<li><p>The output sent to stdout was the output from the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Greeting.__str__()</span></code> method.</p></li>
+</ol>
+<p>This test exercises a service, the <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code> class, and a client of that
+service, the  <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function. Because the function has a direct dependence
+on the service class, we’re forced to use <code class="xref py py-func docutils literal notranslate"><span class="pre">patch()</span></code> to inject a different dependency
+for testing.</p>
+</div>
+<div class="section" id="example-test-function">
+<h3>Example Test Function<a class="headerlink" href="#example-test-function" title="Permalink to this headline">¶</a></h3>
+<p>This goes into a file called <code class="file docutils literal notranslate"><span class="pre">tests/test_hw_2.py</span></code>.  The
+<code class="docutils literal notranslate"><span class="pre">_2</span></code> suffix separates these tests from the tests defined above
+using <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code>.</p>
+<p>The test module will have two test cases:</p>
+<ul class="simple">
+<li><p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">test_greeting()</span></code> function will tet the <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code> class.</p></li>
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">test_main</span></code> function will test the <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function. This
+is more complex because the function depends on <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting.</span>
+<span class="pre">A</span> <span class="pre">unit</span> <span class="pre">test</span> <span class="pre">should</span> <span class="pre">isolated</span> <span class="pre">from</span> <span class="pre">dependencies,</span> <span class="pre">which</span> <span class="pre">means</span>
+<span class="pre">mock</span> <span class="pre">objects</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">used.</span> <span class="pre">Further,</span> <span class="pre">the</span> <span class="pre">:func:`main</span></code>
+function writes to stdout via the <code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code> function,
+and this output needs to be captured.</p></li>
+</ul>
+<p>We’ll decompose the example into three separate sections.
+First, the import look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="k">import</span> <span class="n">Mock</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">import</span> <span class="nn">hw</span>
+</pre></div>
+</div>
+<p>The test for the <code class="xref py py-class docutils literal notranslate"><span class="pre">Greeting</span></code> class looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_greeting</span><span class="p">():</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">hw</span><span class="o">.</span><span class="n">Greeting</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;x y&quot;</span>
+</pre></div>
+</div>
+<p>As with the <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> example, the test is a exercises
+the class to confirm the expected behavior.
+Unlike the <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> class, we use the built-in <code class="docutils literal notranslate"><span class="pre">assert</span></code>
+statement when working with the <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> tool.</p>
+<p>The mock object created for use with the  <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> tool is a
+complete repeat of the example <code class="xref py py-class docutils literal notranslate"><span class="pre">Mock</span></code> object shown above.
+The <code class="xref py py-mod docutils literal notranslate"><span class="pre">unittest.mock</span></code> module is used both by the <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> tool
+as well as the <code class="xref py py-mod docutils literal notranslate"><span class="pre">unittest</span></code> tool.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">&#64;pytest.fixture</span></code> decoration is used to identify functions
+that create test fixtures. In this case, the fixture is a <code class="xref py py-class docutils literal notranslate"><span class="pre">Mock</span></code>
+object that can be shared by multiple tests.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span> <span class="nf">mock_greeting</span><span class="p">(</span><span class="n">monkeypatch</span><span class="p">):</span>
+    <span class="n">greeting</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Greeting&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">Mock</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Greeting instance&quot;</span><span class="p">,</span>
+            <span class="fm">__str__</span><span class="o">=</span><span class="n">Mock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="s2">&quot;mock str output&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="n">hw</span><span class="p">,</span> <span class="s1">&#39;Greeting&#39;</span><span class="p">,</span> <span class="n">greeting</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">greeting</span>
+
+<span class="k">def</span> <span class="nf">test_main</span><span class="p">(</span><span class="n">mock_greeting</span><span class="p">,</span> <span class="n">capsys</span><span class="p">):</span>
+    <span class="n">hw</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+
+    <span class="n">mock_greeting</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span><span class="p">)</span>
+    <span class="n">mock_greeting</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="fm">__str__</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">()</span>
+
+    <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">capsys</span><span class="o">.</span><span class="n">readouterr</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">out</span> <span class="o">==</span> <span class="s2">&quot;mock str output</span><span class="se">\n</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+<p>The test for the <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function is similar in many respects
+to the <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> version. The test asserts that
+the mock was used correctly, and it examines the captured standard output.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">mock_greeting</span></code> and <code class="docutils literal notranslate"><span class="pre">capsys</span></code> parameters are supplied automatically
+by the <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> tool when the test is run. The <code class="docutils literal notranslate"><span class="pre">mock_greeting</span></code> value will
+be the results of the <code class="xref py py-func docutils literal notranslate"><span class="pre">mock_greeting()</span></code> fixture. The <code class="docutils literal notranslate"><span class="pre">capsys</span></code> value
+will be a built-in fixture that captures the <code class="docutils literal notranslate"><span class="pre">sys.stdout</span></code> and <code class="docutils literal notranslate"><span class="pre">sys.stderr</span></code>
+output for the test.</p>
+</div>
+<div class="section" id="running-pytest">
+<h3>Running Pytest<a class="headerlink" href="#running-pytest" title="Permalink to this headline">¶</a></h3>
+<p>We can run the tests with the following command.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">PYTHONPATH</span><span class="o">=</span>src python -m pytest tests
+</pre></div>
+</div>
+<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> tool will find <em>all</em> of the files with names starting with <code class="docutils literal notranslate"><span class="pre">test_</span></code>.
+Any <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code> classes will be processed.
+Any functions with names starting with <code class="docutils literal notranslate"><span class="pre">test_</span></code> will also be processed.</p>
+<p>This one tool lets us use either style of testing. After looking
+at the very sophisticated <code class="xref py py-mod docutils literal notranslate"><span class="pre">unittest</span></code> tool and <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> tool,
+the next section will look at the <code class="xref py py-mod docutils literal notranslate"><span class="pre">doctest</span></code> tool. This tool
+has some limitations, and doesn’t support comprehensive tests. It
+is, however, so easy to use that it can be the first thing
+we turn to.</p>
+</div>
+</div>
+<div class="section" id="python-doctest-testing">
+<h2>Python doctest Testing<a class="headerlink" href="#python-doctest-testing" title="Permalink to this headline">¶</a></h2>
+<p>Python <code class="xref py py-mod docutils literal notranslate"><span class="pre">doctest</span></code>  module requires us to put our test cases
+and expected results into the docstring comments on a class, method
+or function.  Since we’re going to write docstring comments, and
+we’re going to provide examples, there’s very little overhead to this testing.</p>
+<p>The test case information becomes a formal part of the API
+documentation.  When a docstring includes doctest comments, the string
+serves dual duty as formal test and a working example.</p>
+<p><strong>Workflow</strong>.
+To use   <code class="xref py py-mod docutils literal notranslate"><span class="pre">doctest</span></code> is to build the class, exercise it in the
+Python interpreter, then put snippets of the interactive log into our
+docstrings.</p>
+<p>Generally, we follow this outline.</p>
+<ol class="arabic simple">
+<li><p>Write and debug the class, including docstring comments.</p></li>
+<li><p>Exercise the class in an interactive Python interpreter.</p></li>
+<li><p>Copy the snippets out of the interactive log.  Paste them into
+the docstring comments.</p></li>
+<li><p>Run doctest to be sure that you’ve copied and pasted correctly.</p></li>
+</ol>
+<p><strong>Example</strong>. This is an example of what a module with
+doctest docstrings looks like.</p>
+<p class="rubric">Module with doctest examples.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Superclass for cards.</span>
+<span class="sd">    &gt;&gt;&gt; c2d = Card(2, Card.Diamonds)</span>
+<span class="sd">    &gt;&gt;&gt; str(c2d)</span>
+<span class="sd">    &#39; 2♢&#39;</span>
+<span class="sd">    &gt;&gt;&gt; c2d.softValue</span>
+<span class="sd">    2</span>
+<span class="sd">    &gt;&gt;&gt; c2d.hardValue</span>
+<span class="sd">    2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Clubs</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\N{BLACK CLUB SUIT}</span><span class="s2">&quot;</span>
+    <span class="n">Diamonds</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\N{WHITE DIAMOND SUIT}</span><span class="s2">&quot;</span>
+    <span class="n">Hearts</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\N{WHITE HEART SUIT}</span><span class="s2">&quot;</span>
+    <span class="n">Spades</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\N{BLACK SPADE SUIT}</span><span class="s2">&quot;</span>
+    <span class="n">Jack</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">Queen</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">King</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">Ace</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">suit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">suit</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Card</span><span class="o">.</span><span class="n">Clubs</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Hearts</span><span class="p">,</span> <span class="n">Card</span><span class="o">.</span><span class="n">Spades</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">rank</span> <span class="o">&lt;</span> <span class="mi">14</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="n">rank</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suit</span> <span class="o">=</span> <span class="n">suit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">rank</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hardValue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">softValue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span>
+</pre></div>
+</div>
+<div class="section" id="running-doctest">
+<h3>Running Doctest<a class="headerlink" href="#running-doctest" title="Permalink to this headline">¶</a></h3>
+<p>There are two ways to use doctest: you can run it directly,
+or use it as part of <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code>.</p>
+<p class="rubric">Running Doctest from the Command Line</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python -m doctest -v code/blackjack_doctest.py
+</pre></div>
+</div>
+<p>This runs doctest and examines the specific module for comments
+that can be taken as useful examples.</p>
+<p class="rubric">Running Doctest via Pytest</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python -m pytest --doctest-modules code/blackjack_doctest.py
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--doctest-modules</span></code> option is used to examine all of the
+modules named for doctest examples. This can be done for the
+entire <code class="docutils literal notranslate"><span class="pre">src</span></code> directory.</p>
+</div>
+<div class="section" id="building-doctest-examples">
+<h3>Building Doctest Examples<a class="headerlink" href="#building-doctest-examples" title="Permalink to this headline">¶</a></h3>
+<p>Let’s assume we’ve built two classes; for example, <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> and <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a>.
+One class defines a standard
+playing card and the other class deals individual card instances. We’ll
+define some minimal doctests.</p>
+<p>The first step is to develop our baseline class. See <a class="reference internal" href="#example-class-definition">Example Class Definition</a>
+for a version of the blackjack module with the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class definition
+that we might start with.</p>
+<p><strong>Exercise the Class</strong>.
+Once we have the class, we need to exercise it using interactive Python.
+Here’s what we saw.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>MacBookPro-SLott:OODesign-3.1 slott$ python3
+Python 3.7.4 (default, Aug 13 2019, 15:17:50)
+[Clang 4.0.1 (tags/RELEASE_401/final)] :: Anaconda, Inc. on darwin
+Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
+&gt;&gt;&gt; from blackjack import Card, AceCard, FaceCard
+&gt;&gt;&gt; c2d = Card(2, Card.Diamonds)
+&gt;&gt;&gt; str(c2d)
+&#39; 2♢&#39;
+&gt;&gt;&gt; cas = AceCard(Card.Ace, Card.Spades)
+&gt;&gt;&gt; str(cas)
+&#39; A♠&#39;
+&gt;&gt;&gt; cas.softValue
+11
+</pre></div>
+</div>
+<p>During our session, we played with the preferred use
+cases for our class. We can copy the examples from the interactive session and
+paste them into our class docstrings.</p>
+<p><strong>Update the Docstrings</strong>.
+After we have some output that shows correct behavior of our class, we
+can put that output into the class docstrings. Here’s our updated <code class="file docutils literal notranslate"><span class="pre">card.py</span></code>
+module with doctest comments.</p>
+<p class="rubric">blackjack.py With Doctests Included</p>
+<pre class="code python literal-block"><code>    <span class="operator">&gt;&gt;&gt;</span> <span class="name builtin">str</span><span class="punctuation">(</span><span class="name">cas</span><span class="punctuation">)</span>
+    <span class="literal string single">' A♠'</span>
+    <span class="operator">&gt;&gt;&gt;</span> <span class="name">cas</span><span class="operator">.</span><span class="name">softValue</span>
+    <span class="literal number integer">11</span>
+    <span class="literal string double">&quot;&quot;&quot;
+
+    def __init__(self, rank: int, suit: str) -&gt; None:
+        assert rank == 1
+        super().__init__(rank, suit)
+        self.order = 14  # above King
+
+    def __str__(self) -&gt; str:
+        return f&quot; A{self.suit}&quot;
+
+    &#64;property
+    def hardValue(self) -&gt; int:
+        return 1
+
+    &#64;property
+    def softValue(self) -&gt; int:
+        return 11</span></code></pre>
+<p>We’ve only shown the docstrings from two classes within
+the overall module file.</p>
+<p>In both cases, we’ve copied and pasted lines from
+an interactive session to show show the class definitions
+shold behave.  When we process this module with
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">doctest</span></code> we can confirm that the advertised behavior
+matches the actual behavior of the classes.</p>
+</div>
+</div>
+<div class="section" id="handling-dependencies">
+<h2>Handling Dependencies<a class="headerlink" href="#handling-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Let’s assume we’ve built two classes in some chapter; for example, we’re building
+<a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> and <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a>. One class defines a standard
+playing card and the other class deals individual card instances. We
+need unit tests for each class.</p>
+<p>Generally, unit tests are taken to mean that a class is tested in
+isolation. In our case, a unit test for the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class is completely isolated because
+it has no dependencies.</p>
+<p>However, our <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class depends on the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class, leading us to make a choice
+between the following two alternatives:</p>
+<ul class="simple">
+<li><p>Create a <code class="xref py py-class docutils literal notranslate"><span class="pre">Mock</span></code> object to stand in for the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class.
+This lets us test the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class in complete isolation. Doing
+this means we either use <code class="xref py py-func docutils literal notranslate"><span class="pre">patch()</span></code> (or <code class="xref py py-func docutils literal notranslate"><span class="pre">monkeypatch.setattr()</span></code>),
+or we design the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class so it doesn’t have a direct dependency
+on <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>.</p></li>
+<li><p>Test the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class knowing it depends on the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class. In this case
+we haven’t isolated the two classes, pushing the edge of the envelope on
+one of the ideas behind unit testing. It’s not clear that this is utterly
+evil, however. It’s acceptable when we can create
+an integrated test of the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class which also tests all of the
+features of the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class.</p></li>
+</ul>
+<p>The choice depends on the relative complexity of the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class,
+whether or not the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class and <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class will evolve independently,
+and whether or not we can test all of the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class and <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class.</p>
+<p>Some folks demand that <strong>all</strong> testing be done in “complete” isolation with
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Mock</span></code> objects. In order to reduce the number of patches, we need to consider
+ways of making the the two classes independent. We could, for example, provide
+the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class as a parameter to the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Deck" title="Deck"><code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code></a> class, removing
+the implicit dependency, and making testing simpler.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>Programming involves writing application code as well as test code.
+In many cases, we’ll write a great deal of test code for relatively
+small – but important – pieces of application code.</p>
+<p>It helps to have an easy-to-use testing tool. The <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> tool
+makes it easy to run a complete suite of unit tests, confirming that
+everything we write behaves as we expected.</p>
+<p>In the next chapter we’ll look at one of the other important parts
+of creating trusted, high-quality code: the documentation. While a simple
+<code class="file docutils literal notranslate"><span class="pre">README.rst</span></code> is helpful, using the <code class="xref py py-mod docutils literal notranslate"><span class="pre">sphinx</span></code> tool produces
+more complete, and easier to use documentation with relatively little work.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python Unit Testing</a><ul>
+<li><a class="reference internal" href="#using-unit-tests">Using Unit Tests</a><ul>
+<li><a class="reference internal" href="#example-class-definition">Example Class Definition</a></li>
+<li><a class="reference internal" href="#example-testcase-classes">Example TestCase classes</a></li>
+<li><a class="reference internal" href="#example-test-function">Example Test Function</a></li>
+<li><a class="reference internal" href="#running-pytest">Running Pytest</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#python-doctest-testing">Python doctest Testing</a><ul>
+<li><a class="reference internal" href="#running-doctest">Running Doctest</a></li>
+<li><a class="reference internal" href="#building-doctest-examples">Building Doctest Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#handling-dependencies">Handling Dependencies</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="initial_setup.html" title="previous chapter">Development Environment</a></li>
+      <li>Next: <a href="python_documentation.html" title="next chapter">Python Documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

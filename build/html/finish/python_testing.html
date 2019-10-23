@@ -1,0 +1,416 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Python Unit Testing &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Python Documentation" href="python_documentation.html" />
+    <link rel="prev" title="Conclusion" href="../blackjack/conclusion.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="python-unit-testing">
+<h1>Python Unit Testing<a class="headerlink" href="#python-unit-testing" title="Permalink to this headline">¶</a></h1>
+<p>The Python <code class="xref py py-mod docutils literal notranslate"><span class="pre">unittest</span></code> module encourages us to build a test module
+separate from the application class we’re testing. The test module will
+have one more more <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code> classes, each of which has one
+or more test methods.</p>
+<p>In <a class="reference internal" href="#using-unit-tests">Using Unit Tests</a> we’ll look at an overall development process
+that leverages unit tests as a way to write testable specifications.</p>
+<p>In <a class="reference internal" href="#dependencies">Dependencies</a> we’ll touch briefly on testing dependent classes
+together or creating mock objects.</p>
+<p>We’ll look at an example in <a class="reference internal" href="#example-unit-test">Example Unit Test</a>. To be complete,
+we’ll show the class which was tested in <a class="reference internal" href="#example-class-definition">Example Class Definition</a>.</p>
+<p>In <a href="#id19"><span class="problematic" id="id20">`Python doctest Testing`_</span></a> we’ll look at how we can execute the test cases
+in the document strings of a module, class, function, or method.</p>
+<p>In <a class="reference internal" href="#building-doctest-examples">Building Doctest Examples</a> we’ll show how we can take
+interactive Python output and transform it into a doctest example.
+This will involve copy and paste. It’s not too challenging.</p>
+<p>In <a class="reference internal" href="#mixed-unittest-and-doctest">Mixed unittest and doctest</a> we’ll show how we can combine unittest
+tests with doctest tests.</p>
+<div class="section" id="using-unit-tests">
+<h2>Using Unit Tests<a class="headerlink" href="#using-unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>One approach to unit testing is to build the tests first, then write a
+class which at least doesn’t crash, but may not pass all the tests. Once
+we have this in place, we can now debug the tests until everything looks
+right. This is called test-driven development.</p>
+<p>We’d start with unittest files in the <code class="file docutils literal notranslate"><span class="pre">test</span></code> directory of our
+project. In this case, we’d have <code class="file docutils literal notranslate"><span class="pre">testCard.py</span></code> and <code class="file docutils literal notranslate"><span class="pre">testDeck.py</span></code>.
+We also need skeleton files in our <code class="xref py py-class docutils literal notranslate"><span class="pre">src</span></code> directory: <code class="xref py py-class docutils literal notranslate"><span class="pre">cards.py</span></code>
+and <code class="xref py py-class docutils literal notranslate"><span class="pre">deck.py</span></code>.</p>
+<p>Generally, the process for creating a class with the unit tests has the following outline.</p>
+<ol class="arabic simple">
+<li><p>Write a skeleton for the class that’s the <a href="#id1"><span class="problematic" id="id2">:phrase:`Unit Under Test`</span></a> (<a href="#id3"><span class="problematic" id="id4">:abbrev:`UUT`</span></a>).
+This class that doesn’t really do anything,
+but at least compiles and has the right method names.</p></li>
+<li><p>Write the test class.  This will create instances of the class under test,
+exercise those instances, and make assertions about the state of those instances.
+The test class may create mocks for the various collaborators of the
+target class.</p></li>
+<li><p>Run the test, knowing that the first few attempts will fail.
+Sometimes our class under test is so simple
+that we get it right the first time.  Other times, the class under test is more complex
+and there are parts we didn’t finish when we wrote the skeleton version.</p></li>
+<li><p>While at least one test is failing.</p>
+<ol class="loweralpha simple">
+<li><p>Refactor.  We finish our target class.  Sometimes we simply fill in the missing
+parts.  Other times, we have more serious design work to do.</p></li>
+<li><p>Run the test suite.</p></li>
+</ol>
+</li>
+<li><p>At this point, the  class under test passes the suite of tests.  However, it may still
+fail to meet other quality criteria.  For example, it may have a convoluted
+structure, or it may be inefficient, or it may lack appropriate documentation.
+In any case, we’re not really done with development.</p></li>
+<li><p>While our target class fails to meet our quality standards.</p>
+<ol class="loweralpha simple">
+<li><p>Refactor.  We correct the quality problems in our target class.</p></li>
+<li><p>Run the test suite.  If we have refactored properly, the tests still
+pass.  If we have introduced a problem, tests will fail.</p></li>
+</ol>
+</li>
+</ol>
+<p><strong>Using unittest</strong>.
+A test runner will locate all the <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code> instances, execute them
+and summarize the pass/fail status of each individual test method.</p>
+<p>Generally, the useful modules will be in package with a name like <code class="file docutils literal notranslate"><span class="pre">casino_sim</span></code>.
+The test modules will be in a separate package named <code class="file docutils literal notranslate"><span class="pre">test</span></code>.</p>
+<p>We might have something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">casino_sim</span>
+    <span class="n">__main__</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">common</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">roulette</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">craps</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">blackjack</span><span class="o">.</span><span class="n">py</span>
+<span class="n">test</span>
+    <span class="n">__main__</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">test_common</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">test_roulette</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">test_craps</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">test_blackjack</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>(This isn’t a requirement, it’s just a notion.
+In many cases, we’ll want to subdivide each game into
+game and player modules because they evolve independently.)</p>
+<p>Here is an example of running a test from the command
+line.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3 -m unittest test.test_blackjack.TestDeck
+..
+----------------------------------------------------------------------
+Ran <span class="m">2</span> tests in <span class="m">0</span>.001s
+
+OK
+</pre></div>
+</div>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Let’s assume we’ve built two classes in some chapter; for example, we’re building
+<a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code>. One class defines a standard
+playing card and the other class deals individual card instances. We
+need unit tests for each class.</p>
+<p>Generally, unit tests are taken to mean that a class is tested in
+isolation. In our case, a unit test for Card is completely isolated because
+it has no dependencies.</p>
+<p>However, our Deck class depends on Card, leading us to make a choice.
+Either we have to create a Mock Card that can be used to test Deck
+in complete isolation, or our Deck test will depend on both Deck and
+Card. The choice depends on the relative complexity of Card, and whether
+or not Deck and Card will evolve independently.</p>
+<p>Some folks demand that <strong>all</strong> testing be done in “complete” isolation with
+a lot of mock classes.  Other folks are less strict on this, recognizing
+that Deck and Card are very tightly coupled and Card is very simple.
+The Mock Card is almost as complex as Card.</p>
+</div>
+<div class="section" id="example-unit-test">
+<h2>Example Unit Test<a class="headerlink" href="#example-unit-test" title="Permalink to this headline">¶</a></h2>
+<p class="rubric">test_card.py</p>
+<ol class="arabic">
+<li><p>Generally, we create a number of object instances in the
+setup method. In this case, we created five distinct
+<a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> instances. These object constructors
+imply several things in our <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a>
+class.</p>
+<ol class="loweralpha simple">
+<li><p>There will be a set of manifest constants for the suits:
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Clubs</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Diamonds</span></code>,
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Hearts</span></code> and
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">Spades</span></code>.</p></li>
+<li><p>The constructor (<code class="xref py py-meth docutils literal notranslate"><span class="pre">Card.__init__()</span></code>) will accept a rank and a suit
+constant.</p></li>
+</ol>
+<p>Note that we didn’t write tests to create all suits or all
+ranks. In same cases, we may need to produce tests which exhaustively
+enumerate all possibe alternatives. We may also want to include
+<a href="#id5"><span class="problematic" id="id6">:phrase:`edge and corner`</span></a> cases like trying to create an <code class="xref py py-class docutils literal notranslate"><span class="pre">AceCard</span></code>
+with a rank of 2.</p>
+<p>For the purposes of learning
+OO design, we only need to sketch out our class by defining the
+tests it must pass. We sometimes call these <a href="#id7"><span class="problematic" id="id8">:phrase:`happy path`</span></a> test
+cases.</p>
+</li>
+<li><p>In <code class="xref py py-meth docutils literal notranslate"><span class="pre">testString()</span></code>, we exercise the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__str__()</span></code> method of the
+<a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class to be sure that it formats cards
+correctly. These tests tell us what the formatting algorithm will
+look like.</p></li>
+<li><p>In <code class="xref py py-meth docutils literal notranslate"><span class="pre">testOrder()</span></code>, we exercise some comparison methods of the
+<a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class to be sure that it compares card
+ranks correctly. Note that we have explicitly claimed that the
+equality test only checks the rank and ignores the suit; this is
+typical for Blackjack, but won’t work well for Bridge or
+Solitaire.</p>
+<p>Note that we didn’t exhaustively test all possible
+comparisons among the four cards we defined. We tested enough
+to be sure we had an implementation that was good enough to
+get started.</p>
+</li>
+<li><p>This is the standard main program for a <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest</span></code> module.
+We often include this in each test module. We’ll also include
+a <code class="xref py py-mod docutils literal notranslate"><span class="pre">__main__</span></code> module that includes all of the tests into
+a master test suite.</p></li>
+</ol>
+</div>
+<div class="section" id="example-class-definition">
+<h2>Example Class Definition<a class="headerlink" href="#example-class-definition" title="Permalink to this headline">¶</a></h2>
+<p>Our initial <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class needs to have just enough of an API to allow the
+tests to run. Here’s our skeleton <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class.</p>
+<p class="rubric">blackjack.py</p>
+<p>This class will – minimally – participate in the testing. It won’t
+pass many tests, but it serves as a basis for developing the class implementation.</p>
+<p>Note that there’s almost no documentation in this class.
+We’ll address that gap in <a class="reference internal" href="python_documentation.html#documentation"><span class="std std-ref">Python Documentation</span></a>.</p>
+</div>
+</div>
+<div class="section" id="python-application-doctest-testing">
+<h1>Python <a href="#id9"><span class="problematic" id="id10">:application:`doctest`</span></a> Testing<a class="headerlink" href="#python-application-doctest-testing" title="Permalink to this headline">¶</a></h1>
+<p>Python <a href="#id11"><span class="problematic" id="id12">:application:`doctest`</span></a>  module requires us to put our test cases
+and expected results into the docstring comments on a class, method
+or function.  The test case information becomes a formal part of the API
+documentation.  When a docstring includes doctest comments, the string
+serves dual duty as formal test and a working example.</p>
+<p><strong>Workflow</strong>.
+To use   <a href="#id13"><span class="problematic" id="id14">:application:`doctest`</span></a> is to build the class, exercise it in the
+Python interpreter, then put snippets of the interactive log into our
+docstrings.</p>
+<p>Generally, we follow this outline.</p>
+<ol class="arabic simple">
+<li><p>Write and debug the class, including docstring comments.</p></li>
+<li><p>Exercise the class in an interactive Python interpreter.
+You can use <a href="#id15"><span class="problematic" id="id16">:application:`IDLE`</span></a> or any other command line.</p></li>
+<li><p>Copy the snippets out of the interactive log.  Paste them into
+the docstring comments.</p></li>
+<li><p>Run doctest to be sure that you’ve copied and pasted correctly.</p></li>
+</ol>
+<p><strong>Using Doctest</strong>.
+There are two ways to use doctest.</p>
+<p>Start with Python 2.6, you can run doctest from the command line like this.</p>
+<p class="rubric">Running Doctest from the Command Line</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python -m doctest -v roulette.py
+</pre></div>
+</div>
+<p>You can also add a test function to a module which runs doctest on the module.
+This test function should have a name which begins with <code class="docutils literal notranslate"><span class="pre">_</span></code> to make it
+a name that’s private to the module and not part fo the module’s interface.</p>
+<p class="rubric">Running Doctest Within a Module</p>
+<p>This <code class="xref py py-func docutils literal notranslate"><span class="pre">_test()</span></code> function is the main function of the module, so that when
+you run the module, it performs it’s internal doctests.</p>
+<p class="rubric">Running A Module with Doctest</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python roulette.py
+</pre></div>
+</div>
+<p><strong>Test-Driven Development</strong>.
+Note that the strict test-driven development (<a href="#id17"><span class="problematic" id="id18">:abbrev:`TDD`</span></a>)
+approach to unit testing is to build the tests first, then write a
+class which at least doesn’t crash, but may not pass all the tests. Once
+we have this in place, we can now debug the tests until everything looks
+right. This is called test-driven development, because the test cases
+come first, driving the rest of the work.</p>
+<p>The test-driven approach doesn’t fit well with <code class="xref py py-class docutils literal notranslate"><span class="pre">doctest</span></code>.
+It’s very difficult to develop the test output without having the class
+available to exercise interactively. Also, we don’t want to put
+comprehensive test scripts into our class docsting; they can easily get
+too long to be useful.</p>
+<p>Also, it’s difficult to “fake” the interactive log when designing the
+class.  It’s usually simpler to have a working class and then add
+test cases.</p>
+<p>Finally, we need to pick essential features for
+demonstration in the doctest comments. We can’t easily write comprehensive tests
+that cover all features or all line of code in doctest comments.</p>
+<div class="section" id="building-doctest-examples">
+<h2>Building Doctest Examples<a class="headerlink" href="#building-doctest-examples" title="Permalink to this headline">¶</a></h2>
+<p>Let’s assume we’ve built two classes; for example, <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Deck</span></code>.
+One class defines a standard
+playing card and the other class deals individual card instances. We’ll
+define some minimal doctests.</p>
+<p>The first step is to develop our baseline class. See <a class="reference internal" href="#example-class-definition">Example Class Definition</a>
+for a version of the blackjack module with the <a class="reference internal" href="../blackjack/card_deck_shoe.html#Card" title="Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a> class definition
+that we might start with.</p>
+<p><strong>Exercise the Class</strong>.
+Once we have the class, we need to exercise it using interactive Python.
+Here’s what we saw.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>MacBookPro-SLott:OODesign-3.1 slott$ python3
+Python 3.4.3 (v3.4.3:9b73f1c3e601, Feb 23 2015, 02:52:03)
+[GCC 4.2.1 (Apple Inc. build 5666) (dot 3)] on darwin
+Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license&quot; for more information.
+&gt;&gt;&gt; from blackjack import Card, AceCard, FaceCard
+&gt;&gt;&gt; c2d = Card(2, Card.Diamonds)
+&gt;&gt;&gt; str(c2d)
+&#39; 2♢&#39;
+&gt;&gt;&gt; cas = AceCard(Card.Ace, Card.Spades)
+&gt;&gt;&gt; str(cas)
+&#39; A♠&#39;
+&gt;&gt;&gt; cas.softValue
+11
+</pre></div>
+</div>
+<p>During our session, we played with the preferred use
+cases for our class. We can copy the examples from the interactive session and
+paste them into our class docstrings.</p>
+<p><strong>Update the Docstrings</strong>.
+After we have some output that shows correct behavior of our class, we
+can put that output into the class docstrings. Here’s our updated <code class="file docutils literal notranslate"><span class="pre">card.py</span></code>
+module with doctest comments.</p>
+<p class="rubric">blackjack.py With Doctests Included</p>
+<p>We’ve only shown the docstrings from two classes within
+the overall module file.</p>
+<p>In both cases, we’ve copied and pasted lines from
+an interactive session to show show the class definitions
+shold behave.  When we process this module with
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">doctest</span></code> we can confirm that the advertised behavior
+matches the actual behavior of the classes.</p>
+</div>
+<div class="section" id="mixed-unittest-and-doctest">
+<h2>Mixed <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">doctest</span></code><a class="headerlink" href="#mixed-unittest-and-doctest" title="Permalink to this headline">¶</a></h2>
+<p>A more complete approach is to use <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest</span></code> for most
+testing and <code class="xref py py-class docutils literal notranslate"><span class="pre">doctest</span></code> to emphasize specific use cases in the
+docstrings. When doing this, you’ll have a test module that looks
+something like the following.</p>
+<p class="rubric">combined_test.py</p>
+<p>We’ve imported <code class="xref py py-mod docutils literal notranslate"><span class="pre">unittest</span></code> and <code class="xref py py-mod docutils literal notranslate"><span class="pre">doctest</span></code> because we’ll be
+executing a combined suite of tests.</p>
+<p>We’ve imported the <code class="xref py py-mod docutils literal notranslate"><span class="pre">blackjack_doctest</span></code> module. This is an
+example that <em>includes</em> doctests in the comments. We have a separate
+example that doesn’t include an doctests in the comments.</p>
+<p>We’ve also imported the <code class="xref py py-mod docutils literal notranslate"><span class="pre">test_card</span></code> module that performs
+unit tests on the class definitions in the <code class="xref py py-mod docutils literal notranslate"><span class="pre">blackjack</span></code> module.</p>
+<p>We can the build a test suite from these two sources of tests:</p>
+<ul class="simple">
+<li><p>The doctest strings in the module, and</p></li>
+<li><p>The unit tests <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code> classes in the test module.</p></li>
+</ul>
+<p>Between the two sources, we have eight separate tests.</p>
+<p>Our <code class="file docutils literal notranslate"><span class="pre">test/__main__.py</span></code> module will often use this technique
+to build a complete suite of tests incorporating unittest and doctest
+tests.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python Unit Testing</a><ul>
+<li><a class="reference internal" href="#using-unit-tests">Using Unit Tests</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#example-unit-test">Example Unit Test</a></li>
+<li><a class="reference internal" href="#example-class-definition">Example Class Definition</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#python-application-doctest-testing">Python :application:`doctest` Testing</a><ul>
+<li><a class="reference internal" href="#building-doctest-examples">Building Doctest Examples</a></li>
+<li><a class="reference internal" href="#mixed-unittest-and-doctest">Mixed <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">doctest</span></code></a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../blackjack/conclusion.html" title="previous chapter">Conclusion</a></li>
+      <li>Next: <a href="python_documentation.html" title="next chapter">Python Documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

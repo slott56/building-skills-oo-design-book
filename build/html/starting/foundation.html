@@ -1,0 +1,635 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Foundations &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Development Environment" href="initial_setup.html" />
+    <link rel="prev" title="Preface" href="../preface.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="foundations">
+<span id="found"></span><h1>Foundations<a class="headerlink" href="#foundations" title="Permalink to this headline">¶</a></h1>
+<p>This section starts with a <a class="reference internal" href="#problem-statement">Problem Statement</a>.
+This attempts to define the context in which the problem arises, the
+problem to be solved and any forces that
+influence the choice of solution. Given  this,
+it can propose a solution and some consequences of the
+chosen solution.</p>
+<p>Based on the problem statement, this section describes a use
+case for this software. This will be <a class="reference internal" href="#our-simulation-application">Our Simulation Application</a>.
+In this section, we’ll look at the
+overall strategy and establish some areas of responsibility for
+various software components.</p>
+<p>We’ll look at some issues in
+<a class="reference internal" href="#methodology-technique-and-process">Methodology, Technique and Process</a> that are not technical in nature.
+They’re more procedural and provide some direction on development, testing
+and writing documentation.</p>
+<p>In <a class="reference internal" href="#additional-topics-non-functional-requirements">Additional Topics: Non-Functional Requirements</a> we’ll look at issues
+like Quality, Rework, Reuse, and Design Patterns.</p>
+<p>Finally, we’ll look at rework in <a class="reference internal" href="#rework-and-the-learning-process">Rework and the Learning Process</a>.
+Doing rework to correct initial assumptions
+is an important part of the way this book is organized.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Fools Rush In</p>
+<p>It’s important not to rush in to programming.</p>
+<p>Be sure you understand the problem being solved and how
+software solves that problem.</p>
+</div>
+<p>Let’s look closely at the problem we’re going to solve.</p>
+<div class="section" id="problem-statement">
+<span id="found-problem"></span><h2>Problem Statement<a class="headerlink" href="#problem-statement" title="Permalink to this headline">¶</a></h2>
+<p><strong>Context</strong>.
+We’re going to study the “classic” casino table games
+played against the house, including Roulette, Craps and Blackjack. We
+want to explore the consequences of various betting strategies for
+these casino games.</p>
+<p>Questions include “How well does the
+Cancellation strategy work?” “How well does the
+Martingale strategy works for the Come Line odds bet in Craps?”
+“How well does this Blackjack strategy I found on the Internet
+compare with the strategy card I bought in the gift
+shop?”</p>
+<p>A close parallel to this is exploring variations in rules and how
+these different rules have an influence on outcomes. Questions include
+“What should we do with the 2× and 10× odds offers in
+Craps?” “How should we modify our play for a single-deck
+Blackjack game with 6:5 blackjack odds?”</p>
+<p>Our context does not include exploring or designing new casino
+games. Our context also excludes multi-player games like poker.</p>
+<p><strong>Problem</strong>.
+Our problem is to answer the following question: <em>For a
+given game, what player strategies produce the best
+results?</em></p>
+<p><strong>Forces</strong>.
+There are a number of forces that influence our choice of
+solution. Here’s an overview:</p>
+<ul class="simple">
+<li><p>We want an application that is has bounded complexity.
+Instead of producing a rich, sophisticated interactive user
+interface, we will produce raw data and statistical
+summaries. A command-line interface (CLI)
+lets the user  specify a betting strategy; the application
+will respond with a presentation of the
+results. Using a comma-separated values
+(CSV) format, the can be pasted into a
+spreadsheet for further analysis.</p></li>
+<li><p>We want an application that is easy to extend to different
+betting strategies as well as new games. The customization
+is done by modifying the supplied code.
+The user can build a new betting strategy, test it, and run simulations.</p></li>
+<li><p>We need to reflect actual game play.
+A long-running simulation of thousands of individual cycles of play will
+approach the theoretical results. However, people typically don’t spend more than
+a few hours at a table game. If, for example, a Roulette wheel is spun
+once each minute, a player is unlikely to see more that 120 spins in
+two hours at a casino.</p></li>
+<li><p>Additionally, many players have a fixed
+budget, and the betting is confined by table limits.
+This means that the betting strategy needs to address the subject of
+“money management:” a player may
+elect to stop playing when they are ahead or cut their losses
+when they are behind.</p></li>
+</ul>
+<p><strong>High-Level Use Case</strong>.
+The high-level use case is the overall cycle of
+investigation. The actor’s goal is to find an optimal strategy for a given game.</p>
+<p>Here’s the scenario we’re imagining.</p>
+<ol class="arabic simple">
+<li><p><strong>Actor</strong>:
+Uses an IDE to build new classes for a simulator and runs the
+updated simulation. The classes may provide variant game
+rules, variant play strategies, or variant betting strategies.</p></li>
+<li><p><strong>IDE</strong>:
+Responds with output from running unit tests.</p></li>
+<li><p><strong>Actor</strong>:
+Runs the simulator with selection of
+game and strategy.</p></li>
+<li><p><strong>Simulator</strong>:
+Responds with statistical results.</p></li>
+<li><p><strong>Actor</strong>.
+Evaluates the results. Uses a spreadsheet or other tool for
+analysis and visualization. Perhaps another Python application
+digests the simulation output to produce summaries.</p></li>
+</ol>
+<p><strong>Consequences</strong>.
+We’re going build the simulator application around the use case.</p>
+<p>We won’t address how to analyze the results. That’s a separate,
+and interesting topic.</p>
+<p>One of the most important consequences of our solution is building
+an application into which new player betting strategies
+can be inserted. Clever gamblers invent new strategies all the time.</p>
+<p>We will not know all of the available strategies in advance, so we
+will not be able to fully specify all of the various design details in
+advance. Instead, we will find ourselves reworking some parts of the
+solution, to support a new player betting strategy.</p>
+<p>Given this overview of the simulation and modeling intent, we
+can look at the application program and how we’ll use it. In the
+next section we’ll provide the overall concept behind using this application.</p>
+</div>
+<div class="section" id="our-simulation-application">
+<span id="found-solution"></span><h2>Our Simulation Application<a class="headerlink" href="#our-simulation-application" title="Permalink to this headline">¶</a></h2>
+<p>What will our application look like?</p>
+<p>From reading the problem and use case information, we can identify
+at least the following four elements to our application.</p>
+<ul class="simple">
+<li><p>The game being simulated. This includes the various
+elements of the game: the wheel, the dice, the cards, the table,
+and the bets.</p></li>
+<li><p>The player being simulated. This includes two separate details:</p>
+<ul>
+<li><p>Decisions the player makes based on the state of the game.
+Blackjack has complex player decisions.</p></li>
+<li><p>Betting choices based on the state of the game.
+Craps has very complex betting decisions.</p></li>
+</ul>
+</li>
+<li><p>The statistics being collected.</p></li>
+<li><p>An overall control component which processes the game,
+collects the statistics, and writes the details or the final
+summary.</p></li>
+</ul>
+<p>While potentially interesting, we will not pursue the design of a
+general-purpose simulation framework. Nor will we use any of the
+available general frameworks. While these are handy and powerful tools,
+we want to focus on developing application software “from scratch”
+(or <em>de novo</em>) as a learning exercise.</p>
+<p>For more information on a general simulation tool, see <a class="reference external" href="https://mesa.readthedocs.io/en/master/">https://mesa.readthedocs.io/en/master/</a>.</p>
+<p>A typical execution of the simulator application will look like the following
+example:</p>
+<p class="rubric" id="found-solution-ex1">Sample Execution</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3 -m casino.craps --Dplayer.name<span class="o">=</span><span class="s2">&quot;Player1326&quot;</span> &gt;details.log
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li><p>We select the main simulator control using the package
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">casino</span></code> and the module <code class="xref py py-mod docutils literal notranslate"><span class="pre">craps</span></code>.</p></li>
+<li><p>We define the player to use, <code class="samp docutils literal notranslate"><span class="pre">player.name=&quot;Player1326&quot;</span></code>.
+The main method will use this parameter to create objects and execute the simulation.</p></li>
+<li><p>We collect the raw data in a file named <code class="file docutils literal notranslate"><span class="pre">details.log</span></code>.</p></li>
+</ol>
+<p>There are a number of more technical considerations that we will
+expand in <a class="reference internal" href="initial_setup.html#found-starting"><span class="std std-ref">Development Environment</span></a>. These include the use of an
+overall application framework and an approach for unit testing.</p>
+<p>In addition to the software itself, we also need to look closely
+at how we’ll build this software. In the next section, we’ll
+look at our overall approach, often called the “methodology”.
+We’ll look at some specific techniques and talk about the
+process of building software.</p>
+</div>
+<div class="section" id="methodology-technique-and-process">
+<h2>Methodology, Technique and Process<a class="headerlink" href="#methodology-technique-and-process" title="Permalink to this headline">¶</a></h2>
+<p>The intent of this book is to focus on programming language and design skills;
+we won’t narrowly follow the details any
+particular software development methodology.
+We prefer to lift up a few techniques which seem to have the most benefit.</p>
+<ul class="simple">
+<li><p>Incremental Development. Each chapter is a “sprint” that
+produces some collection of deliverables. Each part of the book is a complete
+release.</p></li>
+<li><p>Unit Testing. We don’t dwell on test-driven development, but
+each chapter explicitly requires unit tests for the classes
+built. Ideally, one writes the test cases first.</p></li>
+<li><p>Static Analysis. We’ll provide suggested type hints. The student
+should use <strong>mypy</strong> to provide some confidence the code is likely
+to work as expected.</p></li>
+<li><p>Embedded Documentation. We’ll describe the documentation
+expectations.</p></li>
+</ul>
+<p>The exercises are presented as if we are doing a kind of iterative
+design with small deliverables. We present the exercises like
+this for a number of reasons.</p>
+<ol class="arabic simple">
+<li><p>We find design is helped by immediate feedback.
+While we present the design in considerable detail,
+we do not present the final code. Programmers new
+to OO design will benefit from repeated exposure to the
+transformation of problem statement through design to code.</p></li>
+<li><p>This presentation parallels the way software is developed.
+A project may emphasize larger collections of deliverables.
+However, the actual creation of working eventually decomposes into classes, fields and
+methods.</p></li>
+</ol>
+<p>For developers enamored of a strict waterfall methodology –
+with all design work completed before any programming work – the book
+can be read in a slightly different order. From each exercise chapter,
+read only the <strong>overview</strong> and <strong>design</strong> sections. From that information,
+integrate the complete design. Then proceed through the <strong>deliverables</strong>
+sections of each chapter, removing duplicates and building only the
+final form of the deliverables based on the complete design.</p>
+<p>This preliminary work to create a waterfall project is quite difficult.</p>
+<div class="section" id="making-technical-decisions">
+<h3>Making Technical Decisions<a class="headerlink" href="#making-technical-decisions" title="Permalink to this headline">¶</a></h3>
+<p>Many of the chapters will include some lengthy design discussions.
+Some of these will appear to be little more than hand-wringing over nuances.
+Others appear to be “thinking out loud.”</p>
+<p>Pragmatically, it helps to do a certain amount of hand-wringing over OO design.
+We call it “Looking For The Big Simple”. It can take a great
+deal of time and effort to find a simple implementation for a complex problem.
+A technique that helps is to enumerate the alternatives with pros and cons.</p>
+<p>Our intent can be summarized as follows:</p>
+<blockquote>
+<div><p>Good design comes from a good process for
+technical decision-making.</p>
+<p>Admit what is unknown, and take steps to reduce
+our degrees of ignorance. Do research. Write proofs-of-concept.</p>
+<p>Budget time for exploring the bad designs before arriving at a good design.</p>
+<p>A little more
+time spent on design can result in considerable simplification,
+which will reduce overall development and maintenance costs.</p>
+</div></blockquote>
+<p>It’s also important to note that people are not
+omniscient. Some of the exercises include intentional dead-ends. As a
+practical matter, we can rarely foresee all of the consequences of a
+design decision and we need to be prepared to undertake rework.</p>
+<p>We’ve looked at the problem, and an overview of our solution;
+these are the functional requirements for the solution.
+In this section, we looked out some of the techniques and
+processes. In the next section, we’ll look at some additional
+considerations for the product we’ll create; these are
+non-functional requirements.</p>
+</div>
+</div>
+<div class="section" id="additional-topics-non-functional-requirements">
+<h2>Additional Topics: Non-Functional Requirements<a class="headerlink" href="#additional-topics-non-functional-requirements" title="Permalink to this headline">¶</a></h2>
+<p>We can decompose software requirements into two broad categories:</p>
+<ul class="simple">
+<li><p><strong>Functional Requirements</strong>. These are the things the software
+must do. The use cases should address this completely. The point
+of use cases is to describe what the user will do with
+the software.</p></li>
+<li><p><strong>Non-Functional Requirements</strong>. These are the supporting
+ideals and principles that make good software. This includes
+compatibility with multiple operating systems, auditability
+of the results, retention of history, and other topics.</p></li>
+</ul>
+<p>The number of non-functional features of software is large.
+We’ll talk about a few of them, specifically:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#general-aspects-of-software-quality">General aspects of software quality</a>,</p></li>
+<li><p><a class="reference internal" href="#reusability-of-code">Reusability of code</a>,</p></li>
+<li><p><a class="reference internal" href="#design-patterns-and-principles">Design patterns and principles</a>.</p></li>
+</ul>
+<div class="section" id="general-aspects-of-software-quality">
+<h3>General aspects of software quality<a class="headerlink" href="#general-aspects-of-software-quality" title="Permalink to this headline">¶</a></h3>
+<p>Our approach to overall quality will
+focus on unit tests, static analysis, and documentation.
+There are many more things which can be thought of
+when considering software quality.</p>
+<p>Here’s a broad list of quality topics:</p>
+<ul class="simple">
+<li><p>Need Satisfaction.</p></li>
+<li><p>Performance and Resource Use.</p></li>
+<li><p>Maintenance.</p></li>
+<li><p>Adaptation and Change.</p></li>
+<li><p>Organizational Considerations.</p></li>
+</ul>
+<p><strong>Need Satisfaction</strong>.
+This is the essence of the functional requirements:
+does the software meet the need? If we start with a problem
+statement, and define the use cases, we’ll often write software which is
+focused on the user’s needs.</p>
+<p><strong>Performance</strong>.
+We don’t address performance specifically in this book. However,
+the presence of extensive unit tests allows us to alter the
+implementation of classes to change the overall performance of our
+application. As long as the resulting class still passes the
+unit tests, we can develop numerous alternative implementations
+to optimize speed, memory use, input/output, or any other
+resource.</p>
+<p><strong>Maintenance</strong>.
+Software is something that is subject to a great deal of change.
+It changes when we uncover and fix bugs. More commonly, it changes when our
+understanding of the problem, the actor, or the use case changes.</p>
+<p>In many cases, our initial solution merely clarifies the actor’s
+thinking. After using an application, we’ll need to alter the
+software to reflect the user’s deeper understanding of the problem.</p>
+<p>Software maintenance is just another cycle of the iterative approach
+we’ve chosen in this book. We pick a feature, create or modify
+classes, and then create or modify the unit tests. In the case of
+bug fixing, we often add unit tests to demonstrate the bug, and
+then fix our classes to pass the revised unit tests.</p>
+<p><strong>Adaptation</strong>.
+Adaptation refers to our need to adapt our software to
+changes in the context where its used. The context can
+include interfaces, operating systems, or platforms.
+When we address issues of
+interoperability with other software, portability to new
+operating systems, scalability for more users, we are addressing
+adaptation issues.</p>
+<p><strong>Organizational</strong>.
+There are some organizational quality factors: cost of
+ownership and productivity of the developers creating it. We
+don’t address these directly. Our approach, however, of
+developing software incrementally often leads to good developer
+productivity.</p>
+<p>The non-functional requirements are secondary to the functional
+requirements. If the software doesn’t work in the first place,
+it doesn’t matter how adaptable it is.</p>
+<p>In addition to looking at quality overall, we also need
+to consider reuse of the software. This can be daunting, and
+it’s important to have concrete goals for the reusability
+of software we write.</p>
+</div>
+<div class="section" id="reusability-of-code">
+<h3>Reusability of code<a class="headerlink" href="#reusability-of-code" title="Permalink to this headline">¶</a></h3>
+<p>While there is a great deal of commonality among the three
+games, the exercises do not start with an emphasis on constructing a
+general, reusable framework. We find that too much generalization and too much
+emphasis on reuse is not appropriate for
+beginning OO designers.</p>
+<p>Additionally, we find that projects that begin with too-lofty reuse goals often fail to
+deliver valuable solutions in a timely fashion. We prefer not to start
+out with a goal that amounts to boiling the ocean to make a
+pot of tea.</p>
+<p>While a promise of OO design is reuse, this
+needs to be tempered with some pragmatic considerations. There are
+two important areas of reuse:</p>
+<ul class="simple">
+<li><p>Reusing a class specification to create objects with common
+structure and behavior, and</p></li>
+<li><p>Using inheritance to reuse structure and behavior among
+multiple classes of objects.</p></li>
+</ul>
+<p>Beyond these two areas, undue emphasis on reuse can create more cost than value.</p>
+<p>The first step in reuse comes from isolating
+responsibilities to create classes of objects. Generally, a number
+of objects that have common structure and behavior is a kind of
+reuse. When these objects cooperate to achieve the desired
+results, this is sometimes called emergent
+behavior: no single class contains the
+overall functionality, it grew from the interactions among the
+various objects.</p>
+<p>The second step in OO reuse is
+inheritance. The subclass-superclass relationship yields a
+form of reuse: a class hierarchy with six subclasses will share
+the superclass code seven times over. This, by itself, has
+tremendous benefits.</p>
+<p>We caution against any larger scope of reuse. Sharing
+classes between projects may or may not work out well. The
+complexity of achieving inter-project reuse can be paralyzing to
+first-time designers. Often, different projects reflect different
+points of view, and the amount of sharing is limited by these
+points of view.</p>
+<p>As an example, consider a product in a business
+context. An external customer’s view of the product (shaped by
+sales and marketing) may be very different from the internal views
+of the same product. Internal views of the product (for example,
+finance, legal, manufacturing, shipping, support) may be very
+different from each other. Reconciling these views may be far more
+challenging than a single software development project. For that
+reason, we don’t encourage this broader view of reuse.</p>
+<p>For our purposes in this book, there’s no broader reuse goal.
+We’ll avoid considerations appropriate to larger frameworks,
+or complex enterprise applications.</p>
+<p>An important quality consideration is writing software that
+fits commonly-understood design patterns. We’ll look
+at the question of design patterns next.</p>
+</div>
+<div class="section" id="design-patterns-and-principles">
+<h3>Design patterns and principles<a class="headerlink" href="#design-patterns-and-principles" title="Permalink to this headline">¶</a></h3>
+<p>These exercises will refer to several common design patterns.
+A Design Patterns book is not a prerequisite;
+a reader may want to find books on design patterns to gain additional
+insight into the design patterns used here. We feel that use of common
+design patterns significantly expands the programmer’s repertoire of
+techniques.</p>
+<p>Many design pattern books are focused on languages like C++ and Java,
+where language rules can create sticky situations requiring some
+moderately clever and insightful programming techniques.
+Python has a different set of language features, changing several
+classic design patterns in profound ways. For this reason, we don’t
+strongly recommend spending a lot of time studying design patterns
+outside the Python language context.</p>
+<p>While well-known design patterns can be helpful, they often require
+some experience to see how they work and what the possible value is.
+We suggest paying close attention other software, reading widely,
+and looking for common features that form recognizable patterns.</p>
+<p>The process of writing software often involves dead-ends, mistakes,
+and rework. In the next section, we’ll address the concept of rework
+and how this book helps you to tackle the inevitable rework problems
+that arise.</p>
+<p>In the next section we’ll look at an important part of the overall
+process for building software. We need to understand lessons learned
+along the way, and deal gracefully with the need to rework software.</p>
+</div>
+</div>
+<div class="section" id="rework-and-the-learning-process">
+<h2>Rework and the Learning Process<a class="headerlink" href="#rework-and-the-learning-process" title="Permalink to this headline">¶</a></h2>
+<p>In <a class="reference internal" href="#found-problem"><span class="std std-ref">Problem Statement</span></a>, we described the problem.
+In <a class="reference internal" href="#found-solution"><span class="std std-ref">Our Simulation Application</span></a>, we provided an overview of the
+solution. The following parts will guide you through an incremental
+design process; a process that involves learning and exploring. This
+means that we will coach you to build classes and then modify those
+classes based on lessons learned during later steps in the design
+process. See our <a class="reference internal" href="#soapbox-rework"><span class="std std-ref">Soapbox on Rework</span></a>
+for an opinion on the absolute necessity for design rework.</p>
+<p>We don’t present a complete design for the entire application.
+We feel that it is very important follow a realistic problem-solving trajectory.
+Beginning designers should be exposed to the
+decisions involved in creating a complete design. In our experience,
+all problems involve a considerable amount of “learn as you go”.</p>
+<p>We want to reflect this in our series of exercises. In
+many respects, a successful OO design is one that
+respects the degrees of ignorance that people have
+when starting to build software. We will try to present the exercises
+in a way that teaches the reader how to manage ignorance and still
+develop valuable software.</p>
+<div class="sidebar">
+<p class="sidebar-title">Soapbox on Rework</p>
+<div class="admonition important" id="soapbox-rework">
+<p class="admonition-title">Important</p>
+<p>The best way to learn is to make mistakes.</p>
+<p>Rework is a consequence of learning.</p>
+</div>
+<p>All of software development can be described as various
+forms of knowledge capture. A project begins with
+many kinds of ignorance and takes steps to reduce
+that ignorance. Some of those steps should involve revising or
+consolidating previous learnings.</p>
+<p>A project without rework is suspiciously
+under-engineered.</p>
+</div>
+<p>For some, the word <em>rework</em> has a negative
+connotation. If you find the word distasteful, please replace every
+occurrence with any of the synonyms: adaptation, evolution,
+enhancement, mutation. We prefer the slightly negative connotation
+of the word rework because it helps managers realize the importance
+of incremental learning and how it changes the requirements, the
+design and the resulting software.</p>
+<p>Since learning will involve mistakes, good management plans
+for the costs and risks of those mistakes. Generally, our approach
+is to manage our ignorance; we try to create a design such that
+correcting a mistake only fixes a few classes.</p>
+<p>We often observe denial of the amount of ignorance involved in
+creating IT solutions. It is sometimes very
+difficult to make it clear that if the problem was well-understood,
+or the solution was well-defined there would be immediately
+applicable off-the-shelf or open-source solutions. The absence of a
+ready-to-hand solution generally means the problem is hard. It also
+means that there are several degrees of ignorance: ignorance of the
+problem, solution and technology; not to mention ignorance of the
+amount of ignorance involved in each of these areas.</p>
+<p>We see a number of consequences of denying the degrees of
+ignorance.</p>
+<ul class="simple">
+<li><p><strong>Programmers</strong>.
+For programmers experienced in non-OO
+(e.g. procedural) languages, learning OO design
+can be difficult and frustrating. When this is
+new, it helps to make mistakes to learn effectively.
+Programmers need time and space to explore and make mistakes.
+Feel free to rework your solutions to make them better. Above all, do not attempt to
+design a solution that is complete and perfect the very first
+time. We can’t emphasize enough the need to do design many times
+before understanding what is important and what is not important
+in coping with ignorance.</p></li>
+<li><p><strong>Managers</strong>.
+For managers, the
+design rework appears to be contrary to the fanciful expectation of
+reduced development effort from OO techniques.
+The usual form for the complaint is the following: “I
+thought that OO design was supposed to be easier
+than non-OO design.” We’re not sure where
+the expectation originates, but good design takes time, and
+learning to do good design seems to require making mistakes. Every
+project needs a budget for making the necessary mistakes,
+reworking bad ideas to make them good, and searching for
+simplifications.</p></li>
+</ul>
+<p>We find that early “high-level” designs will
+miss details of the problem domain. This will lead to rework.
+Forbidding rework amounts to mandating a full understanding of the
+problem prior to any code.</p>
+<p>In most cases, our users do not fully understand their
+problem any more than our developers understand our users.
+Generally, it is very hard to understand the problem, the technology,
+and the solution. We find that hands-on use of preliminary versions of
+software can help more than endless conversations about what could
+be built.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>We’ve looked at the problem, the general form of the solution.
+We’ve talked a bit about the process or methodology to be used,
+and some of the non-functional requirements. We’ve even acknowledged
+that mistakes will be made, and rework will be part of the process.</p>
+<p>In the next chapter, we’ll talk specifically about the what
+tools to install, and what deliverables will be created.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Foundations</a><ul>
+<li><a class="reference internal" href="#problem-statement">Problem Statement</a></li>
+<li><a class="reference internal" href="#our-simulation-application">Our Simulation Application</a></li>
+<li><a class="reference internal" href="#methodology-technique-and-process">Methodology, Technique and Process</a><ul>
+<li><a class="reference internal" href="#making-technical-decisions">Making Technical Decisions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additional-topics-non-functional-requirements">Additional Topics: Non-Functional Requirements</a><ul>
+<li><a class="reference internal" href="#general-aspects-of-software-quality">General aspects of software quality</a></li>
+<li><a class="reference internal" href="#reusability-of-code">Reusability of code</a></li>
+<li><a class="reference internal" href="#design-patterns-and-principles">Design patterns and principles</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rework-and-the-learning-process">Rework and the Learning Process</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../preface.html" title="previous chapter">Preface</a></li>
+      <li>Next: <a href="initial_setup.html" title="next chapter">Development Environment</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

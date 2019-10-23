@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Getting Started &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="getting-started">
+<span id="found-starting"></span><h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>In this chapter, we’ll build the initial working development
+environment. We’ll install some tools, create a template directory
+structure, and run the first round of tests to be sure
+things work.</p>
+<p>We’ll start with an overview of what we’re going to build.
+In <cite>Deliverables_</cite>, we’ll address the kinds of deliverables
+that should be produced. These kinds of deliverables form the basis for each chapter.</p>
+<div class="section" id="deliverables">
+<h2>Deliverables<a class="headerlink" href="#deliverables" title="Permalink to this headline">¶</a></h2>
+<p>Each chapter defines the classes to be built and the unit testing
+that is expected. A third category of deliverable – documentation – is merely implied.</p>
+<p>The purpose of
+each chapter is to write the source files for one or more classes, the
+source files for one or more unit tests, and assure that a minimal set
+of API documentation is available.</p>
+<ul>
+<li><p><strong>Source Files</strong>.
+The source files are the most important deliverable. In effect,
+this is the working application program. Generally, we will be
+running this application from within the Integrated Development
+Environment (IDE).</p>
+<p>We can always run the Python as a stand-alone program, if we want
+to exercise it the way end-users will see it.</p>
+<p>In the case of Python, a “program” is the collection of
+<code class="file docutils literal notranslate"><span class="pre">.py</span></code> files. There really isn’t much more to deliver.
+This makes our life simpler than in other languages with
+complex compilers and other tools.</p>
+</li>
+<li><p><strong>Unit Test Files</strong>.
+The deliverables section of each chapter summarizes the unit
+testing that is expected, in addition to the classes to be built. We
+feel that unit testing is a critical skill, and emphasize it
+throughout the inividual exercises.</p>
+<p>There are two broad approaches for unit tests.</p>
+<ul class="simple">
+<li><p>The built-in <code class="xref py py-mod docutils literal notranslate"><span class="pre">unittest</span></code> module has facilities
+for defining test classes.</p></li>
+<li><p>The add-on <code class="xref py py-mod docutils literal notranslate"><span class="pre">pytest</span></code> package has facilities
+for writing somewhat simpler test functions.
+The <code class="docutils literal notranslate"><span class="pre">pytest</span></code> tool can collect <code class="xref py py-class docutils literal notranslate"><span class="pre">unittest.TestCase</span></code>
+classes as part of a test suite, making this
+an ideal choice for running unit tests.</p></li>
+</ul>
+<p>We’ll look closely at the overall project structure in the next section.</p>
+</li>
+<li><p><strong>Documentation</strong>.
+The job isn’t over until the paperwork is done.
+The internal documentation is generally built from
+specially formatted blocks of comments within the source itself.
+We can use <a href="#id1"><span class="problematic" id="id2">:application:`Epydoc`</span></a> (or <a href="#id3"><span class="problematic" id="id4">:application:`sphinx`</span></a>) to create
+documentation based on the code.</p></li>
+</ul>
+<p>We’ll be building three separate, but closely-related things:
+the code, the test cases, and the documentation. In the next
+section we’ll organize our tools.</p>
+</div>
+<div class="section" id="tools">
+<h2>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h2>
+<p>Perhaps one of the most important considerations is to have
+a way to manage Python environments. There are a number
+of “virtual environment” tools available. In this book,
+we’re going to suggest using <strong>conda</strong> to manage Python
+installation and environment setup.</p>
+<p>While Python is often available on modern OS’s, it tends
+to be out-of-date. The OS Python often requires privileges
+to do installs and upgrades.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Don’t Use the OS Python</p>
+<p>Even if Python is already installed, don’t use it.</p>
+<p>Always install your own, so you can keep it up-to-date
+without worrying about OS conflicts or privileges.</p>
+</div>
+<p>Here’s a good way to proceed.</p>
+<ol class="arabic">
+<li><p>Download Miniconda.  <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">https://docs.conda.io/en/latest/miniconda.html</a></p></li>
+<li><p>Detailed instructions: <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">https://conda.io/projects/conda/en/latest/user-guide/install/index.html</a></p></li>
+<li><p>Once conda is installed, create a working environment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">oo</span><span class="o">-</span><span class="n">design</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.7</span> <span class="n">pytest</span> <span class="n">sphinx</span>
+</pre></div>
+</div>
+</li>
+<li><p>Activate the working environment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">oo</span><span class="o">-</span><span class="n">design</span>
+</pre></div>
+</div>
+</li>
+<li><p>Add <code class="docutils literal notranslate"><span class="pre">tox</span></code> to the environment. This isn’t available from the libraries
+searched by <code class="docutils literal notranslate"><span class="pre">conda</span></code>, so we’ll use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install it.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">tox</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>At this point, we can enter the following command to see we have a useful,
+working virtual environment.</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">oo</span><span class="o">-</span><span class="n">design</span><span class="p">)</span> <span class="n">slott</span><span class="nd">@MacBookPro</span><span class="o">-</span><span class="n">SLott</span> <span class="o">%</span> <span class="n">python</span> <span class="o">-</span><span class="n">V</span>
+<span class="n">Python</span> <span class="mf">3.7</span><span class="o">.</span><span class="mi">4</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Python is relatively easy to work with: any text editor will serve
+a developer’s needs. Something as simple as Atom or something
+as sophisticated as PyCharm are both acceptable as IDE’s.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Getting Started</a><ul>
+<li><a class="reference internal" href="#deliverables">Deliverables</a></li>
+<li><a class="reference internal" href="#tools">Tools</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

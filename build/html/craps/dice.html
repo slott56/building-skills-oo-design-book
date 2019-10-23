@@ -1,0 +1,399 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dice Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Throw Builder Class" href="throw_builder.html" />
+    <link rel="prev" title="Throw Class" href="throw.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="dice-class">
+<span id="craps-dice"></span><h1>Dice Class<a class="headerlink" href="#dice-class" title="Permalink to this headline">¶</a></h1>
+<p>Unlike Roulette, where a single <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance could be identified by
+the number in the bin, each <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object is a pair of numbers.</p>
+<p>The idea is to have the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class parallel to the Roulette <a class="reference internal" href="../roulette/wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class.
+A <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> instance is a collection of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances. The <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> instance
+is responsible to picking a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object at random. We’ll look at this in detail in
+<a class="reference internal" href="#dice-analysis">Dice Analysis</a>.</p>
+<p>We’ll reconsider some features of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>  class in <a class="reference internal" href="#throw-rework">Throw Rework</a>.</p>
+<p>Once we’ve settled on the features, we’ll look at the details
+in <a class="reference internal" href="#dice-design">Dice Design</a>. We’ll enumerate the deliverables in <a class="reference internal" href="#dice-deliverables">Dice Deliverables</a>.</p>
+<p>We’ll look at the subject of performance improvements in <a class="reference internal" href="#dice-optimization">Dice Optimization</a>.</p>
+<div class="section" id="dice-analysis">
+<h2>Dice Analysis<a class="headerlink" href="#dice-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The dice have two responsibilities: they are a container for the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances
+and they pick one of the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances at random.</p>
+<p>We find that we have a potential naming problem: both the <a class="reference internal" href="../roulette/wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>
+and the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> classes are somehow instances of a common abstraction.
+Looking forward, we may wind up wrestling with a deck of cards trying to
+invent a common nomenclature for the classes. They create random events,
+and this leads us to a possible superclass: a <code class="xref py py-class docutils literal notranslate"><span class="pre">Randomizer</span></code> class.
+Rather than over-engineer this, we’ll hold off on adding this design
+element until we find something else that is common among them.</p>
+<p><strong>Container</strong>. Since a <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> object has 36 possible <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances,
+it is a collection. We can review our survey of the collections in <a class="reference internal" href="../roulette/bin.html#roul-bin-collections"><span class="std std-ref">Design Decision – Choosing A Collection</span></a>
+for some guidance here. In this case, we note that the choice of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance
+can be selected by a random numeric index.</p>
+<p>For Python  programmers, this makes the a <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> very appealing.
+The collection of outcomes is fixed, and an immutable structure makes
+the most sense.</p>
+<p>After selection a collection type, we must then deciding how to index each
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object in the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> collection.  Recall that in Roulette, we had 38
+numbers: 1 to 36, plus 0 and 00. By using 37 for the index of the
+<a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance that contained 00, we had a simple integer index for each <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance.</p>
+<p>For Craps it seems better to use a two-part index with the values of two independent
+dice.</p>
+<p><strong>Index Choices</strong>.
+In this case, we have two choices for computing the index into the collection,</p>
+<ul class="simple">
+<li><p>We can rethink our use of a simple sequential structure.
+If we use a <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, we can use an object representing
+the pair of numbers as an index instead of a single int value.</p></li>
+<li><p>We can compute a unique index position from the two dice values.</p></li>
+</ul>
+<p><strong>Decision Forces</strong>.
+There are a number of considerations to choosing between these two representations.</p>
+<ol class="arabic">
+<li><p>If we create an object with each unique pair of integers, we
+can then use that object to be the index for a <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>. The
+type hint is <code class="docutils literal notranslate"><span class="pre">Dict[Tuple[int,</span> <span class="pre">int],</span> <span class="pre">Throw]</span></code> which seems
+to describe things succinctly.</p></li>
+<li><p>We can transform the two numeric dice values to a single index value
+for the sequence. This is a technique called
+<em>Key Address Transformation</em>; we transform the keys into
+the address (or index) of the data.</p>
+<p>We create the index, <img class="math" src="../_images/math/5aa339d4daf45a810dda332e3c80a0698e526e04.png" alt="i"/>, from two dice, <img class="math" src="../_images/math/3ae609da43d4b08e38f5d39c0e6b1334d3c6bbd9.png" alt="d_1"/>, <img class="math" src="../_images/math/cc01b82d36d02dbb2f81204ce239408227e1f242.png" alt="d_2"/>,
+via a simple linear equation:  <img class="math" src="../_images/math/a85ae008011938cc3ae921762e1d355ccdf71044.png" alt="i = 6(d_1-1) + (d_2-1)"/>.</p>
+<p>We can reverse this calculation to determine the two dice values from an index.
+<img class="math" src="../_images/math/030657d2d029a303d1d83aa7e951e9d9102996de.png" alt="d_1 = \lfloor i \div 6 \rfloor + 1; d_2 = (i \bmod 6) + 1"/>.
+Python offers a <code class="xref py py-func docutils literal notranslate"><span class="pre">divmod()</span></code> function which does precisely this
+calculation.</p>
+<p>This doesn’t obviously scale to larger collections of dice very well.
+While Craps is a two-dice game, we can imagine simulating
+a game with larger number of dice, making this technique complex.</p>
+</li>
+</ol>
+<p>Because of encapsulation, the choice of algorithm is completely hidden
+within the implementation of <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class.</p>
+<p><strong>Solution</strong>.
+Our recommendation is to encapsulate the
+pair of dice in a <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> instance.  We can use
+this object as index into a <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code> collection to associate a <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>
+of two integers with a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object.</p>
+<p>More advanced students
+can create a class hierarchy for <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> to include
+both implementations as alternative subclasses.</p>
+<p><strong>Random Selection</strong>. The random number generator in <code class="xref py py-class docutils literal notranslate"><span class="pre">random.Random</span></code>
+helps us locate a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance at random.</p>
+<p>First, we can get the <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> of keys from the <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>
+that associates  a <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> of dice numbers with a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance.</p>
+<p>Second, we use <code class="xref py py-meth docutils literal notranslate"><span class="pre">Random.choice()</span></code> to pick one of these  <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> instances.</p>
+<p>We use this randomly selected  <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> object to return the selected
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object.</p>
+</div>
+<div class="section" id="throw-rework">
+<h2>Throw Rework<a class="headerlink" href="#throw-rework" title="Permalink to this headline">¶</a></h2>
+<p>We need to update <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance to return an appropriate key object.</p>
+<p>There are two general strategies available for this kind of computation:</p>
+<ul>
+<li><p><strong>Eager</strong>. This means we calculate the key as soon as we know
+the two dice values. They key can be an attribute which is
+fetched like any other.
+This is computed in the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class constructor method.
+This will allow all parts of the application to share references to a single instance
+of the key.</p></li>
+<li><p><strong>Lazy</strong>. This means we don’t calculate the key until its required.
+We often use the <code class="code docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator for methods which
+embody a lazy calculation that we want to appear as if it was an
+attribute.
+For this, We add a method to <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> to return the <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>
+that is a key for this <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>.</p>
+<dl class="method">
+<dt id="Throw.key">
+<code class="sig-prename descclassname">Throw.</code><code class="sig-name descname">key</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Tuple[int, int]<a class="headerlink" href="#Throw.key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</li>
+</ul>
+<p>It’s very difficult to make an <strong>eager vs. lazy</strong> decision
+until the entire application has been built and we know <strong>all</strong> the places
+where an object is used.</p>
+</div>
+<div class="section" id="dice-design">
+<h2>Dice Design<a class="headerlink" href="#dice-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Dice">
+<em class="property">class </em><code class="sig-name descname">Dice</code><a class="headerlink" href="#Dice" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> instance contains the 36 individual throws of two dice, plus a
+random number generator. It can select a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object at random,
+simulating a throw of dice.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="Dice.throws">
+<code class="sig-prename descclassname">Dice.</code><code class="sig-name descname">throws</code><a class="headerlink" href="#Dice.throws" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code> that maps a two-tuple to a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance.
+The type hint is <code class="docutils literal notranslate"><span class="pre">Dict[Tuple[int,</span> <span class="pre">int],</span> <span class="pre">Throw]</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Dice.rng">
+<code class="sig-prename descclassname">Dice.</code><code class="sig-name descname">rng</code><a class="headerlink" href="#Dice.rng" title="Permalink to this definition">¶</a></dt>
+<dd><p>An instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">random.Random</span></code></p>
+<p>Generates the next random number, used to select a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance
+from the <a class="reference internal" href="#Dice.throws" title="Dice.throws"><code class="xref py py-obj docutils literal notranslate"><span class="pre">throws</span></code></a> collection.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Dice.__init__">
+<code class="sig-prename descclassname">Dice.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Dice.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the dictionary of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances.</p>
+</dd></dl>
+
+<p>At the present time, this does not do the full initialization of all of the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances.
+We’re only building the features of <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> related to random selection.
+We’ll extend this class in a future exercise to build all of the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> objects.</p>
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="addThrow">
+<code class="sig-name descname">addThrow</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">throw: Throw</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#addThrow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>throw</strong> (<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>) – The <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> to add.</p>
+</dd>
+</dl>
+<p>Adds the given <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> to the mapping maintained by this instance
+of <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a>.  The key for this <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> is available from the
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">Throw.getKey()</span></code> method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="roll">
+<code class="sig-name descname">roll</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; Throw<a class="headerlink" href="#roll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the randomly selected <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance.</p>
+<p>First, get the <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> of keys from the <code class="xref py py-obj docutils literal notranslate"><span class="pre">throws</span></code>.</p>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">random.Random.choice()</span></code> method will select one of the available
+keys from the the list.</p>
+<p>This is used to get the corresponding <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> from the <code class="xref py py-obj docutils literal notranslate"><span class="pre">throws</span></code>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Map</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Dice.getThrow">
+<code class="sig-prename descclassname">Dice.</code><code class="sig-name descname">getThrow</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">d1: int</em>, <em class="sig-param">d2: int</em><span class="sig-paren">)</span> &#x2192; Throw<a class="headerlink" href="#Dice.getThrow" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d1</strong> – The value of one die</p></li>
+<li><p><strong>d2</strong> – The other die</p></li>
+</ul>
+</dd>
+</dl>
+<p>This method takes a particular combination of
+dice, locates (or creates) a <code class="xref py py-class docutils literal notranslate"><span class="pre">NumberPair</span></code>, and returns the appropriate <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>.</p>
+<p>This is not needed by the application. However, unit tests will need a method
+to return a specific <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> rather than a randomly selected
+<a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a>.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="dice-deliverables">
+<h2>Dice Deliverables<a class="headerlink" href="#dice-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise. In considering the unit
+test requirements, we note that we will have to follow the design of the <a class="reference internal" href="../roulette/wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>
+class for convenient testability: we will need a way to get a particular <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instance
+from the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> collection, as well as replacing the random number
+generator with one that produces a known sequence of numbers.</p>
+<ul>
+<li><p>The <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class.</p></li>
+<li><p>A class which performs a unit test of building the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a>
+class. The unit test should create several instances of the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class,
+two instances of a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> subclass, and an instance of the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class.
+The unit test should establish that <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances can be
+added to the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> object.</p></li>
+<li><p>A class which performs a demonstration of selecting non-random
+values from the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class. By setting a particular
+seed, the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances will be returned in a fixed order. To
+discover this non-random order, a demonstration should be built
+which includes the following.</p>
+<ol class="arabic simple">
+<li><p>Create several instances of the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class.</p></li>
+<li><p>Create two instances of a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> subclass using the available
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p></li>
+<li><p>Create one instance of the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> class using the two <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances.</p></li>
+<li><p>A number of calls to the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Dice.roll()</span></code> method should return
+randomly selected <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances.</p></li>
+</ol>
+<p>Note that the sequence of random numbers is fixed by the seed value.
+The default constructor for a random number generator creates a seed
+based on the system clock. If your unit test sets a particular seed
+value, you will get a fixed sequence of numbers that can be used to
+get a consistent result.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="dice-optimization">
+<h2>Dice Optimization<a class="headerlink" href="#dice-optimization" title="Permalink to this headline">¶</a></h2>
+<p>First, we note that premature optimization is a common trap.</p>
+<blockquote>
+<div><p>“We should forget about small efficiencies, say about 97% of the time:
+premature optimization is the root of all evil. Yet we should not pass up
+our opportunities in that critical 3%.  A good programmer will not be lulled
+into complacency by such reasoning, he will be wise to look carefully at the
+critical code; but only after that code has been identified”</p>
+<p class="attribution">—Donald Knuth</p>
+</div></blockquote>
+<blockquote>
+<div><p>“Structured Programming with Goto Statements”. Computing Surveys 6:4 (1974), 261-301.</p>
+</div></blockquote>
+<p>The eager vs. lazy calculation of the key associated with a pair of dice
+is something that seems like it should have one “best” way. It seems like
+we should be able to chose between eager and lazy calculation of key values.</p>
+<p>This decision is actually quite difficult to make.</p>
+<p>Eager calculation seems optimal: get it done once and reuse the answer
+many times. However, in some cases, the calculation is rather expensive
+and isn’t always needed. In this case, the key involves the creation of
+a new object, and this can be a costly operation.</p>
+<p>We’ve made an effort to optimize this by thinking of the collection
+of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances as a fixed pool of objects, allocated once, and then never
+created again. It appears that they key associated with a <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> object is only computed
+once.</p>
+<p>For this example, the <strong>Eager v. Lazy</strong> decision seems to be moot.</p>
+<p>In other cases, it’s a significant optimization.</p>
+<p>In all cases, we need to use a profiler to see if this particular piece of the
+application is slowest. We should only optimize the parts which are demonstrably
+slowest. Optimizing parts which aren’t slow (or aren’t even correct) is simply
+a waste of time.</p>
+<p>We should articulate alternative designs. We should leave a note in the
+docstrings about alternative implementations. We should not, however, pursue
+each alternative until we know that it adds significant value to explore
+the alternatives carefully.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have the <a class="reference internal" href="#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> as a container of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> instances,
+we can build the pool of 36 individual <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> objects.  This throw-builder
+will parallel the Roulette <a class="reference internal" href="../roulette/bin_builder.html#BinBuilder" title="BinBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinBuilder</span></code></a>.</p>
+<p>In the next chapter, we’ll look closely at a class to build the individual <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> objects.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Dice Class</a><ul>
+<li><a class="reference internal" href="#dice-analysis">Dice Analysis</a></li>
+<li><a class="reference internal" href="#throw-rework">Throw Rework</a></li>
+<li><a class="reference internal" href="#dice-design">Dice Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dice-deliverables">Dice Deliverables</a></li>
+<li><a class="reference internal" href="#dice-optimization">Dice Optimization</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="throw.html" title="previous chapter">Throw Class</a></li>
+      <li>Next: <a href="throw_builder.html" title="next chapter">Throw Builder Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

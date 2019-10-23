@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bet Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Craps Table Class" href="craps_table.html" />
+    <link rel="prev" title="Throw Builder Class" href="throw_builder.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="bet-class">
+<span id="craps-bet"></span><h1>Bet Class<a class="headerlink" href="#bet-class" title="Permalink to this headline">¶</a></h1>
+<p>This chapter will examine the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class, and its
+suitability for the game of Craps. We’ll expand the design to handle
+additional complications present in real casino games.</p>
+<p>We’ll look at details of craps betting in <a class="reference internal" href="#bet-analysis">Bet Analysis</a>.</p>
+<p>This will lead to some design changes. We’ll cover these in <a class="reference internal" href="#bet-rework">Bet Rework</a>.</p>
+<p>We can then extend the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class hierarchy to include an
+additional kind of bet that’s common in Craps. We’ll cover the
+details in <a class="reference internal" href="#commissionbet-design">CommissionBet Design</a>.</p>
+<p>We’ll detail the deliverables in <a class="reference internal" href="#bet-deliverables">Bet Deliverables</a>.</p>
+<div class="section" id="bet-analysis">
+<span id="craps-bet-ov"></span><h2>Bet Analysis<a class="headerlink" href="#bet-analysis" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance describes an amount that the player has wagered on a specific
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object. This is a simple association of an amount, the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object,
+and a specific <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance.</p>
+<p>When considering the various line bet outcomes (Pass Line, Come Line,
+Don’t Pass and Don’t Come), we noted that when a point was established
+the bet was either a winner or a loser, or it was moved from the line to
+a particular number based on the throw of the dice. We’ll need to add
+this responsibility to our existing definition of the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class.
+This responsibility can be implemented as a <code class="xref py py-meth docutils literal notranslate"><span class="pre">setOutcome()</span></code>
+method that leaves the amount intact, but changes the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance
+from the initial Pass Line or Come Line to a specific point outcome.</p>
+<p>A complexity of placing bets in Craps is the commission (or vigorish)
+required for Buy bets and Lay bets. This is a 5% fee, in addition to the
+bet amount. A player puts $21 down, which is a $20 bet and a $1
+commission. We’ll need to add a a commission or vig responsibility to
+our definition of the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class.</p>
+<p>This price to place a bet generalizes nicely to all other bets. For most
+bets, the price is simply the amount of the bet. For Buy bets, the price
+is 5% higher than the amount of the bet; for Lay bets, the price depends
+on the odds. This adds a new method to the  <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class to compute
+the price of the bet. This has a ripple effect throughout our <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class
+hierarchy to reflect this notion of the price of a bet. We will have to
+make a series of updates to properly deduct the price from the player’s
+stake instead of deducting the amount of the bet.</p>
+<p>There are two parts to creating a proper Craps bet: a revision of the base
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class to separate the price from the amount bet, and a new <a class="reference internal" href="#CommissionBet" title="CommissionBet"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommissionBet</span></code></a>
+subclass to compute prices properly for the more complex Craps bets.</p>
+</div>
+<div class="section" id="bet-rework">
+<h2>Bet Rework<a class="headerlink" href="#bet-rework" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class associates an amount and an <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.
+The <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> class may move a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance to a different <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance to
+reflect a change in the odds used to resolve the bet. In a
+future round of design, we can also associate a it with the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance.</p>
+<p>A bet is not a good candidate for <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.NamedTuple</span></code> because, in craps,
+it’s mutable. If we chose to to use the <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=True)</span></code> decorator,
+we’ll need to change the decorator to <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=False)</span></code>, allowing
+the object to be mutable and change state when a pass-line or come bet is moved.</p>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Bet.setOutcome">
+<code class="sig-prename descclassname">Bet.</code><code class="sig-name descname">setOutcome</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Bet.setOutcome" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – The new <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance for this bet</p>
+</dd>
+</dl>
+<p>Sets the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> for this
+bet. This has the effect of moving the bet to another <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Bet.price">
+<code class="sig-prename descclassname">Bet.</code><code class="sig-name descname">price</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#Bet.price" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the price for this bet. For most
+bets, the price is the amount. Subclasses can override this to
+handle buy and lay bets where the price includes a 5% commission on
+the potential winnings.</p>
+<p>For Buy and Lay bets, a $20 bet has a price of $21.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="commissionbet-design">
+<h2>CommissionBet Design<a class="headerlink" href="#commissionbet-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="CommissionBet">
+<em class="property">class </em><code class="sig-name descname">CommissionBet</code><a class="headerlink" href="#CommissionBet" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#CommissionBet" title="CommissionBet"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommissionBet</span></code></a> extends <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> with a commission
+payment (or vigorish) that determines the price for placing the bet.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="CommissionBet.vig">
+<code class="sig-prename descclassname">CommissionBet.</code><code class="sig-name descname">vig</code><a class="headerlink" href="#CommissionBet.vig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Holds the amount of the vigorish. This is almost universally 5%.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id1">
+<h3>Methods<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Bet.</code><code class="sig-name descname">price</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int</dt>
+<dd><p>Computes the price for this bet. There are
+two variations: Buy bets and Lay bets.</p>
+<p>A Buy bet is a right bet; it has a numerator greater than or equal
+to the denominator (for example, <img class="math" src="../_images/math/2da4d58abd68781dcdd0b97ac1adbaaf01695038.png" alt="2:1"/> odds, which risks 1 to win 2),
+the price is 5% of the amount bet. A $20 Buy bet has a price of $21.</p>
+<p>A Lay bet is a wrong bet; it has a denominator greater than the
+numerator (for example, <img class="math" src="../_images/math/f7ced003b885373b9855cfdf83375eb0346eccd2.png" alt="2:3"/> odds, which risks 3 to win 2), the price
+is 5% of <img class="math" src="../_images/math/d6cf3f9f939b1f509d71f291327ed7c9471da901.png" alt="\tfrac{2}{3}"/> of the amount. A $30 bet Layed at <img class="math" src="../_images/math/f7ced003b885373b9855cfdf83375eb0346eccd2.png" alt="2:3"/> odds has a price
+of $31, the $30 bet, plus the vig of 5% of $20 payout.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="bet-deliverables">
+<h2>Bet Deliverables<a class="headerlink" href="#bet-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise.</p>
+<ul class="simple">
+<li><p>The revised <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class.</p></li>
+<li><p>The new <a class="reference internal" href="#CommissionBet" title="CommissionBet"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommissionBet</span></code></a> subclass. This computes a price
+that is 5% of the bet amount.</p></li>
+<li><p>A class which performs a unit test of the various <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>
+classes. The unit test should create a couple instances of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>,
+and establish that the <code class="xref py py-meth docutils literal notranslate"><span class="pre">winAmount()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">price()</span></code>
+methods work correctly. It should also reset the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object
+associated with a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance.</p></li>
+</ul>
+<p>We could rework the entire <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class hierarchy for
+Roulette to compute the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object’s price in the <code class="xref py py-meth docutils literal notranslate"><span class="pre">placeBets()</span></code>,
+and deduct that price from the player’s stake. For Roulette, however,
+this subtlety is at the fringe of over-engineering, as no bet in Roulette has a commission.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>As with Roulett, once we have the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> and the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> we will
+build the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> to make use of these two classes. In the next
+chapter we’ll build this new class.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Bet Class</a><ul>
+<li><a class="reference internal" href="#bet-analysis">Bet Analysis</a></li>
+<li><a class="reference internal" href="#bet-rework">Bet Rework</a><ul>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#commissionbet-design">CommissionBet Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#id1">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#bet-deliverables">Bet Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="throw_builder.html" title="previous chapter">Throw Builder Class</a></li>
+      <li>Next: <a href="craps_table.html" title="next chapter">Craps Table Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

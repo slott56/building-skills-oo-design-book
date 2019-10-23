@@ -1,0 +1,417 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Review of Testability &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Player Class" href="player.html" />
+    <link rel="prev" title="Roulette Game Class" href="roulette_game.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="review-of-testability">
+<span id="roul-test"></span><h1>Review of Testability<a class="headerlink" href="#review-of-testability" title="Permalink to this headline">¶</a></h1>
+<p>This chapter presents some design rework and implementation rework for
+testability purposes. While testability is very important, new
+programmers can be slowed to a crawl by the mechanics of building test
+drivers and test cases. We prefer to emphasize the basic design
+considerations first, and address testability as a feature to be added
+to a working class.</p>
+<p>In <a class="reference internal" href="#test-scaffolding">Test Scaffolding</a> we’ll look at the basic software components
+required to build unit tests.</p>
+<p>One approach is to write tests first, then create software that passes
+the tests. We’ll look at this in <a class="reference internal" href="#test-driven-design">Test-Driven Design</a>.</p>
+<p>The application works with random numbers. This is awkward for
+testing purposes. We’ll show one approach to solving
+this problem in <a class="reference internal" href="#capturing-pseudo-random-data">Capturing Pseudo-Random Data</a>.</p>
+<p>We’ll touch on a few additional topics in <a class="reference internal" href="#testability-questions-and-answers">Testability Questions and Answers</a>.</p>
+<p>In <a class="reference internal" href="#testability-deliverables">Testability Deliverables</a> we’ll enumerate some deliverables that
+will improve the overall quality of our application.</p>
+<p>We’ll look a little more deeply at random numbers in <a class="reference internal" href="#appendix-on-random-numbers">Appendix: On Random Numbers</a>.</p>
+<div class="section" id="test-scaffolding">
+<h2>Test Scaffolding<a class="headerlink" href="#test-scaffolding" title="Permalink to this headline">¶</a></h2>
+<p>Without pausing, we charged past an elephant standing in the saloon.
+It’s time to pause a moment a take a quick glance back at the pachyderm we ignored.</p>
+<p>In the <a class="reference internal" href="roulette_game.html#roul-game"><span class="std std-ref">Roulette Game Class</span></a> we encouraged creating a stub <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class and
+building a test that integrated the <a class="reference internal" href="roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a>, <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>, <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>,
+and the stub <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class into a kind of working application.
+This is an integration test, not a proper unit test.
+We’ve integrated our various classes into a working whole.</p>
+<p>While this integration test reflects our overall goals, it’s not always the best
+way to assure that the individual classes work in isolation. We need to
+refine our approach somewhat.</p>
+<p>Back in <a class="reference internal" href="wheel.html#roul-wheel"><span class="std std-ref">Wheel Class</span></a> we touched on the problem of testing an application
+that includes a random number generator (RNG).
+There are two questions raised:</p>
+<ol class="arabic simple">
+<li><p>How can we develop formalized unit tests when we can’t predict the
+random outcomes? This is a serious testability issue in randomized
+simulations. This question also arises when considering interactive
+applications, particularly for performance tests of web applications
+where requests are received at random intervals.</p></li>
+<li><p>Are the numbers really random? This is a more subtle issue, and is
+only relevant for more serious applications. Cryptographic
+applications may care more deeply about the randomness
+of random numbers. This is a large subject, and well beyond the
+scope of this book. We’ll just assume that our random number
+generator is good enough for statistical work. It must be consistently
+difficult to predict, but also as fair as the real world.</p></li>
+</ol>
+<p>To address the testing issue, we need to develop some scaffolding that
+permits more controlled testing. We want to isolate each class so
+that our testing reveals problems in the class under test.</p>
+<p>There are two approaches to replacing the random behavior with something more controlled.</p>
+<ul class="simple">
+<li><p>One approach is to create a mocked implementation of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">random.Random</span></code> that returns specific outcomes
+that are appropriate for a given test.</p></li>
+<li><p>A second approach is to record the sequence
+of random numbers actually generated from a particular seed value and
+use this to define the expected test results. We suggested forcing
+the seed to be 42 with <code class="samp docutils literal notranslate"><span class="pre">wheel.rng.seed(42)</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="test-driven-design">
+<h2>Test-Driven Design<a class="headerlink" href="#test-driven-design" title="Permalink to this headline">¶</a></h2>
+<p>Good testability is achieved when classes are tested in isolation
+and there are no changes to the class being tested.
+We have to be careful that our design for the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class
+works with a real random number generator as well as a mocked
+version of a random number generator.</p>
+<p>To facilitate this, we suggested making the
+random number generator in the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class visible. Rather than
+have a <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance use the <code class="xref py py-mod docutils literal notranslate"><span class="pre">random</span></code> module directly, we
+suggesting creating an instance of the <code class="xref py py-class docutils literal notranslate"><span class="pre">random.Random</span></code> class as an
+attribute of each <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance.</p>
+<p>This design choice reveals a tension between the encapsulation principle and the testability principle.</p>
+<p>By <em>Encapsulation</em> we mean the design strategy where we define a class to
+encapsulate the details of it’s implementation.  It’s unclear if the
+random number generator is an implementation detail or an explicit part
+of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class implementation.</p>
+<p>By <em>Testability</em> we mean a design strategy where we can easily isolate
+each class for unit testing. This is sometimes achieved by using complex
+dependency injection. For testing, mock classes are injected; for
+real use, the real classes are injected. The dependency injection
+machinery in other languages is designed around the requirements of the compiler.
+Python doesn’t really need complex injection tools.</p>
+<p>Generally, for must of the normal use cases, the random
+number generator inside a <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> object is an invisible implementation detail.
+However, for testing purposes, the random number generator needs to be a configurable feature
+of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance.</p>
+<p>One approach to making something more visible is to provide
+default values in the constructor for the object. The following example
+provides an <code class="xref py py-obj docutils literal notranslate"><span class="pre">rng</span></code> parameter to permit inserting a mocked random
+number generator.</p>
+<p class="rubric">Wheel with Complex Initialization</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Wheel_RNG</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Bin</span><span class="p">],</span> <span class="n">rng</span><span class="p">:</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">rng</span> <span class="ow">or</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">choose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bin</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For this particular situation, this technique is noisy.
+It introduces a feature that we’ll never use outside writing tests.
+The choice of a random number generator is made infrequently;
+often the choice is made only once when a generator with desired
+statistical properties is identified.</p>
+<p>Because Python type checking happens at run time, it’s
+easier to patch a class as part of the unit test.</p>
+<p>Here’s a simpler <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class definition with simpler
+initialization.</p>
+<p class="rubric">Wheel with Simpler Initialization</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Wheel</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bins</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Bin</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">choose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bin</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bins</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Since we can inject anything as the random number generator in a <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance,
+our unit tests can look like this:</p>
+<p class="rubric">Mock Object Testing</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_wheel_isolation</span><span class="p">():</span>
+    <span class="n">mock_rng</span> <span class="o">=</span> <span class="n">Mock</span><span class="p">(</span>
+        <span class="n">choice</span><span class="o">=</span><span class="n">Mock</span><span class="p">(</span><span class="n">return_value</span><span class="o">=</span><span class="s2">&quot;bin1&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">bins</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;bin1&quot;</span><span class="p">,</span> <span class="s2">&quot;bin2&quot;</span><span class="p">]</span>
+    <span class="n">wheel</span> <span class="o">=</span> <span class="n">Wheel</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+    <span class="n">wheel</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="n">mock_rng</span>  <span class="c1"># Replaces random.Random</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">wheel</span><span class="o">.</span><span class="n">choose</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;bin1&quot;</span>
+    <span class="n">mock_rng</span><span class="o">.</span><span class="n">choice</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This function creates a mocked instance of the <code class="xref py py-class docutils literal notranslate"><span class="pre">random.Random</span></code> class.
+The mock defines a <code class="xref py py-meth docutils literal notranslate"><span class="pre">choice()</span></code> method; this method always returns
+the same value.</p>
+<p>The test case builds a number of mocked <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances. In this
+case, we don’t even use the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class definition, we can use
+a simple string object.</p>
+<p>The <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance is built from the mocked bins. The <code class="xref py py-obj docutils literal notranslate"><span class="pre">rng</span></code>
+attribute is then patched to use the mocked random number generator.
+After the patch is applied, we can exercise the <a class="reference internal" href="wheel.html#Wheel.choose" title="Wheel.choose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Wheel.choose()</span></code></a> method
+to confirm that it properly uses the random number generator’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">choice()</span></code>
+method.</p>
+</div>
+<div class="section" id="capturing-pseudo-random-data">
+<span id="roul-test-random"></span><h2>Capturing Pseudo-Random Data<a class="headerlink" href="#capturing-pseudo-random-data" title="Permalink to this headline">¶</a></h2>
+<p>The other approach – using a fixed seed – means that we need to
+build and execute a program that reveals the fixed
+sequence of spins that are created by the non-random number generator.</p>
+<p>We can create an instance of <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class. We can set the
+random number generator seed to a known, boring value, like <code class="docutils literal notranslate"><span class="pre">42</span></code>.</p>
+<p>When can call the <a class="reference internal" href="wheel.html#Wheel.choose" title="Wheel.choose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Wheel.choose()</span></code></a> method six
+times, and print the winning <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances. This
+sequence will always be the result for a seed value of <code class="docutils literal notranslate"><span class="pre">42</span></code>.</p>
+<p>This discovery procedure will reveal results needed to
+create unit tests for <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class and anything that uses
+it, for example, <a class="reference internal" href="roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a>.</p>
+<p class="rubric">Repeatable Random Sequences</p>
+<pre class="code python literal-block"><code><span class="literal string doc">&quot;&quot;&quot;
+Building Skills in Object-Oriented Design V4
+
+Demo of repeatable random tests.
+&quot;&quot;&quot;</span>
+
+<span class="keyword namespace">import</span> <span class="name namespace">random</span>
+<span class="keyword namespace">from</span> <span class="name namespace">collections</span> <span class="keyword namespace">import</span> <span class="name">Counter</span>
+
+<span class="keyword">def</span> <span class="name function">dice</span><span class="punctuation">():</span>
+    <span class="keyword">return</span> <span class="name">random</span><span class="operator">.</span><span class="name">randint</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">,</span><span class="literal number integer">6</span><span class="punctuation">),</span> <span class="name">random</span><span class="operator">.</span><span class="name">randint</span><span class="punctuation">(</span><span class="literal number integer">1</span><span class="punctuation">,</span> <span class="literal number integer">6</span><span class="punctuation">)</span>
+
+<span class="keyword">def</span> <span class="name function">dice_histogram</span><span class="punctuation">(</span><span class="name">seed</span><span class="punctuation">:</span> <span class="name builtin">int</span><span class="operator">=</span><span class="literal number integer">42</span><span class="punctuation">,</span> <span class="name">samples</span><span class="punctuation">:</span> <span class="name builtin">int</span><span class="operator">=</span><span class="literal number integer">10</span><span class="name">_000</span><span class="punctuation">)</span> <span class="operator">-&gt;</span> <span class="name">Counter</span><span class="punctuation">:</span>
+    <span class="literal string doc">&quot;&quot;&quot;
+    Generate a lot of random numbers.
+
+    &gt;&gt;&gt; c = dice_histogram()
+    &gt;&gt;&gt; c.most_common(5)
+    [(7, 1704), (8, 1392), (6, 1359), (9, 1116), (5, 1094)]
+    &quot;&quot;&quot;</span>
+    <span class="name">random</span><span class="operator">.</span><span class="name">seed</span><span class="punctuation">(</span><span class="name">seed</span><span class="punctuation">)</span>
+    <span class="name">c</span> <span class="operator">=</span> <span class="name">Counter</span><span class="punctuation">(</span>
+        <span class="name builtin">sum</span><span class="punctuation">(</span><span class="name">dice</span><span class="punctuation">())</span> <span class="keyword">for</span> <span class="name">_</span> <span class="operator word">in</span> <span class="name builtin">range</span><span class="punctuation">(</span><span class="name">samples</span><span class="punctuation">)</span>
+    <span class="punctuation">)</span>
+    <span class="keyword">return</span> <span class="name">c</span></code></pre>
+</div>
+<div class="section" id="testability-questions-and-answers">
+<span id="roul-test-qanda"></span><h2>Testability Questions and Answers<a class="headerlink" href="#testability-questions-and-answers" title="Permalink to this headline">¶</a></h2>
+<p>Why are we making the random number generator more visible? Isn’t object
+design about encapsulation?</p>
+<blockquote>
+<div><p>Encapsulation isn’t exactly the same thing as “information hiding”. For
+some people, the information hiding concept can be a useful way to begin
+to learn about encapsulation. However, information hiding is often taken to extremes.</p>
+<p>In this case, we want to
+encapsulate the bins of the wheel and the procedure for selecting the
+winning bin into a single object. However, the exact random-number
+generator (RNG) is a separate component, allowing us to bind
+any suitable RNG.</p>
+<p>Consider the situation where we are generating random numbers for a
+cryptographic application. In this case, the built-in random number
+generator may not be random enough. In this case, we may have a
+third-party Super-Random-Generator that should replace the built-in
+generator. We would prefer to minimize the changes required to introduce
+this new class.</p>
+<p>Our initial design has isolated the changes to the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class,
+but required us to change the constructor. Since we are changing the
+source code for a class, we must to unit test that change. Further, we
+are also obligated unit test all of the classes that depend on this
+class. Changing the source for a class deep within the application
+forces us to endure the consequence of retesting every class that
+depends on this deeply buried class. This is too much work to simply
+replace one object with another.</p>
+<p>We do, however, have an alternative. We can change the top-level <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code>
+method, altering the concrete object instances that compose the working
+application. By making the change at the top of the application, we
+don’t need to change a deeply buried class and unit test all the classes
+that depend on the changed class. Instead, we are simply choosing among
+objects with the same superclass or interface.</p>
+<p>This is why we feel that constructors should be made very visible using
+the various design patterns for <em>Factories</em> and <em>Builders</em>.
+Further, we look at the main method as a kind of master <em>Builder</em>
+that assembles the objects that comprise the current execution of our application.</p>
+<p>See our <a class="reference internal" href="solution.html#roul-ov-qanda-main"><span class="std std-ref">Roulette Solution Questions and Answers</span></a> FAQ for more on this subject.</p>
+<p>Looking ahead, we will have additional notes on this topic as we add the <a class="reference internal" href="sevenreds.html#roul-sevenreds"><span class="std std-ref">SevenReds Player Class</span></a>
+subclass of <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class.</p>
+</div></blockquote>
+<p>If setting the seed works so well, why use a mock object?</p>
+<blockquote>
+<div><p>While setting the seed is an excellent method for setting up a test,
+it’s not actually a unit test. The <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> is not used in isolation
+from other classes.</p>
+</div></blockquote>
+<p>Why use 42 for a seed?</p>
+<blockquote>
+<div><p>It’s mentioned in Douglas Adams’ <em>The Hitchhiker’s Guide to the Galaxy</em>.
+There are several boring numbers that are good choices
+because the numbers are otherwise mathematically uninteresting.</p>
+</div></blockquote>
+</div>
+<div class="section" id="testability-deliverables">
+<h2>Testability Deliverables<a class="headerlink" href="#testability-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are two deliverables for this exercise. All of these deliverables
+need Python docstrings.</p>
+<ul class="simple">
+<li><p>Revised unit tests for <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> using a
+proper Mock for the random number generator.</p></li>
+<li><p>Revised unit tests for <a class="reference internal" href="roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> using a proper Mock for the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>.</p></li>
+</ul>
+</div>
+<div class="section" id="appendix-on-random-numbers">
+<h2>Appendix: On Random Numbers<a class="headerlink" href="#appendix-on-random-numbers" title="Permalink to this headline">¶</a></h2>
+<p>Random numbers aren’t actually “random.” Since they are
+generated by an algorithm, they are properly called pseudo-random.
+The distinction is important. Pseudo-random numbers are
+generated in a fixed sequence from a given seed value.
+Computing the next value in the sequence involves a
+calculation that is expected to overflow the available number of
+bits of precision leaving apparently random bits as the next
+value. This leads to results which, while predictable, are
+arbitrary enough that they pass rigorous statistical tests and
+are indistinguishable from data created by random processes.</p>
+<p>We can make an application more predictable by selecting a specific
+seed value. This provides reproducible results.</p>
+<p>We can make an application less predictable by choosing a very
+hard to predict seed value.
+In most operating systems a special “device” is
+available for producing random values. In Linux this is typically
+<code class="file docutils literal notranslate"><span class="pre">/dev/random</span></code>. In Python, we can access this through
+the <code class="xref py py-func docutils literal notranslate"><span class="pre">os.urandom()</span></code> function as well as the <code class="xref py py-mod docutils literal notranslate"><span class="pre">secrets</span></code> module.</p>
+<p>When we need to make an application’s output repeatable,
+we set a known seed value. For testing purposes, we can note the sequence of numbers
+generated and use this to assure a repeatable test.</p>
+<p>We can also write a short demonstration program to see the
+effect of setting a fixed seed. This will also give us a set of
+predictable answers for unit testing.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>We’ve built a simple, prototype <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class definition.
+This player only places a limited number of bets. The house edge
+in Roulette assures us that the play will, before long, run
+out of money.</p>
+<p>A bet on black pays winnings as if the probability of winning were <img class="math" src="../_images/math/87e07dee79aa92839819195f4f31669cdcfe7778.png" alt="\tfrac{1}{2}"/>.
+The actual probability is <img class="math" src="../_images/math/d6a6827867f2e8bba9e49ed42786315151f91926.png" alt="\tfrac{18}{38}"/>. The difference,
+<img class="math" src="../_images/math/f7fde4e242c5044035bb6387a600a9fc827b2dae.png" alt="\tfrac{1}{38} = \tfrac{1}{2}-\tfrac{18}{38}"/>, tells us
+that the expected number of spins is 38 before the player is out of
+money.</p>
+<p>There’s little that can be done in the real world. We can, however,
+simulate the variety of creative ways people apply fallacious reasoning
+to try and prevent this inevitable loss. We’ll start with a general <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+class and then implement a number of stateful algorithms
+for betting.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Review of Testability</a><ul>
+<li><a class="reference internal" href="#test-scaffolding">Test Scaffolding</a></li>
+<li><a class="reference internal" href="#test-driven-design">Test-Driven Design</a></li>
+<li><a class="reference internal" href="#capturing-pseudo-random-data">Capturing Pseudo-Random Data</a></li>
+<li><a class="reference internal" href="#testability-questions-and-answers">Testability Questions and Answers</a></li>
+<li><a class="reference internal" href="#testability-deliverables">Testability Deliverables</a></li>
+<li><a class="reference internal" href="#appendix-on-random-numbers">Appendix: On Random Numbers</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="roulette_game.html" title="previous chapter">Roulette Game Class</a></li>
+      <li>Next: <a href="player.html" title="next chapter">Player Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

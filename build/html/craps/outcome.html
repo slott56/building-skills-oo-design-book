@@ -1,0 +1,424 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Outcome Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Throw Class" href="throw.html" />
+    <link rel="prev" title="Craps Solution Overview" href="solution.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="outcome-class">
+<span id="craps-outcome"></span><h1>Outcome Class<a class="headerlink" href="#outcome-class" title="Permalink to this headline">¶</a></h1>
+<p>This chapter will examine the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class, and its
+suitability for the game of Craps. We’ll present some additional code
+samples to show a way to handle the different kinds of constructors that
+this class will need.</p>
+<p>We’ll start with <a class="reference internal" href="#outcome-analysis">Outcome Analysis</a> to examine the different kinds
+of outcomes that are part of craps.  This will lead us to some
+additional features, specifically <a class="reference internal" href="#more-complex-odds">More Complex Odds</a> and <a class="reference internal" href="#commission-payments">Commission Payments</a>.</p>
+<p>In <a class="reference internal" href="#fractional-odds-design">Fractional Odds Design</a> we’ll look at a way to design a more sophisticated
+set of odds. This will include <a class="reference internal" href="#optional-parameter-implementation-technique">Optional Parameter Implementation Technique</a>
+to show ways to handle the optional denominator, or denominator with a default
+value of 1.</p>
+<p>In <a class="reference internal" href="#outcome-rework">Outcome Rework</a> we’ll revise the previous version <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+to handle Craps odds. We’ll enumerate the deliverables in <a class="reference internal" href="#outcome-deliverables">Outcome Deliverables</a>.</p>
+<div class="section" id="outcome-analysis">
+<h2>Outcome Analysis<a class="headerlink" href="#outcome-analysis" title="Permalink to this headline">¶</a></h2>
+<p>For the game of Craps, we have to be careful to disentangle the random events
+produced by the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> objects and the outcomes on which a <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
+creates a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance. In Roulette, this relationship was simple: a
+<a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> object was a container of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances; a player’s <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object
+referred to one of these <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>In Craps, however, we
+have one-roll outcomes, hardways outcomes, plus outcomes that aren’t
+resolved until the end of the game. What are the varieties of outcomes possible in Craps?</p>
+<p>There is a rich variety of bet <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. We’ll itemize
+them so that we can confirm the responsibilities for this class.</p>
+<ul class="simple">
+<li><p><strong>The Line Bets</strong>. These are the Pass Line, Don’t Pass Line, Come Line,
+Don’t Come Line. These outcomes have fixed odds of <img class="math" src="../_images/math/47597694b86443e4806abd0eebe5b0f1ae6a0d7b.png" alt="1:1"/>.</p></li>
+<li><p><strong>The Hardways Bets</strong>. These are bets on 4, 6, 8 and 10 “the hard way”.
+These outcomes also have fixed odds which depend on the number.</p></li>
+<li><p><strong>The Propositions</strong>. All of these have fixed odds.
+These are most like the original <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> used for Roulette.</p></li>
+<li><p><strong>The Come-point Bets</strong>. These are the numbers 4, 5, 6, 8, 9 and 10.
+Each of these has fixed odds. Also, the initial line bet is moved to a point number
+from the Come Line bet, based on the number shown on the dice. We’ll
+examine these is some detail, below.</p></li>
+<li><p><strong>The Behind the Line Odds Bets</strong>. These have odds based on
+the point, not the outcome itself. We’ll have to look at these more
+closely, also.</p></li>
+<li><p><strong>The Placed Number Bets</strong>. These have odds are based on the number placed.
+These outcomes have fixed odds. Once the bet is placed, these bets
+are resolved when the number is rolled or when a game-losing seven
+is rolled.</p></li>
+<li><p><strong>The Buy and Lay Bets</strong>. These require a commission payment, called a
+vigorish, when the bet is placed. The outcomes have simple, fixed
+odds. As with the placed number bets, these bets are resolved when
+the number is rolled or when a game-losing seven is rolled.</p></li>
+</ul>
+<p>Looking more closely at the bets with payout odds that depend on the
+point rolled, we note that the Come Line (and Don’t Come) odds bets are
+moved to a specific number when that point is established. For example,
+the player places a Come bet, the dice roll is a 4; the come bet is
+moved into the box labeled “4”. Any additional odds bet is
+placed in this box, also.</p>
+<p>This leaves us with the Pass Line and Don’t Pass Line odds bet, which
+also depend on the point rolled. In this case, the bets are effectively
+moved to a specific numbered box. In a casino, a large, white, “on”
+token in placed in the box. The effect is that same as if the house had
+moved all the Pass Line bets. The odds bet, while physically behind the
+Pass Line, is effectively in the box identified by the point. Again, the
+bet is moved from the 1:1 Pass Line to one of the six numbered boxes;
+any odds bet that is added will be on a single <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance with
+fixed odds.</p>
+<p>In this case, the existing <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class still serves many
+of our needs. Looking forward, we will have to rework the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class
+to provide a method that will change to a different <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class.
+This will move a line bets to one of the six numbered point boxes.</p>
+<div class="section" id="more-complex-odds">
+<h3>More Complex Odds<a class="headerlink" href="#more-complex-odds" title="Permalink to this headline">¶</a></h3>
+<p>There are two additional responsibilities that we will need in the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+class: more complex odds and a house commission. In Roulette, all odds
+were stated as <img class="math" src="../_images/math/8665e25c6c0a1a67649988a49e2cc454b45befa4.png" alt="n:1"/>, and our <code class="xref py py-meth docutils literal notranslate"><span class="pre">winAmount()</span></code>
+depended on that. In craps, many of the odds have non-unit denominators.
+Example odds include <img class="math" src="../_images/math/05a6d3e3b3c0e5b46c0a4e3b5f88d4fa0b867c1d.png" alt="6:5"/>, <img class="math" src="../_images/math/121f5f29be8f0ec9829a4d65d8dd52ff5f14eb1c.png" alt="3:2"/>, <img class="math" src="../_images/math/bdcdb490558b81c32816c60e03d9d5770cceae46.png" alt="7:6"/>, and <img class="math" src="../_images/math/f486ad5b48a83f7dd5ffe7954edd3023b0dd3520.png" alt="9:5"/>.
+In a casino, the bets are multiples of $5, $6 or $10 to accommodate the fractions.</p>
+<p>In our simulation, we are faced with two choices for
+managing these more complex odds: exact fractions or approximate
+floating-point values.</p>
+<p>We suggest using Python’s <code class="xref py py-mod docutils literal notranslate"><span class="pre">fractions</span></code> module. We can replace the
+odds with a <code class="xref py py-class docutils literal notranslate"><span class="pre">fractions.Fraction</span></code> object. We would use something
+like <code class="code docutils literal notranslate"><span class="pre">Outcome(&quot;Something&quot;,</span> <span class="pre">Fraction(2,1))</span></code> for <img class="math" src="../_images/math/2da4d58abd68781dcdd0b97ac1adbaaf01695038.png" alt="2:1"/> odds.</p>
+<p>We’ll look at the design alternatives in the <a class="reference internal" href="#fractional-odds-design">Fractional Odds Design</a> section.</p>
+</div>
+<div class="section" id="commission-payments">
+<h3>Commission Payments<a class="headerlink" href="#commission-payments" title="Permalink to this headline">¶</a></h3>
+<p>The second extension we have to consider is for
+the bets which have a commission when they are created: buy bets and
+lay bets. The buy bet involves an extra 5% placed with the bet: the
+player puts down $21, a $20 bet and a $1 commission. A lay bet, which is a
+wrong bet, involves a risk of a large amount of money against a
+small win, and the commission is based on the potential winning. For a
+2:3 wrong bet, the commission is 5% of the outcome; the player puts down
+$31 to win $20 if the point is not made.</p>
+<p>In both buy and lay cases, the player sees a price to
+create a bet of a given amount. Indeed, this generalizes nicely to all
+other bets. Most bets are simple and the price is the amount of the bet.
+For buy bets, however, the price is 5% of the amount of the bet; for lay
+bets, the price is 5% of the possible payout. The open question is the
+proper allocation of responsibility for this price. Is the price related
+to the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class or the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> class?</p>
+<p>When we look at the buy and lay bets, we see that they are based on
+existing point number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances and share the same odds.
+However, there are three very different ways create a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>
+on one of these point number <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances:</p>
+<ul class="simple">
+<li><p>a bet on the Pass Line (or Don’t Pass Line),</p></li>
+<li><p>a bet on the Come Line (or Don’t Come Line), and</p></li>
+<li><p>a buy (or lay) bet on the number.</p></li>
+</ul>
+<p>When we bet via the Pass Line or Come Line,
+the Line bet was moved to the point number, and the odds bet
+follows the Line bet. For this reason, the price is a feature of
+creating the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance. Therefore, we’ll consider the commission
+as the price of creating a bet and defer it to the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>
+class design.</p>
+<p>We observe that the slight error in the Line bet odds is the house’s
+edge on the Line bet. When we put an odds bet behind the line, the more
+correct odds dilutes this edge. When we buy a number, on the other hand,
+the odds are correct and the house takes the 5% commission directly
+instead of through improper odds. Either approach means the house
+always wins.</p>
+</div>
+</div>
+<div class="section" id="fractional-odds-design">
+<h2>Fractional Odds Design<a class="headerlink" href="#fractional-odds-design" title="Permalink to this headline">¶</a></h2>
+<p>In Roulette, all outcomes paid a multiple of the bet. For example, the
+“Dozen 1-12” outcome paid <img class="math" src="../_images/math/2da4d58abd68781dcdd0b97ac1adbaaf01695038.png" alt="2:1"/>. We used a simple <code class="docutils literal notranslate"><span class="pre">int</span></code> value to show
+the multiplier.</p>
+<p>In Craps, outcomes have more complex payouts. We might see a payout
+of <img class="math" src="../_images/math/05a6d3e3b3c0e5b46c0a4e3b5f88d4fa0b867c1d.png" alt="6:5"/>. We can’t use a simple <code class="docutils literal notranslate"><span class="pre">int</span></code> value.</p>
+<p><strong>Problem</strong>. How do we represent more complex odds?</p>
+<p><strong>Forces</strong>. We have several choices.</p>
+<ul class="simple">
+<li><p>Use a <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> value. This replaces exact integer values with floating-point
+approximations. There’s little compelling reason for this. It can lead
+to displaying values that look like 3.999999999999997 instead of 4.</p></li>
+<li><p>Explicit numerator and denominator. The original design for outcome
+had an assumed denominator of <code class="docutils literal notranslate"><span class="pre">1</span></code>. It’s a small change to introduce
+an explicit denominator value with a default of <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p>Use <code class="xref py py-class docutils literal notranslate"><span class="pre">fractions.Fraction</span></code>. This requires very little change.
+The <code class="xref py py-class docutils literal notranslate"><span class="pre">Fraction</span></code> class works seamlessly with integer values,
+allowing us to use this with little change.</p></li>
+</ul>
+<p><strong>Solution</strong>. Fractions are easy to use and provide pleasant results.</p>
+</div>
+<div class="section" id="optional-parameter-implementation-technique">
+<h2>Optional Parameter Implementation Technique<a class="headerlink" href="#optional-parameter-implementation-technique" title="Permalink to this headline">¶</a></h2>
+<p>A common technique that helps to add features is to
+add optional parameters to a method.  An optional parameter has a default value.</p>
+<p>There’s a common confusion that can arise when using a mutable
+value as a default. We’ll show the immutable example first. Then
+we’ll show what happens when a mutable object is used.</p>
+<p>An instance of one of the Python mutable types (lists, sets, maps) should not be
+provided as default values for an initializer. This is because
+the single initialization object – created when the class is defined –
+will be shared by all instances created with the default value.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BadIdea</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqArg</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">optList</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span><span class="o">=</span><span class="p">[])</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+         <span class="n">initialize</span> <span class="n">using</span> <span class="n">reqArg</span> <span class="ow">and</span> <span class="n">optList</span>
+</pre></div>
+</div>
+<p>We can easily create many instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">BadIdea</span></code>. All of the objects
+can share the single, default list object in the method definition.
+Python doesn’t create a new empty list; it reuses the one list
+that’s part of the definition.</p>
+<p>To avoid this undesirable sharing of an instance of the default
+value, we have to do the following.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SomeClass</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqArg</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">optList</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">optList</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">initialize</span> <span class="n">using</span> <span class="n">reqArg</span> <span class="ow">and</span> <span class="n">optList</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">default</span> <span class="n">initialization</span> <span class="n">reqArg</span> <span class="ow">and</span> <span class="n">a</span> <span class="n">fresh</span><span class="p">,</span> <span class="n">empty</span> <span class="p">[]</span>
+</pre></div>
+</div>
+<p>In this case, we’ve used an immutable <code class="docutils literal notranslate"><span class="pre">None</span></code> as an indicator
+that we should create a fresh, empty, mutable list object.</p>
+<p>In many cases, we can optimize the initialization like this.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SomeClass</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqArg</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">optList</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">optList</span> <span class="o">=</span> <span class="n">optList</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="n">initialize</span> <span class="n">using</span> <span class="n">reqArg</span> <span class="ow">and</span> <span class="n">optList</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">or</span></code> operator performs “short-circuit” evaluation. If the left-hand operand
+is a true-ish value, that’s the result. If the left-hand operand is falsish
+(i.e., <code class="docutils literal notranslate"><span class="pre">False</span></code>, <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+<code class="docutils literal notranslate"><span class="pre">[]</span></code>, <code class="docutils literal notranslate"><span class="pre">{}</span></code>, or <code class="docutils literal notranslate"><span class="pre">()</span></code>) then the result is the right-hand
+operand’s value.</p>
+<p>This is a general way to add default and optional values to a
+function. We can provide optional parameters of a mutable type a default
+value of <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</div>
+<div class="section" id="outcome-rework">
+<h2>Outcome Rework<a class="headerlink" href="#outcome-rework" title="Permalink to this headline">¶</a></h2>
+<p>We won’t change the existing attributes. We will, however, change
+the use of the <code class="xref py py-obj docutils literal notranslate"><span class="pre">odds</span></code> attribute from an integer to a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Fraction</span></code>.</p>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<p>We have two ways to introduce fractional odds. One is to
+make the numerator and denominator explicit.</p>
+<dl class="method">
+<dt id="Outcome.__init__">
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">numerator: int</em>, <em class="sig-param">denominator: int=1</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Outcome.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>string</em>) – The name of this outcome.</p></li>
+<li><p><strong>numerator</strong> (<em>int</em>) – the payout odds numerator</p></li>
+<li><p><strong>denominator</strong> (<em>int</em>) – the payout odds denominator</p></li>
+</ul>
+</dd>
+</dl>
+<p>Sets the name and odds from the parameters. This method will
+create an appropriate <code class="xref py py-class docutils literal notranslate"><span class="pre">Fraction</span></code> from the given values.</p>
+<p>Example 1: 6:5 is a right bet, the player will win 6 for each 5 that
+is bet.</p>
+<p>Example 2: 2:3 is a wrong bet, they player will win 2 for
+each 3 that is bet.</p>
+</dd></dl>
+
+<p>Here’s an alternative.</p>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self, name: str, odds: Union[fraction, int]</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>string</em>) – The name of this outcome.</p></li>
+<li><p><strong>numerator</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">fractions.Fraction</span></code> or int) – the payout odds numerator</p></li>
+</ul>
+</dd>
+</dl>
+<p>Sets the name and odds from the parameters. This method will
+create an appropriate <code class="xref py py-class docutils literal notranslate"><span class="pre">fractions.Fraction</span></code> from the given values.</p>
+<ul class="simple">
+<li><p>If <code class="code docutils literal notranslate"><span class="pre">isinstance(odds,</span> <span class="pre">int)</span></code>, create a <code class="code docutils literal notranslate"><span class="pre">Fraction(odds,</span> <span class="pre">1)</span></code>.</p></li>
+<li><p>If <code class="code docutils literal notranslate"><span class="pre">isinstance(odds,</span> <span class="pre">Fraction)</span></code>, use the given object directly.</p></li>
+</ul>
+<p>In earlier <a class="reference internal" href="../roulette/1_3_2_6.html#soapbox-polymorphism"><span class="std std-ref">On Polymorphism</span></a> we suggested – very strongly – that
+proper polymorphic class design made the <code class="xref py py-func docutils literal notranslate"><span class="pre">isinstance()</span></code> function
+unnecessary. It is required, however, in a few cases to distinguish among
+the built-in types like <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">fractions.Fraction</span></code>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Outcome.winAmount">
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">winAmount</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">amount: int</em><span class="sig-paren">)</span> &#x2192; Fraction<a class="headerlink" href="#Outcome.winAmount" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>amount</strong> (<em>int</em>) – amount of the bet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Returns the product of this <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object’s odds by the given amount.
+The result can be a <code class="xref py py-class docutils literal notranslate"><span class="pre">fractions.Fraction</span></code> object, which will work nicely.</p>
+<p>Note that this change will lead to a ripply of changes as <strong>mypy</strong> tries
+to confirm that all bet-related processing properly uses fractions.</p>
+<dl class="method">
+<dt id="Outcome.__str__">
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#Outcome.__str__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>An easy-to-read string output method is also very handy. This should
+return a <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> representation of the name and the odds. A
+form that looks like <code class="docutils literal notranslate"><span class="pre">1-2</span> <span class="pre">Split</span> <span class="pre">(17:1)</span></code> is the goal.</p>
+<p>This requires decomposing the odds into numerator and denominator.</p>
+</div>
+</div>
+<div class="section" id="outcome-deliverables">
+<h2>Outcome Deliverables<a class="headerlink" href="#outcome-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise.</p>
+<ul class="simple">
+<li><p>The revised <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class that handles fractional
+odds and returns type <code class="xref py py-class docutils literal notranslate"><span class="pre">Fraction</span></code> instances from <code class="xref py py-meth docutils literal notranslate"><span class="pre">winAmount()</span></code>.</p></li>
+<li><p>A class which performs a unit test of the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+class. The unit test should create a couple instances of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>,
+and establish that the <code class="xref py py-meth docutils literal notranslate"><span class="pre">winAmount()</span></code> method works correctly.</p></li>
+<li><p>A revision to each subclass of <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> to correctly
+implement the revised result from <code class="xref py py-meth docutils literal notranslate"><span class="pre">winAmount()</span></code>.
+Currently, there are six subclasses of <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> : <a class="reference internal" href="../roulette/roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a>,
+<a class="reference internal" href="../roulette/sevenreds.html#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a>, <a class="reference internal" href="../roulette/random.html#PlayerRandom" title="PlayerRandom"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerRandom</span></code></a>, <a class="reference internal" href="../roulette/1_3_2_6.html#Player1326" title="Player1326"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player1326</span></code></a>,
+<a class="reference internal" href="../roulette/cancellation.html#PlayerCancellation" title="PlayerCancellation"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerCancellation</span></code></a>, and <a class="reference internal" href="../roulette/fibonacci.html#PlayerFibonacci" title="PlayerFibonacci"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayerFibonacci</span></code></a>.</p></li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>In the next section will look at how a single throw of the dice changes the
+state of the game. We’ll introduce a class, <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> to encapsulate
+the game state changes, as well as the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+that can be winners in a given throw.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Outcome Class</a><ul>
+<li><a class="reference internal" href="#outcome-analysis">Outcome Analysis</a><ul>
+<li><a class="reference internal" href="#more-complex-odds">More Complex Odds</a></li>
+<li><a class="reference internal" href="#commission-payments">Commission Payments</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fractional-odds-design">Fractional Odds Design</a></li>
+<li><a class="reference internal" href="#optional-parameter-implementation-technique">Optional Parameter Implementation Technique</a></li>
+<li><a class="reference internal" href="#outcome-rework">Outcome Rework</a><ul>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#outcome-deliverables">Outcome Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="solution.html" title="previous chapter">Craps Solution Overview</a></li>
+      <li>Next: <a href="throw.html" title="next chapter">Throw Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

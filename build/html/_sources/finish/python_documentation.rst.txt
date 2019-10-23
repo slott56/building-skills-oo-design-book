@@ -1,0 +1,431 @@
+..  include:: ../definitions.inc
+
+..  _documentation:
+
+Python Documentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:phrase:`Application Program Interface` (:abbrev:`API`) documentation is
+absolutely essential. The easiest and most reliable way to produce this
+documentation is by using a tool that examines the source itself and
+develops the document directly from the programs. By using cleverly
+formatted Python docstrings, we can augment that analysis with
+easy-to-understand descriptions.
+
+
+In the case of Python, there are several tools for extracting
+documentation from the source. The most popular one is
+:application:`Sphinx` http://sphinx.pocoo.org/.
+
+We can use some others, also:
+
+-   :application:`Epydoc` http://epydoc.sourceforge.net/.
+
+-   :application:`pydoc` This is part of Python. It doesn't cope well
+    with files in UTF-8 encoding. You need to include the following
+    comment in any files that have Unicode characters.
+
+    ..  code-block:: python
+
+        # -*- coding: utf-8 -*-
+
+In `Documentation Development`_ we'll look at how we can use Sphinx to
+create complete, accurate, and nice-looking documentation for our applicaiton.
+
+In `Using Sphinx`_ we'll look at a aspects of using Sphinx.
+In `Using Epydoc`_ we'll look at how we can use epydoc to create documentation.
+
+In order to use either tool, we'll need to write using ReStructuredText (:abbrev:`RST`.)
+In `Basic RST Markup`_ we'll look at the foundations of using RST.
+
+In `Interpreted Text, or Inline Markup`_ we'll look at inline markup that produces
+things like *emphasis* and **strong** text.
+
+We'll look at how we can provide details of function arguments
+and return values in `RST Field Markup`_. This is primarily focused on Sphinx.
+
+We'll look at more complex RST markup in `Directives`_
+
+In `Standard Paragraphs`_ we'll look at boilerplate like "see also", and "warning"
+sections that are often marked with special icons aor distinctive layout.
+
+We'll show a large example in `Class Example`_.
+
+Documentation Development
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Generally, the workflow has the following outline.
+
+#.  Develop the skeleton class.
+
+#.  Develop unit tests for most features.
+
+#.  Rework the class until it passes the unit tests. This may involve
+    adding or modifying tests as we understand the class better. This
+    also involves writing docstrings for modules, classes and methods.
+
+#.  Revisit the modules, classes and methods, finishing each description
+    using the ReStructured Text (:abbrev:`RST`) markup language. We won't cover all of this
+    language, just enough to provide a sense of how the tool is used to
+    make clean, professional API documentation.
+
+#.  Run the documentation tool (i.e. sphinx-build) to create the documentation.
+    Fix any errors in your docstring markup.
+    Also, rework the documentation as necessary to be sure that
+    you've capture important information about the class, the methods,
+    the design decisions.
+
+
+Using Sphinx
+~~~~~~~~~~~~~~
+
+When you install Sphinx, it creates a script that you can use.
+
+Generally, you'll run the $ sphinx-quickstart script to create an empty documentation directory.
+
+..  code-block:: sh
+
+    $ sphinx-quickstart
+
+This interactive script will ask a number of questions, allowing you to pick sensible
+directories and file names.
+
+You'll need to include two extensions to enable Sphinx to create your API
+documentation.
+
+-    ``autodoc`` will create module documents based on the RST markup in the docstrings.
+
+-   ``autosummary`` will create summaries of packages and modules.
+
+You'll then add content to your :file:`index.rst` file.  This file is the root for
+the documentation.  It can be very simple, or or it can do include other files
+to break a large document into manageable pieces.
+
+The most important commands are the following.
+
+To run Sphinx, you'll use a command similar to the following.
+
+..  code-block:: sh
+
+    $ sphinx-build -b html sourcedir builddir
+
+
+Using Epydoc
+~~~~~~~~~~~~~~
+
+When you install Epydoc, it creates a script that you can use. To run
+Epydoc, you'll use a command similar to the following.
+
+..  code-block:: sh
+
+    epydoc  -v --docformat restructuredtext --output apidoc blackjack.py
+
+The :option:`-v` option provides detailed debugging information for
+incorrectly formatted docstrings. The :option:`--docformat` option
+specifies that the various docstrings use RST markup.  The :option:`--output` option defines the
+directory to which the documentation is written. The arguments (in this case,
+:file:`blackjack.py`) is a list of package directories or module files
+to be documented.
+
+Note that RST is not the default markup language for Epydoc.  You must either
+specify this on the command line or in the module source.
+To identify the formatting in each module you must provide the
+format as the value of a :obj:`__docformat__` module global variable.
+
+
+..  code-block:: python
+
+    #!/usr/bin/env python
+    """
+    Some docstring for a module.
+    """
+    __docformat__ = "restructuredtext en"
+
+
+Basic RST Markup
+~~~~~~~~~~~~~~~~
+
+We write our module, class and method docstrings using the RST
+markup language. RST is one of many :firstterm:`structured text`
+markup languages, where simple indentation and formatting rules are used
+to interpret your documetation. These formatting rules help the tools deduces the
+structure of your document (sections, list, etc.) and the presentation
+(bold, italic, or font changes.) These rules are -- generally -- pretty
+simple rules that plain text documents have been using since documents
+were first stored on computers.
+
+Fundamentally, the RST formatting rules are implemented by a module named
+:application:`docutils`.  For additional documentation on RST, see
+the Sphinx web site (http://sphinx.pocoo.org) and the
+Docutils web site (http://docutils.sourceforge.net/).
+
+In addition to document structure, deduced from the layout,
+RST also uses explicit directives and interpreted text (or "inline") markup.
+
+**Document Structure**. Generally, you must write in paragraphs. A blank
+line is the end of one paragraph and the beginning of another. Also,
+different indentation will signal paragaph changes. The indent rule is
+handy for making bullet lists or numbered lists.
+
+A line that is indented and begins with :literal:`-` is a bulleted list.
+
+A line that starts with digits and periods is a numbered list. Lists can nest within each other.
+
+If you need to have sections and subsections (you'll almost always do
+this in the docstring for a module or package), you "underline" the
+title with lines of :literal:`===`, :literal:`---` or :literal:`~~~`.
+
+To include code code samples and doctest, you'll use either the simple :literal:`::`
+marker.  Or the explicit :literal:`..  code-block::` directive.
+
+Generally, the first paragraph must be a pithy summary of the material
+to follow. This paragraph will often be used in overviews and index pages.
+
+**Example testCard Module**.
+For example, our module document might look like this.
+
+..  code-block:: python
+
+    #!/usr/bin/env python
+    """The testCard module includes a number of unit tests for the Card
+    and Deck classes in the card module.
+
+    Overview
+    ========
+
+    This module tests the following classes:
+        - Card
+        - Deck
+
+    Card Tests
+    ----------
+
+    ..  autoclass:: TestCards
+
+    Deck Tests
+    ----------
+
+    ..  autoclass:: TestDeck
+
+    Usage
+    =====
+
+    This module uses the standard text runner, so it can be executed
+    from the command line as follows::
+
+        python testcard.py
+    """
+
+#.  We started with an overview paragraph. It summarizes the module in a single sentence.
+
+#.  We have an underlined section heading. In this document, the highest level of the outline is
+    underlined with :literal:`=`'s. The second level is underlined with :literal:`-`.
+
+    RST is very flexible with the underlining rules.
+
+#.  We have a bullet list. Simply indent, and begin the paragraph with :literal:`-`.
+    Lists can be nested, the RST processor will work this out based on the
+    indentation of the various sublists.
+
+#.  We used the :literal:`..   autoclass::` directive to gather docstring
+    documentation from the class docstring and include it in the overall
+    module docstring.
+
+#.  We included a literal block of code after a paragraph which ends with :literal:`::`.
+    The following material is indented to show what should be formatted specially.
+
+Interpreted Text, or Inline Markup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to basic document
+structure rules, RST includes a way to show that a span of
+characters should be interpreted specially. This is sometimes called
+Inline Markup because it is within the structural markup.
+
+-   ``*words*`` will render the words in :emphasis:`italic`.  This can also
+    be done with ``:emphasis:`words```.
+
+-   ``**words**`` will render the words in **bold**.  This can also
+    be done with ``:strong:`words```.
+
+-   ````words```` will render the words in a :samp:`fixed` font to indicate
+    that it is a code sample.
+    Literal programming text can also use ``:literal:`words```.
+
+    Code samples can also be done with ``:samp:`word {replaceable}```.  In this case,
+    the material enclosed in :literal:`{}` is displayed in italics: :samp:`word {replaceable}`.
+
+Additionally, there are several cross-reference inline markup formats
+available for code elements.
+
+Here's an example of a paragraph using some inline markup to make some
+characters italic, other bold, and still others a fixed-width find that
+makes them looke like code.
+
+
+..  code-block:: python
+
+    This method computes the square root of a number, *n*.
+    It returns a value, *r*, such that :samp:`r**2 == n`.
+
+    **Note**.  Square root of a negative number will raise a ``TypeError`` exception.
+
+RST Field Markup
+~~~~~~~~~~~~~~~~~
+
+RST Field markup is primarily used to tie your documentation directly
+to Python language structures. Field markup is a separate paragraph of the form
+:samp:`:tag arg: body`.  We won't cover all of the tags, just
+enough to produce basic documentation.
+
+
+Field markup also provides several standard kinds of standard "formal
+paragraphs" within your document. We'll look at these separately.
+
+
+The following tags are used to define
+detailed features of a method function.
+
+-   :literal:`:param p: description` A description of the parameter, *p*, for a function or method.
+
+-   :literal:`:return: description` A description of the return value from the function or method.
+
+-   :literal:`:keyword k: description` A description of the keyword parameter, *k*, for a function or method.
+
+Here's an example of a method function docstring that uses :literal:`@param`
+tags.
+
+
+..  code-block:: python
+
+        def __init__( self, rank, suit ):
+            """Build a card with a given rank and suit.
+
+            :param rank: numeric rank, ace is 1, 2-13 for 2 though King.
+            :param suit: String suit, use one of the module constants.
+            """
+            self.rank= 14 if rank == 1 else rank
+            self.suit= suit
+
+The following tags are used to define specific
+variables in a module or class.
+
+-   :literal:`:ivar v: description` A description of the an instance variable of a class. Generally, this
+    will be in the class level docstring, and will refer to one of the class's
+    :literal:`self.` variables.
+
+
+-   :literal:`:var v: description`  A global variable of a module. Generally, this will
+    be in the module docstring, and will refer to one of the global
+    variables created by the module.
+
+Here's an example of a class definition docstring that uses :literal:`:ivar:`
+tags.
+
+
+..  code-block:: python
+
+    class Card( object ):
+        """A single playing card, suitable for Blackjack or
+        Poker.  While a suit is retained, it doesn't figure into
+        the ordering of cards, as it would in Bridge.
+
+        **Reminder**. The internal rank of an Ace is 14.  The constructor,
+        however, expects a value of 1.
+
+        :ivar rank: the numeric rank of the card.  2-13, with ace as 14.
+        :ivar suit: the string suit of the card.
+        """
+
+Directives
+~~~~~~~~~~~
+
+RST has a number of useful directives available for structuring the documentation.
+Sphinx uses all of the basic RST directives and adds a large number of additional
+directives.
+
+A directive is an RST markup command starts with a special :literal:`..` line,
+and may include a number of lines indented within the directive.  One of the
+common ones is the :literal:`.. code-block::` directive.  The :literal:`::` is
+an essential part of the directive syntax.
+
+It looks like this.
+
+..  parsed-literal::
+
+    Example.
+
+    \.\.  code-block:: python
+
+        def fact(n):
+            if n == 0: return 1
+            return n*fact(n-1)
+
+    More Text.
+
+The directive starts with the :literal:`..` line and continues through the
+indented section.  The directive content ends with the end of the indentation.
+
+Epydoc uses the :literal:`:tag:` syntax; it doesn't define new RST directives.
+Because of this, there are two styles for
+some of the more advanced markup: an Epydoc tag style and a Sphinx directive
+style.
+
+Standard Paragraphs
+~~~~~~~~~~~~~~~~~~~
+
+There are several kinds of standard paragraphs
+that are part of any well-written document set. These include things like
+
+-   Related Topics.
+
+    Epydoc usess the :literal:`:seealso:` tag to generate a "Related
+    Topics" paragaph with references to other documents.
+
+    Sphinx uses the  :literal:`..  seealso::` directive line to generate additional
+    references.
+
+-   Admonitions (Notes, Warnings, etc).
+
+    Epydoc uses tags like :literal:`:note:`, :literal:`:attention:`,
+    :literal:`:bug:`, and :literal:`:warning:` tags to generate standard
+    types of admonition paragraphs.
+
+    Sphinx uses directives like :literal:`..  note::`, :literal:`..  attention::`,
+    and :literal:`..  warning::` directives to generate standard
+    types of admonition paragraphs.
+    Other adminitions include "caution", "danger", "error", "hint", "important", "tip".
+
+
+-   Status. You can track the development and deployment status of your
+    programs.  Tags like :literal:`:version:`, :literal:`:todo:`, :literal:`:deprecated:`,
+    :literal:`:since:`, :literal:`:status:`, and :literal:`change:`
+    are used by both Epydoc and Sphinx.
+
+-   Bibliographic Information. You can provide standard publication
+    information.  Tags like :literal:`:author:`, :literal:`:organization:`,
+    :literal:`:copyright:`, :literal:`:license:` and :literal:`:contact:`
+    can be used.
+
+Class Example
+~~~~~~~~~~~~~
+
+Here's an example of a module with detailed class documentation.
+
+..  rubric::  blackjack.py
+
+..  include:: ../../code/blackjack_doc.py
+    :code: python
+    :end-line: 115
+
+We've included  a module-level docstring, class-level docstings, and even some method-level
+docstrings. The idea is to provide enough information so that the automatic documentation
+produced by Sphnix is complete and useful.
+
+Example Sphinx Automodule
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..  automodule:: code.blackjack_doc
+    :members:
+    :special-members:
+

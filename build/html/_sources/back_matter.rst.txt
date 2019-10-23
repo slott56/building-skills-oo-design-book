@@ -1,0 +1,77 @@
+..  include:: definitions.inc
+
+Bibliography
+^^^^^^^^^^^^^^
+
+Use Cases
+=========
+
+..  [Jacobson92] Ivar Jacobson, Magnus Christerson, Patrik Jonsson, Gunnar |Ouml|\ vergaard.
+    :title:`Object-Oriented Software Engineering`. :subtitle:`A Use Case Driven Approach`.
+    1992. Addison-Wesley. :isbn:`0201544350`.
+
+..  [Jacobson95] Ivar Jacobson, Maria Ericsson, Agenta Jacobson.
+    :title:`The Object Advantage`. Business Process Reengineering with Object Technology. 1995. Addison-Wesley. :isbn:`0201422891`.
+
+
+Computer Science
+================
+
+..  [SEIstr04]. :title:`Software Technology Roadmap`. 2004.
+
+..  [Parnas72] Parnas D.
+    :title:`On the Criteria to Be Used in Decomposing Systems into Modules`. 1053-1058. 1972. Communications of the ACM.
+
+
+Design Patterns
+===============
+
+..  [Gamma95] Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides.
+    :title:`Design Patterns`. Elements of Object-Oriented Software. 1995. Addison-Wesley Professional. :isbn:`0201633612`.
+
+..  [Larman98] Craig Larman.
+    :title:`Applying UML and Patterns`. An Introduction to Object-Oriented Analysis and Design. 1998. Prentice-Hall. :isbn:`0137488807`.
+
+
+Statistics
+==========
+
+..  [Neter73] John Neter, William Wasserman, G. A. Whitmore.
+    :title:`Fundamental Statistics for Business and Economics`. 4. 1973. Allyn and Bacon, Inc.. :isbn:`020503853`.
+
+
+Python
+======
+
+..  [vanRossum04] Various Authors.
+    :title:`Python Documentation`. https://docs.python.org
+
+
+Casino Games
+============
+
+..  [Silberstang05] Edwin Silberstang.
+    :title:`The Winner's Guide to Casino Gambling`. 4th. 2005. Owl Books. :isbn:`0805077650`.
+
+..  [Skiena01] Steven Skiena.
+    :title:`Calculated Bets`. Computers, Gambling, and Mathematical Modeling to Win. 2001. Cambridge University Press. :isbn:`0521009626`.
+
+..  [Shackleford04] Michael Shackleford. :title:`The Wizard Of Odds`. 2004.
+
+..  [Aceten04]. :title:`Ace-Ten`. 2004.
+
+Toolset
+^^^^^^^
+
+
+The following toolset was used for production of this book.
+
+-   Python 3.4.3 (v3.4.3:9b73f1c3e601, Feb 23 2015, 02:52:03)
+
+-   Sphinx 1.3.1
+
+-   Docutils 0.12
+
+-   Komodo Edit 9.3.1
+
+-   MacTeX-2015 Specifically the XeLaTex conversion to PDF

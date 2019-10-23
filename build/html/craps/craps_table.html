@@ -1,0 +1,484 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Craps Table Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CrapsGame Class" href="craps_game.html" />
+    <link rel="prev" title="Bet Class" href="bet.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="craps-table-class">
+<span id="craps-table"></span><h1>Craps Table Class<a class="headerlink" href="#craps-table-class" title="Permalink to this headline">¶</a></h1>
+<p>In Roulette, the table was a passive repository for <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.
+In Craps, however, the table and game must collaborate to accept or
+reject bets based on the state of the game. This validation includes
+rules based on the total amount bet as well as rules for the individual bets.</p>
+<p>In <a class="reference internal" href="throw.html#craps-throw"><span class="std std-ref">Throw Class</span></a>, we roughed out a stub version of the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class
+to test the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class. In this section, we will
+extend this stub with additional features required by the table.</p>
+<p>In <a class="reference internal" href="#craps-table-analysis">Craps Table Analysis</a> we’ll look at two issues related to
+how the game works. In <a class="reference internal" href="#movable-bets">Movable Bets</a> we’ll look at how the
+Pass Line bet works. In <a class="reference internal" href="#game-state-and-allowed-bets">Game State and Allowed Bets</a> we’ll look
+at the bet validation issue.</p>
+<p>We’ll dig into three separate design decisions:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#design-decision-table-vs-game-responsibility">Design Decision – Table vs. Game Responsibility</a>,</p></li>
+<li><p><a class="reference internal" href="#design-decision-allowable-outcomes">Design Decision – Allowable Outcomes</a>, and</p></li>
+<li><p><a class="reference internal" href="#design-decision-domain-of-allowed-bets">Design Decision – Domain of Allowed Bets</a>.</p></li>
+</ul>
+<p>After looking closely at the choices, in <a class="reference internal" href="#handling-working-bets">Handling Working Bets</a> we’ll
+create a final approach to handling the bets on the table.</p>
+<p>This will lead to detailed design presentations
+in <a class="reference internal" href="#crapsgame-stub">CrapsGame Stub</a> and <a class="reference internal" href="#craps-table-design">Craps Table Design</a>. We’ll enumerate the
+deliverables for this chapter in <a class="reference internal" href="#craps-table-deliverables">Craps Table Deliverables</a>.</p>
+<div class="section" id="craps-table-analysis">
+<span id="craps-table-ov"></span><h2>Craps Table Analysis<a class="headerlink" href="#craps-table-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class is a container for  the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances. The
+money placed on <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances on the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> is
+“at risk”. There are several outcomes:</p>
+<ul class="simple">
+<li><p>A bet can win an amount based on the odds,</p></li>
+<li><p>A bet can lose the amount placed by the player,</p></li>
+<li><p>The Don’t Come and Don’t Pass bets may be returned, an event called a “push”, and</p></li>
+<li><p>The Buy and Lay bets include a commission (or vigorish) to place the bet;
+the commission is lost money; the balance of the bet, however, may win or lose.</p></li>
+</ul>
+<p>The responsibility for this new event called
+a push is something we can allocate to <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>, the commission price belongs to <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>.</p>
+<div class="section" id="movable-bets">
+<h3>Movable Bets<a class="headerlink" href="#movable-bets" title="Permalink to this headline">¶</a></h3>
+<p>Some <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances (specifically Pass, Don’t Pass, Come and Don’t
+Come) may have their <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> reference changed.  The use case works like this:</p>
+<ol class="arabic">
+<li><p>The bet is created by the Player with one <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>, for example, “Pass”.
+The <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> accepts this <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance.</p></li>
+<li><p>That bet may be resolved as an immediate winner or loser.  The Game and Throw will
+determine if the Bet is a winner as placed.</p>
+<p>More commonly, the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> may be changed to a new
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>, possibly with different odds.</p>
+<p>In a casino, the chips initially placed on Come Line and Don’t Come bets are relocated to
+a point number box to show this change. In the case of Pass Line and
+Don’t Pass bets, the “On” marker is placed on the table to show
+an implicit movement of all of those line bets.</p>
+</li>
+</ol>
+<p>The change is the
+responsibility of the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object; however, the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> instance
+must provide an iterator over the line bets that the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object
+will move.</p>
+</div>
+<div class="section" id="game-state-and-allowed-bets">
+<h3>Game State and Allowed Bets<a class="headerlink" href="#game-state-and-allowed-bets" title="Permalink to this headline">¶</a></h3>
+<p>Each change to the game state changes the allowed bets as well as the
+active bets. When the point is off, most of the bets on the table are not
+allowed, and some others are inactive, or not “working”.</p>
+<p>When a point is established, all bets are allowed, and all bets are active.
+We’ll examine the rules in detail, below.</p>
+<p>The <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class must be
+able to reject bets which are inappropriate for the current <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object’s
+state.</p>
+</div>
+</div>
+<div class="section" id="design-decision-table-vs-game-responsibility">
+<h2>Design Decision – Table vs. Game Responsibility<a class="headerlink" href="#design-decision-table-vs-game-responsibility" title="Permalink to this headline">¶</a></h2>
+<p>We’ve identified three  responsibilities that are part of handling Craps bets:</p>
+<ul class="simple">
+<li><p>moving <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances,</p></li>
+<li><p>inactivating outcomes based on game state, and</p></li>
+<li><p>accepting or rejecting bets based on <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> state.</p></li>
+</ul>
+<p>Clearly, these require
+additional collaboration between the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> and <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> classes.
+We will have to add methods to the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class that will allow
+or deny some bets, as well as methods that will active or deactive some bets.</p>
+<p>We have to choose where in the class hierarchy we will retrofit this
+additional collaboration.</p>
+<p><strong>Problem</strong>.
+Should we put these new responsibilities at a high-enough level that we’ll  add  table and game
+collaboriation  to the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class used for Roulette?</p>
+<p><strong>Forces</strong>.
+If we do add
+this for Roulette, we could simply return <code class="docutils literal notranslate"><span class="pre">True</span></code> from the
+method that validates the allowed bets, since all bets are allowed in
+Roulette.</p>
+<p>However, our overall application design does not depend on all
+subclasses of <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> and <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> being
+polymorphic; we will never mix and match different combinations of Craps
+Table and Roulette Game.</p>
+<p><strong>Solution</strong>.
+Because we don’t need polymorphism between Craps and Roulette, we can
+create a subclass of <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> with a more complex interface
+and leave Roulette untouched. Perhaps we’ll call it <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>.</p>
+</div>
+<div class="section" id="design-decision-allowable-outcomes">
+<h2>Design Decision – Allowable Outcomes<a class="headerlink" href="#design-decision-allowable-outcomes" title="Permalink to this headline">¶</a></h2>
+<p>After deciding to create a <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> subclass, we have
+several consequent decisions. First, we turn the interesting question of
+how best to allocate responsibility for keeping the list of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+which change with the game state.</p>
+<p><strong>Problem</strong>.
+Which class determines the valid and invalid <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances?</p>
+<p><strong>Forces</strong>.
+We can see two places to place
+this responsibility.</p>
+<ol class="arabic">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>. This class could have
+methods to return the lists of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances that are
+allowed or not allowed. <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> can make a call to
+get the list of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances and make the changes. Making
+each change would involve the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> a second time
+to mark the individual <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. This information is
+then used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> to validate individual <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.</p></li>
+<li><p><a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>. This class could invoke a
+method of <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> that changes a single <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>’s
+state to makt it inactive. This information is then used by the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>
+to validate individual <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.</p>
+<p>A feature of this choice is to have the <code class="xref py py-meth docutils literal notranslate"><span class="pre">validBet()</span></code>
+method of <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> depend on <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> to determine which bets are allowed
+or denied. In this case, <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> has the
+responsibility to respond to requests from either <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>
+or <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> regarding a specific <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+</li>
+</ol>
+<p><strong>Solution</strong>
+We need to place a validation method in the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>; but the Table simply
+delegates the details to the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>.  This allows the Player to
+deal directly with the Table.  But it centralizes the actual decision-making
+on the Game.</p>
+<p>This leaves the table as a fairly passive repository for bets. The
+bulk of the decision-making for validity is delegated to the game.</p>
+<p><strong>Consequences</strong>.
+The game must move <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances for certain kinds of bets.
+Additionally, the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">isValid()</span></code>
+method will use the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> to both check the validity of
+individual bets as well as the entire set of bets created by a player.
+The first check allows or denies individual bets, something <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>
+must do in collaboration with <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>. For the second
+check, the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> assures that the total of the bets is
+within the table limits; something for which only the table has the
+information required.</p>
+</div>
+<div class="section" id="design-decision-domain-of-allowed-bets">
+<h2>Design  Decision – Domain of Allowed Bets<a class="headerlink" href="#design-decision-domain-of-allowed-bets" title="Permalink to this headline">¶</a></h2>
+<p>The rule for allowed and non-allowed bets is relatively
+simple. When the game state has no point (also known as the come out
+roll), only Pass Line and Don’t Pass bets are allowed, all other bets
+are not allowed. When the point is on, all bets are allowed. We’ll have
+to add an <code class="xref py py-meth docutils literal notranslate"><span class="pre">isAllowed()</span></code> to <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>, which <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>
+will use when the player attempts to place a bet.</p>
+<p>We have two ways to implement this:</p>
+<ul class="simple">
+<li><p>A “validation” function that determines if bets are allowed.</p></li>
+<li><p>A “what’s possible” function that returns an enumeration of legal bets.</p></li>
+</ul>
+<p>The idea of one-by-one validation might make sense in a situation where
+the player transactions are quite complex. For casino games, the player’s
+alternatives are narrowly constrained.</p>
+<p>It makes considerable sense for the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> to supply the domain of
+allowed bets to the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> and <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>. In this way, a <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+can simply extract the interesting bets from the available domain of possible
+bets.</p>
+</div>
+<div class="section" id="handling-working-bets">
+<h2>Handling Working Bets<a class="headerlink" href="#handling-working-bets" title="Permalink to this headline">¶</a></h2>
+<p>The rule for working and non-working bets adds
+a layer of complexity to the game state.</p>
+<p>On the come out roll, all odds bets placed behind any
+of the six Come Point numbers are not working. This rule only applies to
+odds behind Come Point bets; odds behind Don’t Come bets are always
+working. We’ll have to add an <code class="xref py py-meth docutils literal notranslate"><span class="pre">isWorking()</span></code> to <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>,
+which <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> will use when iterating through working bets.</p>
+<p>The sequence of events that can lead to this condition is as follows.</p>
+<ol class="arabic simple">
+<li><p>The player places a Come Line bet, the dice roll is 4, 5, 6, 8, 9
+or 10, and establishes a point. The bet is moved to one of the six come points.</p></li>
+<li><p>The player creates an additional odds bet placed behind
+this come point bet.</p></li>
+<li><p>A dice roll makes the main game point is a winner.
+changing the game state so the next roll is a come out roll.
+In this state, any additional odds behind a come point bet will
+be a non-working bets on the subsequent come-out roll.</p></li>
+</ol>
+<p>As with allowed bets, we have a domain of working bets for a given
+game state. We can implement this as a function that responds with
+state information. We can also implement this as a collection
+of bets what are working in a given game state.</p>
+<p>The code could look like this:</p>
+<p class="rubric">Working Bets Method</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">theTable</span><span class="o">.</span><span class="n">is_working</span><span class="p">(</span><span class="n">some_bet</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">theTable</span><span class="o">.</span><span class="n">winner</span><span class="p">(</span><span class="n">some_bet</span><span class="p">):</span>
+        <span class="n">player</span><span class="o">.</span><span class="n">win</span><span class="p">(</span><span class="n">some_bet</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">player</span><span class="o">.</span><span class="n">lose</span><span class="p">(</span><span class="n">some_bet</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or, it could look like this:</p>
+<p class="rubric">Working Bets Collection</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">some_bet</span> <span class="ow">in</span> <span class="n">theTable</span><span class="o">.</span><span class="n">working_bets</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">some_bet</span> <span class="ow">in</span> <span class="n">theTable</span><span class="o">.</span><span class="n">winning_bets</span><span class="p">():</span>
+        <span class="n">player</span><span class="o">.</span><span class="n">win</span><span class="p">(</span><span class="n">some_bet</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">player</span><span class="o">.</span><span class="n">lose</span><span class="p">(</span><span class="n">some_bet</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The distinction is minor.</p>
+<p>Also note that the examples don’t include push outcomes. We’ll look at
+the details of hanlding that in the <a class="reference internal" href="craps_game.html#craps-game"><span class="std std-ref">CrapsGame Class</span></a> section.</p>
+<p>What’s important is that we can handle these subtle cases gracefully.
+This elegant processing of complex rules is one of the important reasons why
+object-oriented programming can be more successful than procedural
+programming. In this case, we can isolate this state-specific processing
+to the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class. We can also provide the interface to the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>
+class making this responsibility explicit and easy to use.</p>
+</div>
+<div class="section" id="crapsgame-stub">
+<span id="craps-game-stub"></span><h2>CrapsGame Stub<a class="headerlink" href="#crapsgame-stub" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class is a preliminary design for the game of Craps. In
+addition to features required by the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class, this version
+includes features required by the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> class.</p>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="CrapsGame.isAllowed">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">isAllowed</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#CrapsGame.isAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – An <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> that may be allowed or not allowed,
+depending on the game state.</p>
+</dd>
+</dl>
+<p>Determines if the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is
+allowed in the current state of the game. When the <a class="reference internal" href="throw.html#CrapsGame.point" title="CrapsGame.point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">point</span></code></a>
+is zero, it is the come out roll, and only Pass, Don’t Pass, Come
+and Don’t Come bets are allowed. Otherwise, all bets are allowed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsGame.isWorking">
+<code class="sig-prename descclassname">CrapsGame.</code><code class="sig-name descname">isWorking</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">outcome: Outcome</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#CrapsGame.isWorking" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcome</strong> (<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>) – An <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> that may be allowed or not allowed,
+depending on the game state.</p>
+</dd>
+</dl>
+<p>Determines if the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> is
+working in the current state of the game. When the <a class="reference internal" href="throw.html#CrapsGame.point" title="CrapsGame.point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">point</span></code></a>
+is zero, it is the come out roll, odds bets placed behind any of the
+six come point numbers are not working.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="craps-table-design">
+<h2>Craps Table Design<a class="headerlink" href="#craps-table-design" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> is a subclass of the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class with an
+association with a <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object. As a subclass of the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class,
+it contains all the <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances created by the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance.
+It also has a betting limit, and the sum of all of a player’s bets
+must be less than or equal to this limit. We assume a single <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
+in the simulation.</p>
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="CrapsTable.game">
+<code class="sig-prename descclassname">CrapsTable.</code><code class="sig-name descname">game</code><a class="headerlink" href="#CrapsTable.game" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> used to determine if a given bet is
+allowed or working in a particular game state.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="CrapsTable.__init__">
+<code class="sig-prename descclassname">CrapsTable.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">game: CrapsGame</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsTable.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>game</strong> (<a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>) – The CrapsGame instance that controls the state of this table</p>
+</dd>
+</dl>
+<p>Uses the superclass for initialization of the empty <code class="xref py py-class docutils literal notranslate"><span class="pre">LinkedList</span></code>
+of bets.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id1">
+<h3>Methods<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="CrapsTable.isValid">
+<code class="sig-prename descclassname">CrapsTable.</code><code class="sig-name descname">isValid</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#CrapsTable.isValid" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet to validate.</p>
+</dd>
+</dl>
+<p>Validates this bet by checking with the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>
+to see if the bet is valid; it returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bet is valid,
+<code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="CrapsTable.allValid">
+<code class="sig-prename descclassname">CrapsTable.</code><code class="sig-name descname">allValid</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#CrapsTable.allValid" title="Permalink to this definition">¶</a></dt>
+<dd><p>This uses the
+superclass to see if the sum of all bets is less than or equal to
+the table limit. If the individual bet outcomes are also valid, return <code class="docutils literal notranslate"><span class="pre">True</span></code>.
+Otherwise, return <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="craps-table-deliverables">
+<h2>Craps Table Deliverables<a class="headerlink" href="#craps-table-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise.</p>
+<ul>
+<li><p>A revision of the stub <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class to add methods
+for validating bets in different game states. In the stub, the point
+value of 0 means that only the “Pass Line” and “Don’t
+Pass Line” bets are valid, where a point value of non-zero means all
+bets are valid.</p></li>
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code> subclass.</p></li>
+<li><p>A class which performs a unit test of the <code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsTable</span></code>
+class. The unit test should create a couple instances of <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>,
+and establish that these <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances are managed by the
+table correctly.</p>
+<p>For testing purposes, it is easiest to have the test method simply
+set the the <code class="xref py py-obj docutils literal notranslate"><span class="pre">point</span></code> variable in the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a>
+instance to force a change in the game state. While public instance
+variables are considered by some to be a bad policy, they facilitate
+the creation of unit test classes.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>We have a table for bets, and a definition of the dice and
+throws. The next component is the fairly complex set of state
+transition rules for the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class.
+In the next chapter we’ll design the state class hierarchy to
+run the <a class="reference internal" href="craps_game.html#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> class.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Craps Table Class</a><ul>
+<li><a class="reference internal" href="#craps-table-analysis">Craps Table Analysis</a><ul>
+<li><a class="reference internal" href="#movable-bets">Movable Bets</a></li>
+<li><a class="reference internal" href="#game-state-and-allowed-bets">Game State and Allowed Bets</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#design-decision-table-vs-game-responsibility">Design Decision – Table vs. Game Responsibility</a></li>
+<li><a class="reference internal" href="#design-decision-allowable-outcomes">Design Decision – Allowable Outcomes</a></li>
+<li><a class="reference internal" href="#design-decision-domain-of-allowed-bets">Design  Decision – Domain of Allowed Bets</a></li>
+<li><a class="reference internal" href="#handling-working-bets">Handling Working Bets</a></li>
+<li><a class="reference internal" href="#crapsgame-stub">CrapsGame Stub</a><ul>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#craps-table-design">Craps Table Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#id1">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#craps-table-deliverables">Craps Table Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="bet.html" title="previous chapter">Bet Class</a></li>
+      <li>Next: <a href="craps_game.html" title="next chapter">CrapsGame Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

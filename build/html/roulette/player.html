@@ -1,0 +1,545 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Player Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Overall Simulation Control" href="control.html" />
+    <link rel="prev" title="Review of Testability" href="testability.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="player-class">
+<span id="roul-player"></span><h1>Player Class<a class="headerlink" href="#player-class" title="Permalink to this headline">¶</a></h1>
+<p>The variations on <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class implementations are the heart of this application.
+Each subclass can reflect different betting strategies.
+In <a class="reference internal" href="roulette_game.html#roul-game"><span class="std std-ref">Roulette Game Class</span></a>,
+we roughed out a stub class for the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class. In this chapter,
+we will complete that design. We will also expand on it to implement the
+Martingale betting strategy.</p>
+<p>We have now built enough infrastructure that we can begin to add a
+variety of players and see how poorly each betting strategy works. Each
+player is a betting algorithm that we will evaluate by looking at the
+player’s stake to see how much they win, and how long they play before
+they run out of time or go broke.</p>
+<p>We’ll look at the player problem in <a class="reference internal" href="#roulette-player-analysis">Roulette Player Analysis</a>.</p>
+<p>In <a class="reference internal" href="#player-design">Player Design</a> we’ll expand on our previous skeleton <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+to create a more complete implementation. We’ll expand on that again
+in <a class="reference internal" href="#martingale-player-design">Martingale Player Design</a>.</p>
+<p>In <a class="reference internal" href="#player-deliverables">Player Deliverables</a> we’ll enumerate the deliverables for
+this chapter.</p>
+<div class="section" id="roulette-player-analysis">
+<h2>Roulette Player Analysis<a class="headerlink" href="#roulette-player-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class has the responsibility to create <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances and manage
+the amount of their stake. To create <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances, the player must create legal
+bets from known <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances and stay within table limits. To
+manage their stake, the player must deduct money when creating a bet,
+accept winnings or pushes, report on the current value of the stake, and
+leave the table when they are out of money.</p>
+<p>We’ll look at a number of topics:</p>
+<ul class="simple">
+<li><p>Our overall goal, in <a class="reference internal" href="#design-objectives">Design Objectives</a>.</p></li>
+<li><p>How we manage the budget, in <a class="reference internal" href="#tracking-the-stake">Tracking the Stake</a>.</p></li>
+<li><p>How a player interacts with table limits, in <a class="reference internal" href="#table-limits">Table Limits</a>.</p></li>
+<li><p>In <a class="reference internal" href="#leaving-the-table">Leaving the Table</a> we’ll look at a player retiring when they’re ahead.
+Or broke.</p></li>
+<li><p>In <a class="reference internal" href="#creating-bets-from-outcomes">Creating Bets from Outcomes</a> we’ll look at a technical question of
+transforming an <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance into a <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance.</p></li>
+</ul>
+<p>We roughed out an interface for the player as part of the design of the :class: <cite>Game</cite> class
+and the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class. In designing the :class: <cite>Game</cite> class,
+we defined a <a class="reference internal" href="../craps/refactoring.html#Player.placeBets" title="Player.placeBets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.placeBets()</span></code></a> method to place all bets.
+We expected the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
+to create <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances and use the <a class="reference internal" href="../craps/refactoring.html#Table.placeBet" title="Table.placeBet"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Table.placeBet()</span></code></a> method
+to save all of the individual <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.</p>
+<p>In the <a class="reference internal" href="roulette_game.html#roul-game-design-passenger57"><span class="std std-ref">Passenger57 Design</span></a> section we defined a kind of player.
+When we finish creating the final superclass, <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>, we
+can then revise our <a class="reference internal" href="roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a> class to be a subclass of the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class.
+We should be able to rerun our unit tests to be sure that this new, more complete design
+still handles the original test cases correctly.</p>
+<div class="section" id="design-objectives">
+<h3>Design Objectives<a class="headerlink" href="#design-objectives" title="Permalink to this headline">¶</a></h3>
+<p>Our objective is to have a new abstract class, <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>,
+with two new concrete subclasses: a revision to the <a class="reference internal" href="roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a> class
+and a new player subclass that follows the Martingale betting system.</p>
+<p>We’ll defer some of the design required to collect detailed measurements
+for statistical analysis. In this first release, we’ll simply place bets.</p>
+<p>There are four design issues tied up in the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class: tracking
+stake, keeping within table limits, leaving the table, and creating
+bets. We’ll tackle them in separate subsections.</p>
+</div>
+<div class="section" id="tracking-the-stake">
+<h3>Tracking the Stake<a class="headerlink" href="#tracking-the-stake" title="Permalink to this headline">¶</a></h3>
+<p>One of the more important features we need to add to the
+<a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class are the methods to track the player’s stake. The
+initial value of the stake is the player’s budget. Here is a list of several
+significant changes to the stake:</p>
+<ul class="simple">
+<li><p>Each bet placed will deduct the bet amount from the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object’s
+stake. We are stopped from placing bets when our stake is less
+than the table minimum.</p></li>
+<li><p>Each win will credit the stake. The <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class will
+compute this amount for the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object.</p></li>
+<li><p>Additionally, a “push” outcome will put the original bet amount back
+into the player’s stake. This is a kind of win with no odds applied.</p></li>
+</ul>
+<p>We’ll have to design an interface that will create <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> objects,
+reducing the stake. and will be used by :class: <cite>Game</cite> class to notify the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+instance of the amount won.</p>
+<p>Additionally, we will need a method to reset the stake to the starting amount. This will be used
+as part of data collection for the overall simulation.</p>
+</div>
+<div class="section" id="table-limits">
+<h3>Table Limits<a class="headerlink" href="#table-limits" title="Permalink to this headline">¶</a></h3>
+<p>Once we have our superclass, we can then define the <a class="reference internal" href="#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a>
+player as a subclass. This player doubles their bet on every loss, and
+resets their bet to a base amount on every win. In the event of a long
+sequence of losses, this player will have their bets rejected as over
+the table limit. This raises the question of how the table limit is
+represented and how conformance with the table limit is assured.</p>
+<p>We put a preliminary design in place in <a class="reference internal" href="roulette_table.html#roul-table"><span class="std std-ref">Roulette Table Class</span></a>.
+There are several places where we could isolate this responsibility.</p>
+<ol class="arabic simple">
+<li><p>The <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class can stop placing bets when they are over the table
+limit. In this case, we will be delegating responsibility to the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class
+hierarchy. In a casino, a sign is posted on the table, and both
+players and casino staff enforce this rule. This can be modeled by
+providing a method in <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class to return the
+table limit for use by the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance to keep bets within
+the limit.</p></li>
+<li><p>The <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class provides a “valid bet” method. This can include
+computing a total of all bets placed, and raise exceptions.</p></li>
+<li><p>The <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class raises an “illegal bet” exception when
+an illegal bet is placed.</p></li>
+</ol>
+<p>The first alternative is unpleasant because the responsibility to spread
+around: both the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> and the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> classes must be aware of a feature
+of the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class. This means that a change to the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class design will
+also require a change to the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class implementation. This is poor object-oriented
+design.</p>
+<p>The second and third choices reflect two common approaches that are summarized
+as:</p>
+<ul class="simple">
+<li><p><strong>Ask Permission</strong>. The application has code wrapped in <code class="code docutils literal notranslate"><span class="pre">if</span> <span class="pre">permitted:</span></code>
+conditional processing.</p></li>
+<li><p><strong>Ask Forgiveness</strong>. The application assumes that things will work.
+An exception indicates something unexpected happened.</p></li>
+</ul>
+<p>The general advice is this:</p>
+<blockquote>
+<div><p><strong>It’s easier to ask forgiveness than to ask permission.</strong></p>
+</div></blockquote>
+<p>Most of the time, validation should be handled by raising an exception. This suggests
+the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class should raise exceptions for bets which are invalid.
+This includes rejecting bets which exceed the table limit.</p>
+<p><strong>Handling Game State</strong>.
+The idea of bet validation raises a question about how we handle games where some bets
+are not allowed during some game states.</p>
+<p>There are two sources of validation for a bet.</p>
+<ul class="simple">
+<li><p>The <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class may reject a bet because it’s over (or under) a limit.</p></li>
+<li><p>The :class: <cite>Game</cite> class may reject a bet because it’s illegal in the current
+state of the game.</p></li>
+</ul>
+<p>Since these considerations are part of Craps and Blackjack, we’ll set them
+aside for now. They’re side-bar considerations during the design of Roulette.</p>
+</div>
+<div class="section" id="leaving-the-table">
+<h3>Leaving the Table<a class="headerlink" href="#leaving-the-table" title="Permalink to this headline">¶</a></h3>
+<p>We need to address the issue of the player
+leaving the game. We can identify a number of possible reasons for
+leaving: out of money, out of time, won enough, and unwilling to place a
+legal bet. Since this decision is private to the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class,
+we need a way of alerting the :class: <cite>Game</cite> instance that the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object
+is finished placing bets.</p>
+<p>There are three mechanisms for alerting a :class: <cite>Game</cite> instance that a <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>
+instance is finished placing bets.</p>
+<ol class="arabic simple">
+<li><p>Expand the responsibilities of the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Game.placeBets()</span></code> to also
+indicate if the player intends to play or is withdrawing from the
+game. While most table games require bets on each round, it is
+possible to step up to a table and watch play before placing a bet.
+This is one classic strategy for winning at blackjack: one player
+sits at the table, placing small bets and counting cards, while a
+confederate places large bets only when the deck is favorable. We
+really have three player conditions: watching, betting, and finished
+playing. It becomes complex trying to bundle all this extra
+responsibility into the <code class="xref py py-meth docutils literal notranslate"><span class="pre">Game.placeBets()</span></code> method.</p></li>
+<li><p>Add another method to the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class, used by the :class: <cite>Game</cite> class
+to determine if the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance will continue or
+stop playing. This can be used for a player who is placing no bets
+while waiting; for example, a player who is waiting for the Roulette
+wheel to spin red seven times in a row before betting on black.</p></li>
+<li><p>The <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class can raise an exception when they are done
+playing. This is an odd use case for an exception. The situation
+occurs exactly once in each simulation, and it is a well-defined condition:
+it doesn’t deserve to be called “exceptional” . It is merely a
+terminating condition for the game.</p></li>
+</ol>
+<p>We recommend adding a method to the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class to indicate when the player
+is finished. This gives the most flexibility, and it permits the <a class="reference internal" href="roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> class
+to cycle until the player withdraws from the game.</p>
+<p>A consequence of this decision is to rework the :class: <cite>Game</cite> class
+to allow the player to exit. This is relatively small change to
+interrogate the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance to see if they’re active
+before asking them to place bets.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Design Evolution</p>
+<p>This section reveals situations we didn’t discover during
+the initial design. It helped to have some experience with the
+classes in order to determine the proper allocation of
+responsibilities. While design walk-throughs are helpful, an
+alternative is to create a “technical spike”: a piece of software that is
+incomplete and can be disposed of. The earlier exercise created a
+version of the <a class="reference internal" href="roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> class that was incomplete,
+and a version of <a class="reference internal" href="roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a> that will have to be disposed of.</p>
+</div>
+</div>
+<div class="section" id="creating-bets-from-outcomes">
+<h3>Creating Bets from Outcomes<a class="headerlink" href="#creating-bets-from-outcomes" title="Permalink to this headline">¶</a></h3>
+<p>Generally, a <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance will
+have a few <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances on which they are betting. Many
+systems are similar to the Martingale system, and place bets on only one
+of the many <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. These <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects are
+usually created during player initialization. From these <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances,
+the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object can create the individual <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>
+instances based on their betting strategy.</p>
+<p>Since we’re currently using the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class as a repository for all legal
+<a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, we’ll need to provide the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class to the
+<a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>.</p>
+<p>This doesn’t generalize well for Craps or Blackjack. We’ll need to revisit
+this design decision. In the long run, we’ll need to find another kind of factory for
+creating proper <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.</p>
+<p>We’ll design the base class of <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> and a specific subclass,
+<a class="reference internal" href="#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a>. This will give us a working player that we can
+test with.</p>
+</div>
+</div>
+<div class="section" id="player-design">
+<h2>Player Design<a class="headerlink" href="#player-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Player">
+<em class="property">class </em><code class="sig-name descname">Player</code><a class="headerlink" href="#Player" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> places bets in Roulette. This an abstract class,
+with no actual body for the <a class="reference internal" href="../craps/refactoring.html#Player.placeBets" title="Player.placeBets"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.placeBets()</span></code></a> method. However,
+this class does implement the basic <a class="reference internal" href="../craps/refactoring.html#Player.win" title="Player.win"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.win()</span></code></a> method used by all subclasses.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt>
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">stake</code></dt>
+<dd><p>The player’s current stake. Initialized to the player’s starting budget.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">roundsToGo</code></dt>
+<dd><p>The number of rounds left to play. Initialized by the overall
+simulation control to the maximum number of rounds to play. In
+Roulette, this is spins. In Craps, this is the number of throws of
+the dice, which may be a large number of quick games or a small
+number of long-running games. In Craps, this is the number of cards
+played, which may be large number of hands or small number of
+multi-card hands.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">table</code></dt>
+<dd><p>The <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object used to place individual <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.
+The <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object contains the current <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> object from which
+the player can get <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects used to build <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">table: Table</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><p>Constructs the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance with a specific <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object
+for placing <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table</strong> (<a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>) – the table to use</p>
+</dd>
+</dl>
+<p>Since the table has access to the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance, we can
+use this wheel to extract :class`Outcome` objects.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">playing</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; bool</dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
+while the player is still active.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">placeBets</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><p>Updates the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object
+with the various <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> objects.</p>
+<p>When designing the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class, we decided that we needed to
+deduct the amount of a bet from the stake when the bet is created.
+See the Table <a class="reference internal" href="roulette_table.html#roul-table-ov"><span class="std std-ref">Roulette Table Analysis</span></a> for more information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">win</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet which won</p>
+</dd>
+</dl>
+<p>Notification from the :class: <cite>Game</cite> object
+that the <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance was a winner. The amount of money won is
+available via the <a class="reference internal" href="bet.html#Bet.winAmount" title="Bet.winAmount"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Bet.winAmount()</span></code></a> method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">lose</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="bet.html#Bet" title="Bet"><em>Bet</em></a>) – The bet which won</p>
+</dd>
+</dl>
+<p>Notification from the :class: <cite>Game</cite> object
+that the <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instance was a loser. Note that the amount was
+already deducted from the stake when the bet was created.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="martingale-player-design">
+<span id="roul-player-martingale"></span><h2>Martingale Player Design<a class="headerlink" href="#martingale-player-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Martingale">
+<em class="property">class </em><code class="sig-name descname">Martingale</code><a class="headerlink" href="#Martingale" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> is a <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> who places bets in
+Roulette. This player doubles their bet on every loss and resets their
+bet to a base amount on each win.</p>
+</dd></dl>
+
+<div class="section" id="id1">
+<h3>Fields<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="Martingale.lossCount">
+<code class="sig-prename descclassname">Martingale.</code><code class="sig-name descname">lossCount</code><a class="headerlink" href="#Martingale.lossCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of losses. This is the number of times to double the bet.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Martingale.betMultiple">
+<code class="sig-prename descclassname">Martingale.</code><code class="sig-name descname">betMultiple</code><a class="headerlink" href="#Martingale.betMultiple" title="Permalink to this definition">¶</a></dt>
+<dd><p>The the bet multiplier, based on the number of losses. This starts
+at 1, and is reset to 1 on each win. It is doubled in each loss.
+This is always equal to <img class="math" src="../_images/math/6c64b6d9979620700dd3332b507df9a83becda7f.png" alt="2^{lossCount}"/>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="id2">
+<h3>Methods<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="Martingale.placeBets">
+<code class="sig-prename descclassname">Martingale.</code><code class="sig-name descname">placeBets</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Martingale.placeBets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object
+with a bet on “black”. The amount bet is <img class="math" src="../_images/math/6c64b6d9979620700dd3332b507df9a83becda7f.png" alt="2^{lossCount}"/>,
+which is the value of <a class="reference internal" href="#Martingale.betMultiple" title="Martingale.betMultiple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">betMultiple</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Martingale.win">
+<code class="sig-prename descclassname">Martingale.</code><code class="sig-name descname">win</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Martingale.win" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet which won</p>
+</dd>
+</dl>
+<p>Uses the superclass <a class="reference internal" href="../craps/refactoring.html#Player.win" title="Player.win"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.win()</span></code></a>
+method to update the stake with an amount won. This method then resets
+<a class="reference internal" href="#Martingale.lossCount" title="Martingale.lossCount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lossCount</span></code></a> to zero, and resets <a class="reference internal" href="#Martingale.betMultiple" title="Martingale.betMultiple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">betMultiple</span></code></a> to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Martingale.lose">
+<code class="sig-prename descclassname">Martingale.</code><code class="sig-name descname">lose</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">bet: Bet</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Martingale.lose" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bet</strong> (<a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>) – The bet which won</p>
+</dd>
+</dl>
+<p>Uses the superclass <code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.loss()</span></code> to do whatever bookkeeping the superclass
+already does.
+Increments <a class="reference internal" href="#Martingale.lossCount" title="Martingale.lossCount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lossCount</span></code></a> by <code class="docutils literal notranslate"><span class="pre">1</span></code>
+and doubles <a class="reference internal" href="#Martingale.betMultiple" title="Martingale.betMultiple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">betMultiple</span></code></a>.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="player-deliverables">
+<h2>Player Deliverables<a class="headerlink" href="#player-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are six deliverables for this exercise. The new classes must have
+Python docstrings.</p>
+<ul class="simple">
+<li><p>The <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> abstract superclass. Since this class
+doesn’t have a body for the <code class="xref py py-meth docutils literal notranslate"><span class="pre">placeBets()</span></code>, it can’t be
+unit tested directly.</p></li>
+<li><p>A revised <a class="reference internal" href="roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a> class. This version will be a
+proper subclass of <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>, but still place bets on
+black until the stake is exhausted. The existing unit test for <a class="reference internal" href="roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a> class
+should continue to work correctly after these changes.</p></li>
+<li><p>The <a class="reference internal" href="#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> subclass of the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class.</p></li>
+<li><p>A unit test class for the <a class="reference internal" href="#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> class. This test should
+synthesize a fixed list of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances,
+and calls a <a class="reference internal" href="#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> instance with various
+sequences of reds and blacks to assure that the bet doubles
+appropriately on each loss, and is reset on each win.</p></li>
+<li><p>A revised :class: <cite>Game</cite> class. This will check the player’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">playing()</span></code>
+method before calling <code class="xref py py-meth docutils literal notranslate"><span class="pre">placeBets()</span></code> method, and do nothing if
+the player withdraws. It will also call the player’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">win()</span></code>
+and <code class="xref py py-meth docutils literal notranslate"><span class="pre">loss()</span></code> methods for winning and losing bets.</p></li>
+<li><p>A unit test class for the revised :class: <cite>Game</cite> class. Using a
+non-random generator for <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance, this should be able to
+confirm correct operation of the :class: <cite>Game</cite> class for a number of bets.</p></li>
+</ul>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have working <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>, <a class="reference internal" href="roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a>, and <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> classes, we have
+two fundamental choices. One option is to build more subclass of the <a class="reference internal" href="#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class.
+The other choice is to put an overall simulation wrapper around the work done so far.</p>
+<p>Building the overall simulation control allows us to deliver a small,
+working example before investing time in building more sophisticated features.
+This is a very helpful next step, so the next chapter will look at overall simulation
+control.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Player Class</a><ul>
+<li><a class="reference internal" href="#roulette-player-analysis">Roulette Player Analysis</a><ul>
+<li><a class="reference internal" href="#design-objectives">Design Objectives</a></li>
+<li><a class="reference internal" href="#tracking-the-stake">Tracking the Stake</a></li>
+<li><a class="reference internal" href="#table-limits">Table Limits</a></li>
+<li><a class="reference internal" href="#leaving-the-table">Leaving the Table</a></li>
+<li><a class="reference internal" href="#creating-bets-from-outcomes">Creating Bets from Outcomes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#player-design">Player Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#martingale-player-design">Martingale Player Design</a><ul>
+<li><a class="reference internal" href="#id1">Fields</a></li>
+<li><a class="reference internal" href="#id2">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#player-deliverables">Player Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="testability.html" title="previous chapter">Review of Testability</a></li>
+      <li>Next: <a href="control.html" title="next chapter">Overall Simulation Control</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

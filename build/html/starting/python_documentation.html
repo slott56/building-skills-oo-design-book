@@ -1,0 +1,738 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Python Documentation &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Roulette Details" href="../roulette/details.html" />
+    <link rel="prev" title="Python Unit Testing" href="python_testing.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="python-documentation">
+<span id="documentation"></span><h1>Python Documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Documentation is
+absolutely essential to anyone seeking to use your software.
+The easiest and most reliable way to produce this
+documentation is by using a tool that examines the source itself and
+develops the document directly from the programs. By using cleverly
+formatted Python docstrings, we can augment that analysis with
+easy-to-understand descriptions.</p>
+<p>In the case of Python, there are several tools for extracting
+documentation from the source. The most popular one is
+Sphinx, <a class="reference external" href="http://sphinx.pocoo.org/">http://sphinx.pocoo.org/</a>.</p>
+<p>We can use <strong>pydoc</strong>, also.
+This is part of Python. It doesn’t cope well
+with files in UTF-8 encoding. You need to include the following
+comment in any files that have Unicode characters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+</pre></div>
+</div>
+<p>In <a class="reference internal" href="#documentation-development">Documentation Development</a> we’ll look at how we can use Sphinx to
+create complete, accurate, and nice-looking documentation for our application.</p>
+<p>In <a class="reference internal" href="#using-sphinx">Using Sphinx</a> we’ll look at a aspects of using Sphinx.</p>
+<p>In order to use either tool, we’ll need to write using ReStructuredText (RST.)
+In <a class="reference internal" href="#basic-rst-markup">Basic RST Markup</a> we’ll look at the foundations of using RST.</p>
+<p>In <a class="reference internal" href="#interpreted-text-or-inline-markup">Interpreted Text, or Inline Markup</a> we’ll look at inline markup that produces
+things like <em>emphasis</em> and <strong>strong</strong> text.</p>
+<p>We’ll look at how we can provide details of function arguments
+and return values in <a class="reference internal" href="#rst-field-markup">RST Field Markup</a>. This is primarily focused on Sphinx.</p>
+<p>We’ll look at more complex RST markup in <a class="reference internal" href="#directives">Directives</a></p>
+<p>In <a class="reference internal" href="#standard-paragraphs">Standard Paragraphs</a> we’ll look at boilerplate like “see also”, and “warning”
+sections that are often marked with special icons aor distinctive layout.</p>
+<p>We’ll show a large example in <a class="reference internal" href="#class-example">Class Example</a>.</p>
+<div class="section" id="documentation-development">
+<h2>Documentation Development<a class="headerlink" href="#documentation-development" title="Permalink to this headline">¶</a></h2>
+<p>Generally, the workflow has the following outline.</p>
+<ol class="arabic simple">
+<li><p>Develop the skeleton class.</p></li>
+<li><p>Develop unit tests for most features.</p></li>
+<li><p>Rework the class until it passes the unit tests. This may involve
+adding or modifying tests as we understand the class better. This
+also involves writing docstrings for modules, classes and methods.</p></li>
+<li><p>Revisit the modules, classes and methods, finishing each description
+using the ReStructured Text (RST) markup language. We won’t cover all of this
+language, just enough to provide a sense of how the tool is used to
+make clean, professional API documentation.</p></li>
+<li><p>Run the documentation tool (i.e. sphinx-build) to create the documentation.
+Fix any errors in your docstring markup.
+Also, rework the documentation as necessary to be sure that
+you’ve capture important information about the class, the methods,
+the design decisions.</p></li>
+</ol>
+</div>
+<div class="section" id="using-sphinx">
+<h2>Using Sphinx<a class="headerlink" href="#using-sphinx" title="Permalink to this headline">¶</a></h2>
+<p>When you install Sphinx, it creates a script that you can use.</p>
+<p>Generally, you’ll run the $ sphinx-quickstart script to create an empty documentation directory.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ sphinx-quickstart
+</pre></div>
+</div>
+<p>This interactive script will ask a number of questions, allowing you to pick sensible
+directories and file names.</p>
+<p>You’ll need to include two extensions to enable Sphinx to create your API
+documentation.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">autodoc</span></code> will create module documents based on the RST markup in the docstrings.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">autosummary</span></code> will create summaries of packages and modules.</p></li>
+</ul>
+<p>You’ll then add content to your <code class="file docutils literal notranslate"><span class="pre">index.rst</span></code> file.  This file is the root for
+the documentation.  It can be very simple, or or it can do include other files
+to break a large document into manageable pieces.</p>
+<p>The most important commands are the following.</p>
+<p>To run Sphinx, you’ll use a command similar to the following.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ sphinx-build -b html sourcedir builddir
+</pre></div>
+</div>
+</div>
+<div class="section" id="basic-rst-markup">
+<h2>Basic RST Markup<a class="headerlink" href="#basic-rst-markup" title="Permalink to this headline">¶</a></h2>
+<p>We write our module, class and method docstrings using the RST
+markup language. RST is one of many structured text
+markup languages, where indentation and formatting rules are used
+to interpret your documentation. These formatting rules help the tools deduces the
+structure of your document (sections, list, etc.) and the presentation
+(bold, italic, or font changes.) Some of these markup rules have been used in
+plain text documents since documents were first stored on computers.</p>
+<p>Fundamentally, the RST formatting rules are implemented by a module named
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">docutils</span></code>.  For additional documentation on RST, see
+the Sphinx web site (<a class="reference external" href="http://sphinx.pocoo.org">http://sphinx.pocoo.org</a>) and the
+Docutils web site (<a class="reference external" href="http://docutils.sourceforge.net/">http://docutils.sourceforge.net/</a>).</p>
+<p>In addition to document structure, deduced from the layout,
+RST also uses explicit directives and interpreted text (or “inline”) markup.</p>
+<p><strong>Document Structure</strong>. Generally, you must write in paragraphs. A blank
+line is the end of one paragraph and the beginning of another. Also,
+different indentation will signal paragraph changes. The indent rule is
+handy for making bullet lists or numbered lists.</p>
+<p>A line that is indented and begins with <code class="docutils literal notranslate"><span class="pre">-</span></code> is a bulleted list.</p>
+<p>A line that starts with digits and periods is a numbered list. Lists can nest within each other.</p>
+<p>If you need to have sections and subsections (you’ll almost always do
+this in the docstring for a module or package), you “underline” the
+title with lines of <code class="docutils literal notranslate"><span class="pre">===</span></code>, <code class="docutils literal notranslate"><span class="pre">---</span></code> or <code class="docutils literal notranslate"><span class="pre">~~~</span></code>.</p>
+<p>To include code code samples and doctest, you’ll use either the <code class="docutils literal notranslate"><span class="pre">::</span></code>
+marker.  Or the explicit <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">code-block::</span></code> directive.</p>
+<p>Generally, the first paragraph must be a pithy summary of the material
+to follow. This paragraph will often be used in overviews and index pages.</p>
+<p><strong>Example testCard Module</strong>.
+For example, our module document might look like this.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="sd">&quot;&quot;&quot;The testCard module includes a number of unit tests for the Card</span>
+<span class="sd">and Deck classes in the card module.</span>
+
+<span class="sd">Overview</span>
+<span class="sd">========</span>
+
+<span class="sd">This module tests the following classes:</span>
+<span class="sd">    - Card</span>
+<span class="sd">    - Deck</span>
+
+<span class="sd">Card Tests</span>
+<span class="sd">----------</span>
+
+<span class="sd">..  autoclass:: TestCards</span>
+
+<span class="sd">Deck Tests</span>
+<span class="sd">----------</span>
+
+<span class="sd">..  autoclass:: TestDeck</span>
+
+<span class="sd">Usage</span>
+<span class="sd">=====</span>
+
+<span class="sd">This module uses the standard text runner, so it can be executed</span>
+<span class="sd">from the command line as follows::</span>
+
+<span class="sd">    python testcard.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic">
+<li><p>We started with an overview paragraph. It summarizes the module in a single sentence.</p></li>
+<li><p>We have an underlined section heading. In this document, the highest level of the outline is
+underlined with <code class="docutils literal notranslate"><span class="pre">=</span></code>’s. The second level is underlined with <code class="docutils literal notranslate"><span class="pre">-</span></code>.</p>
+<p>RST is very flexible with the underlining rules.</p>
+</li>
+<li><p>We have a bullet list. Simply indent, and begin the paragraph with <code class="docutils literal notranslate"><span class="pre">-</span></code>.
+Lists can be nested, the RST processor will work this out based on the
+indentation of the various sublists.</p></li>
+<li><p>We used the <code class="docutils literal notranslate"><span class="pre">..</span>&#160;&#160; <span class="pre">autoclass::</span></code> directive to gather docstring
+documentation from the class docstring and include it in the overall
+module docstring.</p></li>
+<li><p>We included a literal block of code after a paragraph which ends with <code class="docutils literal notranslate"><span class="pre">::</span></code>.
+The following material is indented to show what should be formatted specially.</p></li>
+</ol>
+<div class="section" id="interpreted-text-or-inline-markup">
+<h3>Interpreted Text, or Inline Markup<a class="headerlink" href="#interpreted-text-or-inline-markup" title="Permalink to this headline">¶</a></h3>
+<p>In addition to basic document
+structure rules, RST includes a way to show that a span of
+characters should be interpreted specially. This is sometimes called
+Inline Markup because it is within the structural markup.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">*words*</span></code> will render the words in <em>italic</em>.  This can also
+be done with <code class="docutils literal notranslate"><span class="pre">:emphasis:`words`</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">**words**</span></code> will render the words in <strong>bold</strong>.  This can also
+be done with <code class="docutils literal notranslate"><span class="pre">:strong:`words`</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">``words``</span></code> will render the words in a <code class="samp docutils literal notranslate"><span class="pre">fixed</span></code> font to indicate
+that it is a code sample.
+Literal programming text can also use <code class="docutils literal notranslate"><span class="pre">:literal:`words`</span></code>.</p>
+<p>Code samples can also be done with <code class="docutils literal notranslate"><span class="pre">:samp:`word</span> <span class="pre">{replaceable}`</span></code>.  In this case,
+the material enclosed in <code class="docutils literal notranslate"><span class="pre">{}</span></code> is displayed in italics: <code class="samp docutils literal notranslate"><span class="pre">word</span> <em><span class="pre">replaceable</span></em></code>.</p>
+</li>
+</ul>
+<p>Additionally, there are several cross-reference inline markup formats
+available for code elements.</p>
+<p>Here’s an example of a paragraph using some inline markup to make some
+characters italic, other bold, and still others a fixed-width find that
+makes them look like code.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">method</span> <span class="n">computes</span> <span class="n">the</span> <span class="n">square</span> <span class="n">root</span> <span class="n">of</span> <span class="n">a</span> <span class="n">number</span><span class="p">,</span> <span class="o">*</span><span class="n">n</span><span class="o">*.</span>
+<span class="n">It</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">r</span><span class="o">*</span><span class="p">,</span> <span class="n">such</span> <span class="n">that</span> <span class="p">:</span><span class="n">samp</span><span class="p">:</span><span class="sb">`r**2 == n`</span><span class="o">.</span>
+
+<span class="o">**</span><span class="n">Note</span><span class="o">**.</span>  <span class="n">Square</span> <span class="n">root</span> <span class="n">of</span> <span class="n">a</span> <span class="n">negative</span> <span class="n">number</span> <span class="n">will</span> <span class="k">raise</span> <span class="n">a</span> <span class="sb">``</span><span class="ne">TypeError</span><span class="sb">``</span> <span class="n">exception</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="rst-field-markup">
+<h2>RST Field Markup<a class="headerlink" href="#rst-field-markup" title="Permalink to this headline">¶</a></h2>
+<p>RST Field markup is primarily used to tie your documentation directly
+to Python language structures. Field markup is a separate paragraph of the form
+<code class="samp docutils literal notranslate"><span class="pre">:tag</span> <span class="pre">arg:</span> <span class="pre">body</span></code>.  We won’t cover all of the tags, just
+enough to produce basic documentation.</p>
+<p>Field markup also provides several standard kinds of standard “formal
+paragraphs” within your document. We’ll look at these separately.</p>
+<p>The following tags are used to define
+detailed features of a method function.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">:param</span> <span class="pre">p:</span> <span class="pre">description</span></code> A description of the parameter, <em>p</em>, for a function or method.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">:return:</span> <span class="pre">description</span></code> A description of the return value from the function or method.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">:keyword</span> <span class="pre">k:</span> <span class="pre">description</span></code> A description of the keyword parameter, <em>k</em>, for a function or method.</p></li>
+</ul>
+<p>Here’s an example of a method function docstring that uses <code class="docutils literal notranslate"><span class="pre">&#64;param</span></code>
+tags.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">suit</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Build a card with a given rank and suit.</span>
+
+<span class="sd">    :param rank: numeric rank, ace is 1, 2-13 for 2 though King.</span>
+<span class="sd">    :param suit: String suit, use one of the module constants.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="o">=</span> <span class="mi">14</span> <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">rank</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">suit</span><span class="o">=</span> <span class="n">suit</span>
+</pre></div>
+</div>
+<p>The following tags are used to define specific
+variables in a module or class.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">:ivar</span> <span class="pre">v:</span> <span class="pre">description</span></code> A description of the an instance variable of a class. Generally, this
+will be in the class level docstring, and will refer to one of the class’s
+<code class="docutils literal notranslate"><span class="pre">self.</span></code> variables.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">:var</span> <span class="pre">v:</span> <span class="pre">description</span></code>  A global variable of a module. Generally, this will
+be in the module docstring, and will refer to one of the global
+variables created by the module.</p></li>
+</ul>
+<p>Here’s an example of a class definition docstring that uses <code class="docutils literal notranslate"><span class="pre">:ivar:</span></code>
+tags.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Card</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A single playing card, suitable for Blackjack or</span>
+<span class="sd">    Poker.  While a suit is retained, it doesn&#39;t figure into</span>
+<span class="sd">    the ordering of cards, as it would in Bridge.</span>
+
+<span class="sd">    **Reminder**. The internal rank of an Ace is 14.  The constructor,</span>
+<span class="sd">    however, expects a value of 1.</span>
+
+<span class="sd">    :ivar rank: the numeric rank of the card.  2-13, with ace as 14.</span>
+<span class="sd">    :ivar suit: the string suit of the card.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="directives">
+<h2>Directives<a class="headerlink" href="#directives" title="Permalink to this headline">¶</a></h2>
+<p>RST has a number of useful directives available for structuring the documentation.
+Sphinx uses all of the basic RST directives and adds a large number of additional
+directives.</p>
+<p>A directive is an RST markup command starts with a special <code class="docutils literal notranslate"><span class="pre">..</span></code> line,
+and may include a number of lines indented within the directive.  One of the
+common ones is the <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">code-block::</span></code> directive.  The <code class="docutils literal notranslate"><span class="pre">::</span></code> is
+an essential part of the directive syntax.</p>
+<p>It looks like this.</p>
+<pre class="literal-block">Example.
+
+..  code-block:: python
+
+    def fact(n):
+        if n == 0: return 1
+        return n*fact(n-1)
+
+More Text.</pre>
+<p>The directive starts with the <code class="docutils literal notranslate"><span class="pre">..</span></code> line and continues through the
+indented section.  The directive content ends with the end of the indentation.</p>
+<p>Epydoc uses the <code class="docutils literal notranslate"><span class="pre">:tag:</span></code> syntax; it doesn’t define new RST directives.
+Because of this, there are two styles for
+some of the more advanced markup: an Epydoc tag style and a Sphinx directive
+style.</p>
+</div>
+<div class="section" id="standard-paragraphs">
+<h2>Standard Paragraphs<a class="headerlink" href="#standard-paragraphs" title="Permalink to this headline">¶</a></h2>
+<p>There are several kinds of standard paragraphs
+that are part of any well-written document set. These include things like</p>
+<ul>
+<li><p>Related Topics.</p>
+<p>Epydoc usess the <code class="docutils literal notranslate"><span class="pre">:seealso:</span></code> tag to generate a “Related
+Topics” paragraph with references to other documents.</p>
+<p>Sphinx uses the  <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">seealso::</span></code> directive line to generate additional
+references.</p>
+</li>
+<li><p>Admonitions (Notes, Warnings, etc).</p>
+<p>Epydoc uses tags like <code class="docutils literal notranslate"><span class="pre">:note:</span></code>, <code class="docutils literal notranslate"><span class="pre">:attention:</span></code>,
+<code class="docutils literal notranslate"><span class="pre">:bug:</span></code>, and <code class="docutils literal notranslate"><span class="pre">:warning:</span></code> tags to generate standard
+types of admonition paragraphs.</p>
+<p>Sphinx uses directives like <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">note::</span></code>, <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">attention::</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">warning::</span></code> directives to generate standard
+types of admonition paragraphs.
+Other admonitions include “caution”, “danger”, “error”, “hint”, “important”, “tip”.</p>
+</li>
+<li><p>Status. You can track the development and deployment status of your
+programs.  Tags like <code class="docutils literal notranslate"><span class="pre">:version:</span></code>, <code class="docutils literal notranslate"><span class="pre">:todo:</span></code>, <code class="docutils literal notranslate"><span class="pre">:deprecated:</span></code>,
+<code class="docutils literal notranslate"><span class="pre">:since:</span></code>, <code class="docutils literal notranslate"><span class="pre">:status:</span></code>, and <code class="docutils literal notranslate"><span class="pre">change:</span></code>
+are used by both Epydoc and Sphinx.</p></li>
+<li><p>Bibliographic Information. You can provide standard publication
+information.  Tags like <code class="docutils literal notranslate"><span class="pre">:author:</span></code>, <code class="docutils literal notranslate"><span class="pre">:organization:</span></code>,
+<code class="docutils literal notranslate"><span class="pre">:copyright:</span></code>, <code class="docutils literal notranslate"><span class="pre">:license:</span></code> and <code class="docutils literal notranslate"><span class="pre">:contact:</span></code>
+can be used.</p></li>
+</ul>
+</div>
+<div class="section" id="class-example">
+<h2>Class Example<a class="headerlink" href="#class-example" title="Permalink to this headline">¶</a></h2>
+<p>Here’s an example of a module with detailed class documentation.</p>
+<p class="rubric">blackjack.py</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Building Skills in Object-Oriented Design V4</span>
+
+<span class="sd">The blackjack module includes the Suit class and Card class hierarchy.</span>
+
+<span class="sd">:author: S. Lott</span>
+<span class="sd">:license: http://creativecommons.org/licenses/by-nc-nd/3.0/us/</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+
+
+<span class="k">class</span> <span class="nc">Suit</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Enumerated suit names and values.&quot;&quot;&quot;</span>
+
+    <span class="n">Clubs</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\N{BLACK CLUB SUIT}</span><span class="s2">&quot;</span>
+    <span class="n">Diamonds</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\N{WHITE DIAMOND SUIT}</span><span class="s2">&quot;</span>
+    <span class="n">Hearts</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\N{WHITE HEART SUIT}</span><span class="s2">&quot;</span>
+    <span class="n">Spades</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="se">\N{BLACK SPADE SUIT}</span><span class="s2">&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">Card</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A single playing card, suitable for Blackjack or</span>
+<span class="sd">    Poker.  While a suit is retained, it doesn&#39;t figure into</span>
+<span class="sd">    the ordering of cards, as it would in Bridge.</span>
+
+<span class="sd">    ..  note:: Aces and Facecards.</span>
+<span class="sd">        Ace and Facecards are separate subclasses.</span>
+
+<span class="sd">    ..  attribute:: rank</span>
+
+<span class="sd">        The numeric rank of the card.  2-13,  ace has an effective</span>
+<span class="sd">        rank of 14 when used in Poker.</span>
+
+<span class="sd">    ..  attribute:: suit</span>
+
+<span class="sd">        The string suit of the card.  This should be from the</span>
+<span class="sd">        named constants (Clubs, Diamonds, Hearts, Spades).</span>
+
+<span class="sd">    At the class level, there are four constants that can</span>
+<span class="sd">    make code look a little nicer.</span>
+
+<span class="sd">    :var: Jack</span>
+<span class="sd">    :var: Queen</span>
+<span class="sd">    :var: King</span>
+<span class="sd">    :var: Ace</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Jack</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">Queen</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">King</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">Ace</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">suit</span><span class="p">:</span> <span class="n">Suit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Build a card with a given rank and suit.</span>
+
+<span class="sd">        :param rank: numeric rank, 2-10.  Aces and FaceCards are separate.</span>
+<span class="sd">        :type rank: integer in the range 2 to 10 inclusive.</span>
+
+<span class="sd">        :param suit:  suit, a value from the Suit enum</span>
+<span class="sd">        :type suit: Suit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">suit</span><span class="p">,</span> <span class="n">Suit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="n">rank</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suit</span> <span class="o">=</span> <span class="n">suit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">rank</span>
+
+    <span class="k">def</span> <span class="nf">hardValue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;For blackjack, the hard value of this card.</span>
+
+<span class="sd">        :returns: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span>
+
+    <span class="k">def</span> <span class="nf">softValue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;For blackjack, the soft value of this card.</span>
+
+<span class="sd">        :returns: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Compare cards, ignoring suit.</span>
+
+<span class="sd">        &gt;&gt;&gt; from code.blackjack_doc import Card, Suit</span>
+<span class="sd">        &gt;&gt;&gt; Card(2, Suit.Diamonds) == Card(2, Suit.Spades)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; Card(2, Suit.Diamonds) == Card(10, Suit.Spades)</span>
+<span class="sd">        False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">rank</span>
+
+    <span class="k">def</span> <span class="nf">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Compare cards, ignoring suit.</span>
+
+<span class="sd">        &gt;&gt;&gt; from code.blackjack_doc import Card, Suit</span>
+<span class="sd">        &gt;&gt;&gt; Card(2, Suit.Diamonds) &lt; Card(3, Suit.Spades)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; Card(10, Suit.Diamonds) &lt; Card(10, Suit.Spades)</span>
+<span class="sd">        False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">rank</span>
+
+    <span class="k">def</span> <span class="nf">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">rank</span>
+
+    <span class="k">def</span> <span class="nf">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">rank</span>
+
+    <span class="k">def</span> <span class="nf">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">&gt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">rank</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; from code.blackjack_doc import Card, Suit</span>
+<span class="sd">        &gt;&gt;&gt; str(Card(2, Suit.Diamonds))</span>
+<span class="sd">        &#39; 2♢&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.rank:2d}{self.suit.value}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; from code.blackjack_doc import Card, Suit</span>
+<span class="sd">        &gt;&gt;&gt; repr(Card(2, Suit.Diamonds))</span>
+<span class="sd">        &quot;Card(rank=2, suit=&lt;Suit.Diamonds: &#39;♢&#39;&gt;)&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{self.__class__.__name__}</span><span class="s2">(rank=</span><span class="si">{self.rank!r}</span><span class="s2">, suit=</span><span class="si">{self.suit!r}</span><span class="s2">)&quot;</span>
+</pre></div>
+</div>
+<p>We’ve included  a module-level docstring, class-level docstrings, and even some method-level
+docstrings. The idea is to provide enough information so that the automatic documentation
+produced by Sphinx is complete and useful.</p>
+</div>
+<div class="section" id="example-sphinx-automodule">
+<h2>Example Sphinx Automodule<a class="headerlink" href="#example-sphinx-automodule" title="Permalink to this headline">¶</a></h2>
+<p>This shows how the documentation looks when <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">automodule::</span></code> is used.</p>
+<span class="target" id="module-code.blackjack_doc"></span><p>Building Skills in Object-Oriented Design V4</p>
+<p>The blackjack module includes the Suit class and Card class hierarchy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">author</dt>
+<dd class="field-odd"><ol class="upperalpha simple" start="19">
+<li><p>Lott</p></li>
+</ol>
+</dd>
+<dt class="field-even">license</dt>
+<dd class="field-even"><p><a class="reference external" href="http://creativecommons.org/licenses/by-nc-nd/3.0/us/">http://creativecommons.org/licenses/by-nc-nd/3.0/us/</a></p>
+</dd>
+</dl>
+<dl class="class">
+<dt id="code.blackjack_doc.Card">
+<em class="property">class </em><code class="sig-prename descclassname">code.blackjack_doc.</code><code class="sig-name descname">Card</code><span class="sig-paren">(</span><em class="sig-param">rank: int</em>, <em class="sig-param">suit: code.blackjack_doc.Suit</em><span class="sig-paren">)</span><a class="headerlink" href="#code.blackjack_doc.Card" title="Permalink to this definition">¶</a></dt>
+<dd><p>A single playing card, suitable for Blackjack or
+Poker.  While a suit is retained, it doesn’t figure into
+the ordering of cards, as it would in Bridge.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Aces and Facecards.
+Ace and Facecards are separate subclasses.</p>
+</div>
+<dl class="attribute">
+<dt id="code.blackjack_doc.Card.rank">
+<code class="sig-name descname">rank</code><a class="headerlink" href="#code.blackjack_doc.Card.rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>The numeric rank of the card.  2-13,  ace has an effective
+rank of 14 when used in Poker.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="code.blackjack_doc.Card.suit">
+<code class="sig-name descname">suit</code><a class="headerlink" href="#code.blackjack_doc.Card.suit" title="Permalink to this definition">¶</a></dt>
+<dd><p>The string suit of the card.  This should be from the
+named constants (Clubs, Diamonds, Hearts, Spades).</p>
+</dd></dl>
+
+<p>At the class level, there are four constants that can
+make code look a little nicer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Var</dt>
+<dd class="field-odd"><p>Jack</p>
+</dd>
+<dt class="field-even">Var</dt>
+<dd class="field-even"><p>Queen</p>
+</dd>
+<dt class="field-odd">Var</dt>
+<dd class="field-odd"><p>King</p>
+</dd>
+<dt class="field-even">Var</dt>
+<dd class="field-even"><p>Ace</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="code.blackjack_doc.Card.__eq__">
+<code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param">other: Any</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#code.blackjack_doc.Card.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare cards, ignoring suit.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">code.blackjack_doc</span> <span class="k">import</span> <span class="n">Card</span><span class="p">,</span> <span class="n">Suit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Card</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">)</span> <span class="o">==</span> <span class="n">Card</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Spades</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Card</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">)</span> <span class="o">==</span> <span class="n">Card</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Spades</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.__ge__">
+<code class="sig-name descname">__ge__</code><span class="sig-paren">(</span><em class="sig-param">other: Any</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#code.blackjack_doc.Card.__ge__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self&gt;=value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.__gt__">
+<code class="sig-name descname">__gt__</code><span class="sig-paren">(</span><em class="sig-param">other: Any</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#code.blackjack_doc.Card.__gt__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self&gt;value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">rank: int</em>, <em class="sig-param">suit: code.blackjack_doc.Suit</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#code.blackjack_doc.Card.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a card with a given rank and suit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rank</strong> (<em>integer in the range 2 to 10 inclusive.</em>) – numeric rank, 2-10.  Aces and FaceCards are separate.</p></li>
+<li><p><strong>suit</strong> (<a class="reference internal" href="#code.blackjack_doc.Suit" title="code.blackjack_doc.Suit"><em>Suit</em></a>) – suit, a value from the Suit enum</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.__le__">
+<code class="sig-name descname">__le__</code><span class="sig-paren">(</span><em class="sig-param">other: Any</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#code.blackjack_doc.Card.__le__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self&lt;=value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.__lt__">
+<code class="sig-name descname">__lt__</code><span class="sig-paren">(</span><em class="sig-param">other: Any</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#code.blackjack_doc.Card.__lt__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare cards, ignoring suit.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">code.blackjack_doc</span> <span class="k">import</span> <span class="n">Card</span><span class="p">,</span> <span class="n">Suit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Card</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">Card</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Spades</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Card</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">Card</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Spades</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.__repr__">
+<code class="sig-name descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#code.blackjack_doc.Card.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">code.blackjack_doc</span> <span class="k">import</span> <span class="n">Card</span><span class="p">,</span> <span class="n">Suit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">Card</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">))</span>
+<span class="go">&quot;Card(rank=2, suit=&lt;Suit.Diamonds: &#39;♢&#39;&gt;)&quot;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.__str__">
+<code class="sig-name descname">__str__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#code.blackjack_doc.Card.__str__" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">code.blackjack_doc</span> <span class="k">import</span> <span class="n">Card</span><span class="p">,</span> <span class="n">Suit</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">Card</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">Suit</span><span class="o">.</span><span class="n">Diamonds</span><span class="p">))</span>
+<span class="go">&#39; 2♢&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="code.blackjack_doc.Card.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#code.blackjack_doc.Card.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.hardValue">
+<code class="sig-name descname">hardValue</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#code.blackjack_doc.Card.hardValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>For blackjack, the hard value of this card.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="code.blackjack_doc.Card.softValue">
+<code class="sig-name descname">softValue</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#code.blackjack_doc.Card.softValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>For blackjack, the soft value of this card.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="code.blackjack_doc.Suit">
+<em class="property">class </em><code class="sig-prename descclassname">code.blackjack_doc.</code><code class="sig-name descname">Suit</code><a class="headerlink" href="#code.blackjack_doc.Suit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerated suit names and values.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>In these first few chapters we’ve done several things:</p>
+<ul class="simple">
+<li><p>Identified the problem we’re going to solve,</p></li>
+<li><p>Installed the tools to help build a trustworthy Python application,</p></li>
+<li><p>Made sure we can write unit tests for our code,</p></li>
+<li><p>Started down the path of producing useful documentation.</p></li>
+</ul>
+<p>In the next chapter, we’ll start the journey of building a simulation
+for the Roulette game. The first chapter has a close look at the game.
+After that, we’ll look at the kind of solution we’ll build, and in the
+remaining chapters, we’ll look at the  individual classes required.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python Documentation</a><ul>
+<li><a class="reference internal" href="#documentation-development">Documentation Development</a></li>
+<li><a class="reference internal" href="#using-sphinx">Using Sphinx</a></li>
+<li><a class="reference internal" href="#basic-rst-markup">Basic RST Markup</a><ul>
+<li><a class="reference internal" href="#interpreted-text-or-inline-markup">Interpreted Text, or Inline Markup</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rst-field-markup">RST Field Markup</a></li>
+<li><a class="reference internal" href="#directives">Directives</a></li>
+<li><a class="reference internal" href="#standard-paragraphs">Standard Paragraphs</a></li>
+<li><a class="reference internal" href="#class-example">Class Example</a></li>
+<li><a class="reference internal" href="#example-sphinx-automodule">Example Sphinx Automodule</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="python_testing.html" title="previous chapter">Python Unit Testing</a></li>
+      <li>Next: <a href="../roulette/details.html" title="next chapter">Roulette Details</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

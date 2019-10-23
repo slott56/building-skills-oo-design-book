@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Python Documentation &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="command_line_interface.html" />
+    <link rel="prev" title="Python Unit Testing" href="python_testing.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="python-documentation">
+<span id="documentation"></span><h1>Python Documentation<a class="headerlink" href="#python-documentation" title="Permalink to this headline">¶</a></h1>
+<p><a href="#id1"><span class="problematic" id="id2">:phrase:`Application Program Interface`</span></a> (<a href="#id3"><span class="problematic" id="id4">:abbrev:`API`</span></a>) documentation is
+absolutely essential. The easiest and most reliable way to produce this
+documentation is by using a tool that examines the source itself and
+develops the document directly from the programs. By using cleverly
+formatted Python docstrings, we can augment that analysis with
+easy-to-understand descriptions.</p>
+<p>In the case of Python, there are several tools for extracting
+documentation from the source. The most popular one is
+<a href="#id5"><span class="problematic" id="id6">:application:`Sphinx`</span></a> <a class="reference external" href="http://sphinx.pocoo.org/">http://sphinx.pocoo.org/</a>.</p>
+<p>We can use some others, also:</p>
+<ul>
+<li><p><a href="#id7"><span class="problematic" id="id8">:application:`Epydoc`</span></a> <a class="reference external" href="http://epydoc.sourceforge.net/">http://epydoc.sourceforge.net/</a>.</p></li>
+<li><p><a href="#id9"><span class="problematic" id="id10">:application:`pydoc`</span></a> This is part of Python. It doesn’t cope well
+with files in UTF-8 encoding. You need to include the following
+comment in any files that have Unicode characters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>In <a class="reference internal" href="#documentation-development">Documentation Development</a> we’ll look at how we can use Sphinx to
+create complete, accurate, and nice-looking documentation for our applicaiton.</p>
+<p>In <a class="reference internal" href="#using-sphinx">Using Sphinx</a> we’ll look at a aspects of using Sphinx.
+In <a class="reference internal" href="#using-epydoc">Using Epydoc</a> we’ll look at how we can use epydoc to create documentation.</p>
+<p>In order to use either tool, we’ll need to write using ReStructuredText (<a href="#id11"><span class="problematic" id="id12">:abbrev:`RST`</span></a>.)
+In <a class="reference internal" href="#basic-rst-markup">Basic RST Markup</a> we’ll look at the foundations of using RST.</p>
+<p>In <a class="reference internal" href="#interpreted-text-or-inline-markup">Interpreted Text, or Inline Markup</a> we’ll look at inline markup that produces
+things like <em>emphasis</em> and <strong>strong</strong> text.</p>
+<p>We’ll look at how we can provide details of function arguments
+and return values in <a class="reference internal" href="#rst-field-markup">RST Field Markup</a>. This is primarily focused on Sphinx.</p>
+<p>We’ll look at more complex RST markup in <a class="reference internal" href="#directives">Directives</a></p>
+<p>In <a class="reference internal" href="#standard-paragraphs">Standard Paragraphs</a> we’ll look at boilerplate like “see also”, and “warning”
+sections that are often marked with special icons aor distinctive layout.</p>
+<p>We’ll show a large example in <a class="reference internal" href="#class-example">Class Example</a>.</p>
+<div class="section" id="documentation-development">
+<h2>Documentation Development<a class="headerlink" href="#documentation-development" title="Permalink to this headline">¶</a></h2>
+<p>Generally, the workflow has the following outline.</p>
+<ol class="arabic simple">
+<li><p>Develop the skeleton class.</p></li>
+<li><p>Develop unit tests for most features.</p></li>
+<li><p>Rework the class until it passes the unit tests. This may involve
+adding or modifying tests as we understand the class better. This
+also involves writing docstrings for modules, classes and methods.</p></li>
+<li><p>Revisit the modules, classes and methods, finishing each description
+using the ReStructured Text (<a href="#id13"><span class="problematic" id="id14">:abbrev:`RST`</span></a>) markup language. We won’t cover all of this
+language, just enough to provide a sense of how the tool is used to
+make clean, professional API documentation.</p></li>
+<li><p>Run the documentation tool (i.e. sphinx-build) to create the documentation.
+Fix any errors in your docstring markup.
+Also, rework the documentation as necessary to be sure that
+you’ve capture important information about the class, the methods,
+the design decisions.</p></li>
+</ol>
+</div>
+<div class="section" id="using-sphinx">
+<h2>Using Sphinx<a class="headerlink" href="#using-sphinx" title="Permalink to this headline">¶</a></h2>
+<p>When you install Sphinx, it creates a script that you can use.</p>
+<p>Generally, you’ll run the $ sphinx-quickstart script to create an empty documentation directory.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ sphinx-quickstart
+</pre></div>
+</div>
+<p>This interactive script will ask a number of questions, allowing you to pick sensible
+directories and file names.</p>
+<p>You’ll need to include two extensions to enable Sphinx to create your API
+documentation.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">autodoc</span></code> will create module documents based on the RST markup in the docstrings.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">autosummary</span></code> will create summaries of packages and modules.</p></li>
+</ul>
+<p>You’ll then add content to your <code class="file docutils literal notranslate"><span class="pre">index.rst</span></code> file.  This file is the root for
+the documentation.  It can be very simple, or or it can do include other files
+to break a large document into manageable pieces.</p>
+<p>The most important commands are the following.</p>
+<p>To run Sphinx, you’ll use a command similar to the following.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ sphinx-build -b html sourcedir builddir
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-epydoc">
+<h2>Using Epydoc<a class="headerlink" href="#using-epydoc" title="Permalink to this headline">¶</a></h2>
+<p>When you install Epydoc, it creates a script that you can use. To run
+Epydoc, you’ll use a command similar to the following.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>epydoc  -v --docformat restructuredtext --output apidoc blackjack.py
+</pre></div>
+</div>
+<p>The <code class="xref std std-option docutils literal notranslate"><span class="pre">-v</span></code> option provides detailed debugging information for
+incorrectly formatted docstrings. The <code class="xref std std-option docutils literal notranslate"><span class="pre">--docformat</span></code> option
+specifies that the various docstrings use RST markup.  The <code class="xref std std-option docutils literal notranslate"><span class="pre">--output</span></code> option defines the
+directory to which the documentation is written. The arguments (in this case,
+<code class="file docutils literal notranslate"><span class="pre">blackjack.py</span></code>) is a list of package directories or module files
+to be documented.</p>
+<p>Note that RST is not the default markup language for Epydoc.  You must either
+specify this on the command line or in the module source.
+To identify the formatting in each module you must provide the
+format as the value of a <code class="xref py py-obj docutils literal notranslate"><span class="pre">__docformat__</span></code> module global variable.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Some docstring for a module.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="basic-rst-markup">
+<h2>Basic RST Markup<a class="headerlink" href="#basic-rst-markup" title="Permalink to this headline">¶</a></h2>
+<p>We write our module, class and method docstrings using the RST
+markup language. RST is one of many <a href="#id15"><span class="problematic" id="id16">:firstterm:`structured text`</span></a>
+markup languages, where simple indentation and formatting rules are used
+to interpret your documetation. These formatting rules help the tools deduces the
+structure of your document (sections, list, etc.) and the presentation
+(bold, italic, or font changes.) These rules are – generally – pretty
+simple rules that plain text documents have been using since documents
+were first stored on computers.</p>
+<p>Fundamentally, the RST formatting rules are implemented by a module named
+<a href="#id17"><span class="problematic" id="id18">:application:`docutils`</span></a>.  For additional documentation on RST, see
+the Sphinx web site (<a class="reference external" href="http://sphinx.pocoo.org">http://sphinx.pocoo.org</a>) and the
+Docutils web site (<a class="reference external" href="http://docutils.sourceforge.net/">http://docutils.sourceforge.net/</a>).</p>
+<p>In addition to document structure, deduced from the layout,
+RST also uses explicit directives and interpreted text (or “inline”) markup.</p>
+<p><strong>Document Structure</strong>. Generally, you must write in paragraphs. A blank
+line is the end of one paragraph and the beginning of another. Also,
+different indentation will signal paragaph changes. The indent rule is
+handy for making bullet lists or numbered lists.</p>
+<p>A line that is indented and begins with <code class="docutils literal notranslate"><span class="pre">-</span></code> is a bulleted list.</p>
+<p>A line that starts with digits and periods is a numbered list. Lists can nest within each other.</p>
+<p>If you need to have sections and subsections (you’ll almost always do
+this in the docstring for a module or package), you “underline” the
+title with lines of <code class="docutils literal notranslate"><span class="pre">===</span></code>, <code class="docutils literal notranslate"><span class="pre">---</span></code> or <code class="docutils literal notranslate"><span class="pre">~~~</span></code>.</p>
+<p>To include code code samples and doctest, you’ll use either the simple <code class="docutils literal notranslate"><span class="pre">::</span></code>
+marker.  Or the explicit <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">code-block::</span></code> directive.</p>
+<p>Generally, the first paragraph must be a pithy summary of the material
+to follow. This paragraph will often be used in overviews and index pages.</p>
+<p><strong>Example testCard Module</strong>.
+For example, our module document might look like this.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="sd">&quot;&quot;&quot;The testCard module includes a number of unit tests for the Card</span>
+<span class="sd">and Deck classes in the card module.</span>
+
+<span class="sd">Overview</span>
+<span class="sd">========</span>
+
+<span class="sd">This module tests the following classes:</span>
+<span class="sd">    - Card</span>
+<span class="sd">    - Deck</span>
+
+<span class="sd">Card Tests</span>
+<span class="sd">----------</span>
+
+<span class="sd">..  autoclass:: TestCards</span>
+
+<span class="sd">Deck Tests</span>
+<span class="sd">----------</span>
+
+<span class="sd">..  autoclass:: TestDeck</span>
+
+<span class="sd">Usage</span>
+<span class="sd">=====</span>
+
+<span class="sd">This module uses the standard text runner, so it can be executed</span>
+<span class="sd">from the command line as follows::</span>
+
+<span class="sd">    python testcard.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic">
+<li><p>We started with an overview paragraph. It summarizes the module in a single sentence.</p></li>
+<li><p>We have an underlined section heading. In this document, the highest level of the outline is
+underlined with <code class="docutils literal notranslate"><span class="pre">=</span></code>’s. The second level is underlined with <code class="docutils literal notranslate"><span class="pre">-</span></code>.</p>
+<p>RST is very flexible with the underlining rules.</p>
+</li>
+<li><p>We have a bullet list. Simply indent, and begin the paragraph with <code class="docutils literal notranslate"><span class="pre">-</span></code>.
+Lists can be nested, the RST processor will work this out based on the
+indentation of the various sublists.</p></li>
+<li><p>We used the <code class="docutils literal notranslate"><span class="pre">..</span>&#160;&#160; <span class="pre">autoclass::</span></code> directive to gather docstring
+documentation from the class docstring and include it in the overall
+module docstring.</p></li>
+<li><p>We included a literal block of code after a paragraph which ends with <code class="docutils literal notranslate"><span class="pre">::</span></code>.
+The following material is indented to show what should be formatted specially.</p></li>
+</ol>
+</div>
+<div class="section" id="interpreted-text-or-inline-markup">
+<h2>Interpreted Text, or Inline Markup<a class="headerlink" href="#interpreted-text-or-inline-markup" title="Permalink to this headline">¶</a></h2>
+<p>In addition to basic document
+structure rules, RST includes a way to show that a span of
+characters should be interpreted specially. This is sometimes called
+Inline Markup because it is within the structural markup.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">*words*</span></code> will render the words in <em>italic</em>.  This can also
+be done with <code class="docutils literal notranslate"><span class="pre">:emphasis:`words`</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">**words**</span></code> will render the words in <strong>bold</strong>.  This can also
+be done with <code class="docutils literal notranslate"><span class="pre">:strong:`words`</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">``words``</span></code> will render the words in a <code class="samp docutils literal notranslate"><span class="pre">fixed</span></code> font to indicate
+that it is a code sample.
+Literal programming text can also use <code class="docutils literal notranslate"><span class="pre">:literal:`words`</span></code>.</p>
+<p>Code samples can also be done with <code class="docutils literal notranslate"><span class="pre">:samp:`word</span> <span class="pre">{replaceable}`</span></code>.  In this case,
+the material enclosed in <code class="docutils literal notranslate"><span class="pre">{}</span></code> is displayed in italics: <code class="samp docutils literal notranslate"><span class="pre">word</span> <em><span class="pre">replaceable</span></em></code>.</p>
+</li>
+</ul>
+<p>Additionally, there are several cross-reference inline markup formats
+available for code elements.</p>
+<p>Here’s an example of a paragraph using some inline markup to make some
+characters italic, other bold, and still others a fixed-width find that
+makes them looke like code.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="n">method</span> <span class="n">computes</span> <span class="n">the</span> <span class="n">square</span> <span class="n">root</span> <span class="n">of</span> <span class="n">a</span> <span class="n">number</span><span class="p">,</span> <span class="o">*</span><span class="n">n</span><span class="o">*.</span>
+<span class="n">It</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">r</span><span class="o">*</span><span class="p">,</span> <span class="n">such</span> <span class="n">that</span> <span class="p">:</span><span class="n">samp</span><span class="p">:</span><span class="sb">`r**2 == n`</span><span class="o">.</span>
+
+<span class="o">**</span><span class="n">Note</span><span class="o">**.</span>  <span class="n">Square</span> <span class="n">root</span> <span class="n">of</span> <span class="n">a</span> <span class="n">negative</span> <span class="n">number</span> <span class="n">will</span> <span class="k">raise</span> <span class="n">a</span> <span class="sb">``</span><span class="ne">TypeError</span><span class="sb">``</span> <span class="n">exception</span><span class="o">.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="rst-field-markup">
+<h2>RST Field Markup<a class="headerlink" href="#rst-field-markup" title="Permalink to this headline">¶</a></h2>
+<p>RST Field markup is primarily used to tie your documentation directly
+to Python language structures. Field markup is a separate paragraph of the form
+<code class="samp docutils literal notranslate"><span class="pre">:tag</span> <span class="pre">arg:</span> <span class="pre">body</span></code>.  We won’t cover all of the tags, just
+enough to produce basic documentation.</p>
+<p>Field markup also provides several standard kinds of standard “formal
+paragraphs” within your document. We’ll look at these separately.</p>
+<p>The following tags are used to define
+detailed features of a method function.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">:param</span> <span class="pre">p:</span> <span class="pre">description</span></code> A description of the parameter, <em>p</em>, for a function or method.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">:return:</span> <span class="pre">description</span></code> A description of the return value from the function or method.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">:keyword</span> <span class="pre">k:</span> <span class="pre">description</span></code> A description of the keyword parameter, <em>k</em>, for a function or method.</p></li>
+</ul>
+<p>Here’s an example of a method function docstring that uses <code class="docutils literal notranslate"><span class="pre">&#64;param</span></code>
+tags.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">suit</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Build a card with a given rank and suit.</span>
+
+<span class="sd">    :param rank: numeric rank, ace is 1, 2-13 for 2 though King.</span>
+<span class="sd">    :param suit: String suit, use one of the module constants.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="o">=</span> <span class="mi">14</span> <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">rank</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">suit</span><span class="o">=</span> <span class="n">suit</span>
+</pre></div>
+</div>
+<p>The following tags are used to define specific
+variables in a module or class.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">:ivar</span> <span class="pre">v:</span> <span class="pre">description</span></code> A description of the an instance variable of a class. Generally, this
+will be in the class level docstring, and will refer to one of the class’s
+<code class="docutils literal notranslate"><span class="pre">self.</span></code> variables.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">:var</span> <span class="pre">v:</span> <span class="pre">description</span></code>  A global variable of a module. Generally, this will
+be in the module docstring, and will refer to one of the global
+variables created by the module.</p></li>
+</ul>
+<p>Here’s an example of a class definition docstring that uses <code class="docutils literal notranslate"><span class="pre">:ivar:</span></code>
+tags.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Card</span><span class="p">(</span> <span class="nb">object</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A single playing card, suitable for Blackjack or</span>
+<span class="sd">    Poker.  While a suit is retained, it doesn&#39;t figure into</span>
+<span class="sd">    the ordering of cards, as it would in Bridge.</span>
+
+<span class="sd">    **Reminder**. The internal rank of an Ace is 14.  The constructor,</span>
+<span class="sd">    however, expects a value of 1.</span>
+
+<span class="sd">    :ivar rank: the numeric rank of the card.  2-13, with ace as 14.</span>
+<span class="sd">    :ivar suit: the string suit of the card.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="directives">
+<h2>Directives<a class="headerlink" href="#directives" title="Permalink to this headline">¶</a></h2>
+<p>RST has a number of useful directives available for structuring the documentation.
+Sphinx uses all of the basic RST directives and adds a large number of additional
+directives.</p>
+<p>A directive is an RST markup command starts with a special <code class="docutils literal notranslate"><span class="pre">..</span></code> line,
+and may include a number of lines indented within the directive.  One of the
+common ones is the <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">code-block::</span></code> directive.  The <code class="docutils literal notranslate"><span class="pre">::</span></code> is
+an essential part of the directive syntax.</p>
+<p>It looks like this.</p>
+<pre class="literal-block">Example.
+
+..  code-block:: python
+
+    def fact(n):
+        if n == 0: return 1
+        return n*fact(n-1)
+
+More Text.</pre>
+<p>The directive starts with the <code class="docutils literal notranslate"><span class="pre">..</span></code> line and continues through the
+indented section.  The directive content ends with the end of the indentation.</p>
+<p>Epydoc uses the <code class="docutils literal notranslate"><span class="pre">:tag:</span></code> syntax; it doesn’t define new RST directives.
+Because of this, there are two styles for
+some of the more advanced markup: an Epydoc tag style and a Sphinx directive
+style.</p>
+</div>
+<div class="section" id="standard-paragraphs">
+<h2>Standard Paragraphs<a class="headerlink" href="#standard-paragraphs" title="Permalink to this headline">¶</a></h2>
+<p>There are several kinds of standard paragraphs
+that are part of any well-written document set. These include things like</p>
+<ul>
+<li><p>Related Topics.</p>
+<p>Epydoc usess the <code class="docutils literal notranslate"><span class="pre">:seealso:</span></code> tag to generate a “Related
+Topics” paragaph with references to other documents.</p>
+<p>Sphinx uses the  <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">seealso::</span></code> directive line to generate additional
+references.</p>
+</li>
+<li><p>Admonitions (Notes, Warnings, etc).</p>
+<p>Epydoc uses tags like <code class="docutils literal notranslate"><span class="pre">:note:</span></code>, <code class="docutils literal notranslate"><span class="pre">:attention:</span></code>,
+<code class="docutils literal notranslate"><span class="pre">:bug:</span></code>, and <code class="docutils literal notranslate"><span class="pre">:warning:</span></code> tags to generate standard
+types of admonition paragraphs.</p>
+<p>Sphinx uses directives like <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">note::</span></code>, <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">attention::</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">..</span>&#160; <span class="pre">warning::</span></code> directives to generate standard
+types of admonition paragraphs.
+Other adminitions include “caution”, “danger”, “error”, “hint”, “important”, “tip”.</p>
+</li>
+<li><p>Status. You can track the development and deployment status of your
+programs.  Tags like <code class="docutils literal notranslate"><span class="pre">:version:</span></code>, <code class="docutils literal notranslate"><span class="pre">:todo:</span></code>, <code class="docutils literal notranslate"><span class="pre">:deprecated:</span></code>,
+<code class="docutils literal notranslate"><span class="pre">:since:</span></code>, <code class="docutils literal notranslate"><span class="pre">:status:</span></code>, and <code class="docutils literal notranslate"><span class="pre">change:</span></code>
+are used by both Epydoc and Sphinx.</p></li>
+<li><p>Bibliographic Information. You can provide standard publication
+information.  Tags like <code class="docutils literal notranslate"><span class="pre">:author:</span></code>, <code class="docutils literal notranslate"><span class="pre">:organization:</span></code>,
+<code class="docutils literal notranslate"><span class="pre">:copyright:</span></code>, <code class="docutils literal notranslate"><span class="pre">:license:</span></code> and <code class="docutils literal notranslate"><span class="pre">:contact:</span></code>
+can be used.</p></li>
+</ul>
+</div>
+<div class="section" id="class-example">
+<h2>Class Example<a class="headerlink" href="#class-example" title="Permalink to this headline">¶</a></h2>
+<p>Here’s an example of a module with detailed class documentation.</p>
+<p class="rubric">blackjack.py</p>
+<p>We’ve included  a module-level docstring, class-level docstings, and even some method-level
+docstrings. The idea is to provide enough information so that the automatic documentation
+produced by Sphnix is complete and useful.</p>
+</div>
+<div class="section" id="example-sphinx-automodule">
+<h2>Example Sphinx Automodule<a class="headerlink" href="#example-sphinx-automodule" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python Documentation</a><ul>
+<li><a class="reference internal" href="#documentation-development">Documentation Development</a></li>
+<li><a class="reference internal" href="#using-sphinx">Using Sphinx</a></li>
+<li><a class="reference internal" href="#using-epydoc">Using Epydoc</a></li>
+<li><a class="reference internal" href="#basic-rst-markup">Basic RST Markup</a></li>
+<li><a class="reference internal" href="#interpreted-text-or-inline-markup">Interpreted Text, or Inline Markup</a></li>
+<li><a class="reference internal" href="#rst-field-markup">RST Field Markup</a></li>
+<li><a class="reference internal" href="#directives">Directives</a></li>
+<li><a class="reference internal" href="#standard-paragraphs">Standard Paragraphs</a></li>
+<li><a class="reference internal" href="#class-example">Class Example</a></li>
+<li><a class="reference internal" href="#example-sphinx-automodule">Example Sphinx Automodule</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="python_testing.html" title="previous chapter">Python Unit Testing</a></li>
+      <li>Next: <a href="command_line_interface.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

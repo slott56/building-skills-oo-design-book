@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Craps Solution Overview &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Outcome Class" href="outcome.html" />
+    <link rel="prev" title="Craps Details" href="details.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="craps-solution-overview">
+<h1>Craps Solution Overview<a class="headerlink" href="#craps-solution-overview" title="Permalink to this headline">¶</a></h1>
+<p>We will present a survey of the classes gleaned from the general problem
+statement in <a class="reference internal" href="#preliminary-survey-of-classes">Preliminary Survey of Classes</a>.
+In <a class="reference internal" href="#preliminary-craps-class-structure">Preliminary Craps Class Structure</a> we’ll describe some potential
+class definitions.</p>
+<p>Given this survey of the candidate classes, we will then do a
+walk-through to refine the definitions. We’ll show this in <a class="reference internal" href="#a-walk-through-of-craps">A Walk-Through of Craps</a>.
+We can use assure ourselves that we have a reasonable architecture.
+We will make some changes to the preliminary class list, revising and expanding on our survey.</p>
+<p>We will also include a number of questions and answers in <a class="reference internal" href="#craps-solution-questions-and-answers">Craps Solution Questions and Answers</a>.
+This should help clarify the design presentation and set the stage for the various development exercises in
+the chapters that follow.</p>
+<div class="section" id="preliminary-survey-of-classes">
+<h2>Preliminary Survey of Classes<a class="headerlink" href="#preliminary-survey-of-classes" title="Permalink to this headline">¶</a></h2>
+<p>We have divided up the responsibilities to provide a starting point for
+the development effort. The central principle behind the allocation of
+responsibility is to encapsulate the information or algorithm into a class.
+In reading the background
+information and the problem statement, we noticed a number of nouns that
+seemed to be important parts of the Craps game.</p>
+<ul class="simple">
+<li><p>Dice</p></li>
+<li><p>Bet</p></li>
+<li><p>Table</p></li>
+<li><p>Point</p></li>
+<li><p>Proposition</p></li>
+<li><p>Number</p></li>
+<li><p>Odds</p></li>
+<li><p>Player</p></li>
+<li><p>House</p></li>
+</ul>
+<p>The following table summarizes some of the classes and responsibilities
+that we can identify from the problem statement. This is not the
+complete list of classes we need to build. As we work through the
+exercises, we’ll discover additional classes and rework some of these
+classes more than once.</p>
+<p>We also have a legacy of classes available from the Roulette solution.
+We would like to build on this infrastructure as much as possible.</p>
+</div>
+<div class="section" id="preliminary-craps-class-structure">
+<h2>Preliminary Craps Class Structure<a class="headerlink" href="#preliminary-craps-class-structure" title="Permalink to this headline">¶</a></h2>
+<dl class="field-list">
+<dt class="field-odd">Outcome</dt>
+<dd class="field-odd"><p><strong>Responsibilities</strong></p>
+<p>A name for a particular
+betting opportunity. Most outcomes have fixed odds, but the behind the
+line odds bets have odds that depend on a point value.</p>
+<p><strong>Collaborators</strong></p>
+<p>Collected
+by a <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object into the available bets for the
+<a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>; used by <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance to compute the amount
+won from the amount that was bet.</p>
+</dd>
+<dt class="field-even">Dice</dt>
+<dd class="field-even"><p><strong>Responsibilities</strong></p>
+<p>Selects any winning
+propositions as well as next state of the game.</p>
+<p><strong>Collaborators</strong></p>
+<p>Used by the
+overall <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance to get a next set of winning
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, as well as change the state of the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance.</p>
+</dd>
+<dt class="field-odd">Table</dt>
+<dd class="field-odd"><p><strong>Responsibilities</strong></p>
+<p>A collection of bets placed on <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances by a
+<a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>. This isolates the set of possible bets and the
+management of the amounts currently at risk on each bet. This also
+serves as the interface between the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> and the other
+elements of the game.</p>
+<p><strong>Collaborators</strong></p>
+<p>Collects the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances; used
+by <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> to place a bet amount on a specific
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects; used by <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance to compute the amount
+won from the amount that was bet.</p>
+</dd>
+<dt class="field-even">Player</dt>
+<dd class="field-even"><p><strong>Responsibilities</strong></p>
+<p>Places bets on
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, updates the stake with amounts won and lost.
+This is the most important responsibility in the application, since we
+expect to update the algorithms this class uses to place different kinds
+of bets. Clearly, we need to cleanly encapsulate the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class,
+so that changes to this class have no ripple effect in other classes
+of the application.</p>
+<p><strong>Collaborators</strong></p>
+<p>Uses <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object to place
+<a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances on preferred <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances; used by
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> object to record wins and losses.</p>
+</dd>
+<dt class="field-odd">Game</dt>
+<dd class="field-odd"><p><strong>Responsibilities</strong></p>
+<p>Runs the game: gets bets
+from <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object, throws the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> objects, updates the
+state of the game, collects losing bets, pays winning bets. This
+encapsulates the basic sequence of play into a single class. The overall
+statistical analysis is based on playing a finite number of games and
+seeing the final value of the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object’s stake.</p>
+<p><strong>Collaborators</strong></p>
+<p>Uses
+<a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a>, <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>, <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>,
+and <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> objects.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="a-walk-through-of-craps">
+<h2>A Walk-through of Craps<a class="headerlink" href="#a-walk-through-of-craps" title="Permalink to this headline">¶</a></h2>
+<p>A good preliminary task is to review these responsibilities to confirm
+that a complete cycle of play is possible. This will help provide some
+design details for each class. It will also provide some insight into
+classes that may be missing from this overview. A good way to structure
+this task is to do a CRC walk-through. For more information on
+this technique see <a class="reference internal" href="../roulette/solution.html#roul-solution-walkthrough"><span class="std std-ref">A Walk-Through of Roulette</span></a>.</p>
+<p>The basic processing outline is the responsibility of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code>
+class. To start, locate the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> card.</p>
+<ol class="arabic simple">
+<li><p>Our preliminary note was that this class “Runs the game.” The
+responsibilities section has a summary of five steps involved in
+running the game.</p></li>
+<li><p>The first step is “gets bets from <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>.” Find the
+<a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> card.</p></li>
+<li><p>Does a <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance collaborate with a <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance to
+place bets? Note that the game state influences the allowed bets. Does
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance collaborate with <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance to provide
+the state information? If not, add this information to one or both cards.</p></li>
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> object’s second step is to throw the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> objects.
+Is this collaboration on the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> card?</p></li>
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> object’s third step is to update the state of the
+game. While the state appears to be internal to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> class,
+requiring no collaboration, we note that the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
+needs to know the state, and therefore should collaborate with the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> class.
+Be sure this collaboration is documented.</p></li>
+<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> object’s fourth and fifth steps are to pay winning
+bets and collect losing bets. Does the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance collaborate
+with the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object to get the working bets? If not, update
+the collaborations.</p></li>
+</ol>
+<p>Something we’ll need to consider is the complex relationship between the
+dice, the number rolled on the dice, the game state and the various
+bets. In Roulette, a <a class="reference internal" href="../roulette/wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance picked a random <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> object;
+the bin had a simple list of winning <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.
+All <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances on other <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances were losers. In Craps,
+however, we find that we have game bets that are based on changes to the
+game state, not simply the number on the dice. The random outcome is
+used to resolve one-roll proposition bets, resolve hardways bets, change
+the game state, and resolve game bets. It is not a simple <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> collection.</p>
+<p>We also note that the house moves Come Line (and Don’t Come) bets from
+the Come Line to the numbered spaces. In effect, the bet is changed from a generic
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance to a more specific <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.
+This means that a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object has a kind of state change.
+The parallels the the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance’s
+state change and any possible <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance state change.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Stateful Objects</p>
+<p>Many interesting applications
+involve stateful objects. Everything that has a state or status or
+attributes that change, is stateful. State
+changes are almost universally accompanied by rules that determine
+legal changes, events that precipitate changes, and actions that
+accompany a state change.</p>
+<p>Stateful objects must be taken very seriously. The consequence of
+ignoring state change complications is software that performs invalid or unexpected state
+transitions.</p>
+</div>
+<p>A walk-through gives an overview of the interactions among the
+objects in the working application. You may uncover additional design
+ideas from this walk-through. The most important outcome of the
+walk-through is a clear sense of the responsibilities and the
+collaborations required to create the necessary application behavior.</p>
+</div>
+<div class="section" id="craps-solution-questions-and-answers">
+<h2>Craps Solution Questions and Answers<a class="headerlink" href="#craps-solution-questions-and-answers" title="Permalink to this headline">¶</a></h2>
+<p>Why is the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class distinct? Each object that is an
+instance of the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class is merely a number from 2 to 12.</p>
+<blockquote>
+<div><p>We have complex interdependency between the dice, the game states,
+the bets and outcomes. An outcome has different meanings in different
+game states: sometimes a 7 is an immediate winner, other times it as an
+immediate loser. Clearly, we need to isolate these various rules into
+separate objects to be sure that we have captured them accurately
+without any confusion, gaps or conflicts.</p>
+<p>We can foresee three general kinds of <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> classes: the
+propositions that are resolved by a single throw of the dice, the
+hardways that are resolved periodically, and the game bets which are
+resolved when a point is made or missed. Some of the outcomes are only
+available in certain game states.</p>
+<p>The alternative is deeply nested if-statements. Multiple objects
+introduce some additional details in the form of class declarations, but
+objects have the advantage of clearly isolating responsibilities.
+Clear, narrow responsibilities makes
+us more confident that our design will work properly. If-statements only
+conflate all of the various conditions into a tangle that includes a
+huge risk of missing an important and rare condition.</p>
+<p>See the discussion under <a class="reference internal" href="../roulette/outcome.html#roul-outcome-identity"><span class="std std-ref">Design Decision – Object Identity</span></a>  for more discussion
+on object identity and why each Outcome is a separate object.</p>
+</div></blockquote>
+<p>What is the real difference between the classes <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> and <a class="reference internal" href="../roulette/wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>?
+Don’t they both represent simple collections with random selection?</p>
+<blockquote>
+<div><p>Perhaps. At the present time, the distinction appears to be in the
+initialization. A <a class="reference internal" href="../roulette/wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance is a collection of <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>
+objects. The <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> object has 36 outcomes, each with a number
+of meanings.</p>
+<p>Generally, we are slow to merge classes together without evidence that
+they are really the same thing. In this case, they appear very similar,
+so we will note the similarities and differences as we work through the
+design details. There is a fine line between putting too many things
+together and splitting too many things apart.</p>
+<p>Generally, the bigger mistake seems to be conflating too many distinct things,
+and resolving the differences through complex if-statements and other hidden processing logic.</p>
+</div></blockquote>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>In the next chapter we’ll look closely at the various outcomes that stem from
+rolling the dice. This will lead us to a deeper understanding of the existing
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class definition, and some rework to make it suitable for
+both games.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Craps Solution Overview</a><ul>
+<li><a class="reference internal" href="#preliminary-survey-of-classes">Preliminary Survey of Classes</a></li>
+<li><a class="reference internal" href="#preliminary-craps-class-structure">Preliminary Craps Class Structure</a></li>
+<li><a class="reference internal" href="#a-walk-through-of-craps">A Walk-through of Craps</a></li>
+<li><a class="reference internal" href="#craps-solution-questions-and-answers">Craps Solution Questions and Answers</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="details.html" title="previous chapter">Craps Details</a></li>
+      <li>Next: <a href="outcome.html" title="next chapter">Outcome Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

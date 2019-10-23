@@ -1,0 +1,708 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Building Skills in Object-Oriented Design, V4 &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Preface" href="preface.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="building-skills-in-object-oriented-design-v4">
+<h1>Building Skills in Object-Oriented Design, V4<a class="headerlink" href="#building-skills-in-object-oriented-design-v4" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Step-by-Step Construction of A Complete Application</p>
+<p>This is release 4.1910, published Oct 18, 2019.</p>
+<div class="admonition-legal-notice admonition">
+<p class="admonition-title">Legal Notice</p>
+<a class="reference external image-reference" href="http://creativecommons.org/licenses/by-nc-nd/2.0/"><img alt="Creative Commons License; some rights reserved." src="_images/somerights20.png" /></a>
+<p>This work is licensed under a <a class="reference external" href="http://creativecommons.org/licenses/by-nc-nd/2.0/">Creative Commons License</a>.
+You are free to copy, distribute, display, and perform
+the work under the following conditions:</p>
+<ul class="simple">
+<li><p><strong>Attribution</strong>.
+You must give the original author, Steven F. Lott, credit.</p></li>
+<li><p><strong>Noncommercial</strong>.
+You may not use this work for commercial purposes.</p></li>
+<li><p><strong>No Derivative Works</strong>.
+You may not alter, transform, or build upon this work.</p></li>
+</ul>
+<p>For any reuse or distribution, you must make clear to others the
+license terms of this work.</p>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="preface.html">Preface</a></li>
+</ul>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>In this part, we’ll look at some general topics required to
+get started. The first chapter will provide some foundations,
+talking about the problem domain, the solution, and some general
+ideas on how the work will proceed.</p>
+<p>The remaining chapters will provide specific guidance on setting
+up a working development environment, writing some basic unit
+tests, and starting down the road to producing useful documentation.
+These sections will set the stage for all of the work which follows.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="starting/foundation.html">Foundations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="starting/foundation.html#problem-statement">Problem Statement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/foundation.html#our-simulation-application">Our Simulation Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/foundation.html#methodology-technique-and-process">Methodology, Technique and Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/foundation.html#additional-topics-non-functional-requirements">Additional Topics: Non-Functional Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/foundation.html#rework-and-the-learning-process">Rework and the Learning Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/foundation.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="starting/initial_setup.html">Development Environment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="starting/initial_setup.html#deliverables">Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/initial_setup.html#tools">Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/initial_setup.html#working-directories">Working Directories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/initial_setup.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="starting/python_testing.html">Python Unit Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_testing.html#using-unit-tests">Using Unit Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_testing.html#python-doctest-testing">Python doctest Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_testing.html#handling-dependencies">Handling Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_testing.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="starting/python_documentation.html">Python Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#documentation-development">Documentation Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#using-sphinx">Using Sphinx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#basic-rst-markup">Basic RST Markup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#rst-field-markup">RST Field Markup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#directives">Directives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#standard-paragraphs">Standard Paragraphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#class-example">Class Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#example-sphinx-automodule">Example Sphinx Automodule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="starting/python_documentation.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="roulette">
+<span id="roul"></span><h2>Roulette<a class="headerlink" href="#roulette" title="Permalink to this headline">¶</a></h2>
+<p>Roulette is a stateless game
+with numerous bets and a very simple process for game play.</p>
+<p>The chapters of this part present the details on the game, an overview
+of the solution, and a series of sixteen exercises to build a complete
+simulation of the game, plus a variety of betting strategies. Each
+exercise chapter builds at least one class, plus unit tests; in some
+cases, this includes rework of previous deliverables.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="roulette/details.html">Roulette Details</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/details.html#roulette-game">Roulette Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/details.html#available-bets-in-roulette">Available Bets in Roulette</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/details.html#some-betting-strategies">Some Betting Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/details.html#roulette-details-questions-and-answers">Roulette Details Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/details.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/solution.html">Roulette Solution Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/solution.html#preliminary-survey-of-classes">Preliminary Survey of Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/solution.html#preliminary-roulette-class-structure">Preliminary Roulette Class Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/solution.html#a-walk-through-of-roulette">A Walk-Through of Roulette</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/solution.html#roulette-solution-questions-and-answers">Roulette Solution Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/solution.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/outcome.html">Outcome Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#outcome-analysis">Outcome Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#design-decision-object-identity">Design Decision – Object Identity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#additional-outcome-design-thoughts">Additional Outcome Design Thoughts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#outcome-design-complex">Outcome Design – Complex</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#outcome-design-simple">Outcome Design – Simple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#example-unit-test-case">Example Unit Test Case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#outcome-deliverables">Outcome Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#message-formatting">Message Formatting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/outcome.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/bin.html">Bin Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin.html#bin-analysis">Bin Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin.html#design-decision-choosing-a-collection">Design Decision – Choosing A Collection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin.html#wrap-vs-extend-a-collection">Wrap vs. Extend a Collection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin.html#bin-questions-and-answers">Bin Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin.html#bin-design">Bin Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin.html#bin-deliverables">Bin Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/wheel.html">Wheel Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/wheel.html#wheel-analysis">Wheel Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/wheel.html#wheel-design">Wheel Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/wheel.html#test-setup">Test Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/wheel.html#wheel-deliverables">Wheel Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/wheel.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/bin_builder.html">Bin Builder Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin_builder.html#bin-builder-analysis">Bin Builder Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin_builder.html#bin-builder-algorithms">Bin Builder Algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin_builder.html#binbuilder-design">BinBuilder Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin_builder.html#bin-builder-deliverables">Bin Builder Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin_builder.html#internationalization-and-localization">Internationalization and Localization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bin_builder.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/bet.html">Roulette Bet Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bet.html#roulette-bet-analysis">Roulette Bet Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bet.html#design-decision-create-or-locate-an-outcome">Design Decision – Create or Locate an Outcome</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bet.html#roulette-bet-questions-and-answers">Roulette Bet Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bet.html#roulette-bet-design-complex">Roulette Bet Design – Complex</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bet.html#roulette-bet-design-simple">Roulette Bet Design – Simple</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bet.html#wheel-redesign">Wheel Redesign</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bet.html#roulette-bet-deliverables">Roulette Bet Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/bet.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/roulette_table.html">Roulette Table Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_table.html#roulette-table-analysis">Roulette Table Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_table.html#invalidbet-exception-design">InvalidBet Exception Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_table.html#roulette-table-design">Roulette Table Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_table.html#roulette-table-deliverables">Roulette Table Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_table.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/roulette_game.html">Roulette Game Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_game.html#roulette-game-analysis">Roulette Game Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_game.html#passenger57-design">Passenger57 Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_game.html#roulette-game-design">Roulette Game Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_game.html#roulette-game-simplification">Roulette Game Simplification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_game.html#roulette-game-questions-and-answers">Roulette Game Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_game.html#roulette-game-deliverables">Roulette Game Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_game.html#appendix-roulette-variations">Appendix: Roulette Variations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/roulette_game.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/testability.html">Review of Testability</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/testability.html#test-scaffolding">Test Scaffolding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/testability.html#test-driven-design">Test-Driven Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/testability.html#capturing-pseudo-random-data">Capturing Pseudo-Random Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/testability.html#testability-questions-and-answers">Testability Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/testability.html#testability-deliverables">Testability Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/testability.html#appendix-on-random-numbers">Appendix: On Random Numbers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/testability.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/player.html">Player Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/player.html#roulette-player-analysis">Roulette Player Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/player.html#player-design">Player Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/player.html#martingale-player-design">Martingale Player Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/player.html#player-deliverables">Player Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/player.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/control.html">Overall Simulation Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/control.html#simulation-analysis">Simulation Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/control.html#statistical-summary">Statistical Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/control.html#simulator-design">Simulator Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/control.html#simulation-control-deliverables">Simulation Control Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/control.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/sevenreds.html">SevenReds Player Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/sevenreds.html#sevenreds-player-analysis">SevenReds Player Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/sevenreds.html#soapbox-on-composition">Soapbox on Composition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/sevenreds.html#sevenreds-design">SevenReds Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/sevenreds.html#player-rework">Player Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/sevenreds.html#game-rework">Game Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/sevenreds.html#table-rework">Table Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/sevenreds.html#sevenreds-player-deliverables">SevenReds Player Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/sevenreds.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/statistics.html">Statistical Measures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/statistics.html#statistical-analysis">Statistical Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/statistics.html#some-foundations">Some Foundations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/statistics.html#python-coding">Python Coding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/statistics.html#statistical-algorithms">Statistical Algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/statistics.html#integerstatistics-design">IntegerStatistics Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/statistics.html#statistics-deliverables">Statistics Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/statistics.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/random.html">Random Player Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/random.html#random-player-analysis">Random Player Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/random.html#random-player-design">Random Player Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/random.html#random-player-deliverables">Random Player Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/random.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/1_3_2_6.html">Player 1-3-2-6 Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player-1-3-2-6-analysis">Player 1-3-2-6 Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#on-polymorphism">On Polymorphism</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player-1-3-2-6-questions-and-answers">Player 1-3-2-6 Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player1326-state-design">Player1326 State Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player1326-no-wins-design">Player1326 No Wins Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player1326-one-win-design">Player1326 One Win Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player1326-two-wins-design">Player1326 Two Wins Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player1326-three-wins">Player1326 Three Wins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player1326-design">Player1326 Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#player-1-3-2-6-deliverables">Player 1-3-2-6 Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#advanced-exercise-refactoring">Advanced Exercise – Refactoring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#advanced-exercise-less-object-creation">Advanced Exercise – Less Object Creation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/1_3_2_6.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/cancellation.html">Cancellation Player Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/cancellation.html#cancellation-player-analysis">Cancellation Player Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/cancellation.html#playercancellation-design">PlayerCancellation Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/cancellation.html#cancellation-player-deliverables">Cancellation Player Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/cancellation.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/fibonacci.html">Fibonacci Player Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/fibonacci.html#fibonacci-player-analysis">Fibonacci Player Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/fibonacci.html#playerfibonacci-design">PlayerFibonacci Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/fibonacci.html#fibonacci-player-deliverables">Fibonacci Player Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/fibonacci.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roulette/conclusion.html">Conclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="roulette/conclusion.html#exploration">Exploration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/conclusion.html#the-solid-principles">The SOLID Principles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/conclusion.html#other-design-patterns">Other Design Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="roulette/conclusion.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="craps">
+<span id="id1"></span><h2>Craps<a class="headerlink" href="#craps" title="Permalink to this headline">¶</a></h2>
+<p>This part describes parts of the more complex game of Craps.  Craps
+is played with dice.
+Craps is a game with two states and a number of state-change rules. It has a
+variety betting alternatives, some of which are quite complex.</p>
+<p>The chapters of this part presents the details on the game, an overview
+of the solution, and a series of eleven exercises to build a complete
+simulation of the game, with a variety of betting strategies. The
+exercises in this part are more advanced; unlike <a class="reference internal" href="#roul"><span class="std std-ref">Roulette</span></a>, we will
+often combine several classes into a single batch of deliverables.</p>
+<p>There are several examples of rework in this part, some of them quite
+extensive. This kind of rework reflects three more advanced scenarios:
+refactoring to generalize and add features, renaming to rationalize the
+architecture, and refactoring to extract features. Each of these is the
+result of learning; they are design issues that can’t easily be located
+or explained in advance.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="craps/details.html">Craps Details</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/details.html#craps-game-overview">Craps Game Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/details.html#game-state-changes">Game State Changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/details.html#creating-a-dice-frequency-distribution">Creating A Dice Frequency Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/details.html#available-bets">Available Bets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/details.html#some-betting-strategies">Some Betting Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/details.html#wrong-betting">Wrong Betting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/details.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/solution.html">Craps Solution Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/solution.html#preliminary-survey-of-classes">Preliminary Survey of Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/solution.html#preliminary-craps-class-structure">Preliminary Craps Class Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/solution.html#a-walk-through-of-craps">A Walk-through of Craps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/solution.html#craps-solution-questions-and-answers">Craps Solution Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/solution.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/outcome.html">Outcome Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/outcome.html#outcome-analysis">Outcome Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/outcome.html#fractional-odds-design">Fractional Odds Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/outcome.html#optional-parameter-implementation-technique">Optional Parameter Implementation Technique</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/outcome.html#outcome-rework">Outcome Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/outcome.html#outcome-deliverables">Outcome Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/outcome.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/throw.html">Throw Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#throw-analysis">Throw Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#the-wrap-vs-extend-question">The Wrap vs. Extend Question</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#throw-design">Throw Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#natural-throw-design">Natural Throw Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#craps-throw-design">Craps Throw Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#eleven-throw-design">Eleven Throw Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#point-throw-design">Point Throw Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#craps-game-design">Craps Game Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#throw-deliverables">Throw Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/dice.html">Dice Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/dice.html#dice-analysis">Dice Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/dice.html#throw-rework">Throw Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/dice.html#dice-design">Dice Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/dice.html#dice-deliverables">Dice Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/dice.html#dice-optimization">Dice Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/dice.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/throw_builder.html">Throw Builder Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#throw-builder-analysis">Throw Builder Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#outcomes-with-variable-odds">Outcomes with Variable Odds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#refactoring-the-outcome-hierarchy">Refactoring The Outcome Hierarchy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#soapbox-on-subclasses">Soapbox on Subclasses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#soapbox-on-architecture">Soapbox on Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#throw-builder-questions-and-answers">Throw Builder Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#design-light">Design Light</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#design-heavy">Design Heavy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#common-design">Common Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#throw-builder-deliverables">Throw-Builder Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/throw_builder.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/bet.html">Bet Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/bet.html#bet-analysis">Bet Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/bet.html#bet-rework">Bet Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/bet.html#commissionbet-design">CommissionBet Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/bet.html#bet-deliverables">Bet Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/bet.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/craps_table.html">Craps Table Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#craps-table-analysis">Craps Table Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#design-decision-table-vs-game-responsibility">Design Decision – Table vs. Game Responsibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#design-decision-allowable-outcomes">Design Decision – Allowable Outcomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#design-decision-domain-of-allowed-bets">Design  Decision – Domain of Allowed Bets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#handling-working-bets">Handling Working Bets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#crapsgame-stub">CrapsGame Stub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#craps-table-design">Craps Table Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#craps-table-deliverables">Craps Table Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_table.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/craps_game.html">CrapsGame Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#craps-game-analysis">Craps Game Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#design-decision-win-lose-wait">Design Decision – Win, Lose, Wait</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#additional-craps-design">Additional Craps Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#craps-game-implementation-steps">Craps Game Implementation Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#throw-rework">Throw Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#throwbuilder-rework">ThrowBuilder Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#bet-rework">Bet Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#crapsplayer-class-stub">CrapsPlayer Class Stub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#crapsgamestate-class">CrapsGameState Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#crapsgamepointoff-class">CrapsGamePointOff Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#crapsgamepointon-class">CrapsGamePointOn Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#crapsgame-design">CrapsGame Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#craps-game-deliverables">Craps Game Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#optional-working-bets">Optional Working Bets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_game.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/craps_player.html">CrapsPlayer Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_player.html#craps-player-analysis">Craps Player Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_player.html#crapsplayer-design">CrapsPlayer Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_player.html#crapsplayerpass-subclass">CrapsPlayerPass Subclass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_player.html#craps-martingale-subclass">Craps Martingale Subclass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_player.html#craps-player-deliverables">Craps Player Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/craps_player.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/refactoring.html">Design Cleanup and Refactoring</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#design-review">Design Review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#randomeventfactory-design">RandomEventFactory Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#wheel-class-design">Wheel Class Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#dice-class-design">Dice Class Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#table-class-design">Table Class Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#player-class-design">Player Class Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#game-class-design">Game Class Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#roulettegame-class-design">RouletteGame Class Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#crapsgame-class-design">CrapsGame Class Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#refactoring-deliverables">Refactoring Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/refactoring.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/simple_craps_player.html">Simple Craps Players</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#simple-craps-players-analysis">Simple Craps Players Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#crapsplayer-design">CrapsPlayer Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#crapssimpleplayer-superclass">CrapsSimplePlayer superclass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#craps-martingale-player">Craps Martingale Player</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#player1326-state">Player1326 State</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#craps1326-player">Craps1326 Player</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#crapscancellation-player">CrapsCancellation Player</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#simple-craps-players-deliverables">Simple Craps Players Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/simple_craps_player.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/roll_counting_player.html">Roll-Counting Player Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#roll-counting-analysis">Roll-Counting Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#bettingstrategy-design">BettingStrategy Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#nochangebetting-class">NoChangeBetting Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#martingalebetting-class">MartingaleBetting Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#bet1326betting-class">Bet1326Betting Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#crapsonebetplayer-class">CrapsOneBetPlayer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#crapstwobetplayer-class">CrapsTwoBetPlayer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#crapssevencountplayer-class">CrapsSevenCountPlayer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#roll-counting-deliverables">Roll-Counting Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="craps/roll_counting_player.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="craps/conclusion.html">Conclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="craps/conclusion.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="blackjack">
+<span id="id2"></span><h2>Blackjack<a class="headerlink" href="#blackjack" title="Permalink to this headline">¶</a></h2>
+<p>This part describes the more complex game of Blackjack.
+This game has a
+number of states and a number of complex state-change rules.
+While the betting rules are simple, the game play is more complex.</p>
+<p>The chapters of this part presents the details on the game, an overview
+of the solution, and a series of six relatively complex exercises to
+build a complete simulation of the game. In the case of Blackjack, we
+have to create a design that allows for considerable variation in the
+rules of the game as well as variation in the player’s betting strategies.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/details.html">Blackjack Details</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/details.html#blackjack-game">Blackjack Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/details.html#available-bets-and-choices">Available Bets and Choices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/details.html#betting-strategies">Betting Strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/details.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/solution.html">Blackjack Solution Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/solution.html#preliminary-survey-of-classes">Preliminary Survey of Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/solution.html#preliminary-class-structure">Preliminary Class Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/solution.html#a-walkthrough">A Walkthrough</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/solution.html#blackjack-solution-questions-and-answers">Blackjack Solution Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/solution.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/card_deck_shoe.html">Card, Deck and Shoe Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#card-deck-and-shoe-analysis">Card, Deck and Shoe Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#card-deck-shoe-questions-and-answers">Card-Deck-Shoe Questions and Answers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#card-superclass">Card Superclass</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#facecard-class">FaceCard Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#acecard-class">AceCard Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#card-factory-function">Card Factory Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#deck-class">Deck class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#shoe-class">Shoe class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#card-deck-shoe-deliverables">Card-Deck-Shoe Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#testing-examples">Testing Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/card_deck_shoe.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/hand.html">Hand and Outcome Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/hand.html#hand-analysis">Hand Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/hand.html#hand-class-design">Hand Class Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/hand.html#hand-deliverables">Hand Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/hand.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/blackjack_table.html">Blackjack Table Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_table.html#blackjack-table-analysis">Blackjack Table Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_table.html#blackjacktable-class">BlackjackTable Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_table.html#hand-rework">Hand Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_table.html#blackjack-table-deliverables">Blackjack Table Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_table.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/blackjack_game.html">Blackjack Game Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#blackjack-game-analysis">Blackjack Game Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#blackjack-collaboration">Blackjack Collaboration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#dealer-rules">Dealer Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#blackjackplayer-class">BlackjackPlayer Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#card-rework">Card Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#hand-rework">Hand Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#blackjackgame-class">BlackjackGame Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#blackjack-game-deliverables">Blackjack Game Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/blackjack_game.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/simple_blackjack_player.html">Simple Blackjack Player Class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/simple_blackjack_player.html#blackjack-player-analysis">Blackjack Player Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/simple_blackjack_player.html#simpleblackjackplayer-design">SimpleBlackjackPlayer Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/simple_blackjack_player.html#blackjack-player-deliverables">Blackjack Player Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/simple_blackjack_player.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/variant_game.html">Variant Game Rules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#variant-game-examples">Variant Game Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#additional-wins">Additional Wins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#no-resplit-no-double-after-split">No Resplit, No Double After Split</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#dealer-hits-soft-17">Dealer Hits Soft 17</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#changing-the-number-of-decks">Changing the Number of Decks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#changing-the-payout-odds">Changing the Payout Odds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#blackjackgame-rework">BlackjackGame Rework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#fivecardcharlie-class">FiveCardCharlie Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#onedeckgame-class">OneDeckGame Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#variant-game-deliverables">Variant Game Deliverables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/variant_game.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blackjack/conclusion.html">Conclusion</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blackjack/conclusion.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="fit-and-finish">
+<span id="finish"></span><h2>Fit and Finish<a class="headerlink" href="#fit-and-finish" title="Permalink to this headline">¶</a></h2>
+<p>A finished application includes more than just a collection of packages.
+We’ll need to build a Command-Line Interface (CLI) to operate this program.
+This isn’t a sophisticated OO design problem. This is a collection
+of exercises in using the standard library to create the final
+application.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="finish/test_automation.html">Quality Assurance</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="finish/test_automation.html#static-type-checking">Static Type Checking</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="finish/test_automation.html#some-common-problems">Some Common Problems</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="finish/test_automation.html#static-code-quality-checks">Static Code Quality Checks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="finish/test_automation.html#code-formatting">Code Formatting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="finish/test_automation.html#test-coverage-analysis">Test Coverage Analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="finish/test_automation.html#the-test-coverage-tool">The Test Coverage Tool</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="finish/test_automation.html#test-automation">Test Automation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="finish/test_automation.html#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="finish/command_line_interface.html">Command-Line Interface (CLI)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="finish/command_line_interface.html#cli-analysis">CLI Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="finish/command_line_interface.html#design-decision-cli-library">Design Decision – CLI Library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="finish/command_line_interface.html#design-decision-class-vs-function">Design Decision – Class vs. Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="finish/command_line_interface.html#cli-design">CLI Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="finish/command_line_interface.html#cli-deliverables">CLI Deliverables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="finish/management_handwringing.html">Rework and Management Hand-Wringing: A Post-Script</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="production">
+<h2>Production<a class="headerlink" href="#production" title="Permalink to this headline">¶</a></h2>
+<p>This book was built with Python 3.7</p>
+<ul class="simple">
+<li><p>Sphinx 2.2.0</p></li>
+<li><p>MacTeX 2019</p></li>
+</ul>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="#">
+    <img class="logo" src="_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Building Skills in Object-Oriented Design, V4</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#roulette">Roulette</a></li>
+<li><a class="reference internal" href="#craps">Craps</a></li>
+<li><a class="reference internal" href="#blackjack">Blackjack</a></li>
+<li><a class="reference internal" href="#fit-and-finish">Fit and Finish</a></li>
+<li><a class="reference internal" href="#production">Production</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="preface.html" title="next chapter">Preface</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

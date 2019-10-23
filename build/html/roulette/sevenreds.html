@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>SevenReds Player Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Statistical Measures" href="statistics.html" />
+    <link rel="prev" title="Overall Simulation Control" href="control.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="sevenreds-player-class">
+<span id="roul-sevenreds"></span><h1>SevenReds Player Class<a class="headerlink" href="#sevenreds-player-class" title="Permalink to this headline">¶</a></h1>
+<p>This section introduces an additional specialization of the Martingale betting
+strategy. Adding this new
+subclass should be a small change to the main application class.
+Additionally, we’ll also address some issues in how an overall
+application is composed of individual class instances.</p>
+<p>We’ll also revisit a question in the design of the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class.
+Should we really be checking for a minimum? Or was that needless?</p>
+<p>In <a class="reference internal" href="#sevenreds-player-analysis">SevenReds Player Analysis</a> we’ll examine the general strategy
+this player will follow.</p>
+<p>We’ll revisit object-oriented design by composition in <a class="reference internal" href="#soapbox-on-composition">Soapbox on Composition</a>.</p>
+<p>In <a class="reference internal" href="#sevenreds-design">SevenReds Design</a> we’ll look at the design of this player. We’ll
+need to revise the overall design for the abstract <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class, also,
+which we’ll look at in <a class="reference internal" href="#player-rework">Player Rework</a>.</p>
+<p>These design changes will lead to other changes. We’ll look at these
+changes in <a class="reference internal" href="#game-rework">Game Rework</a> and <a class="reference internal" href="#table-rework">Table Rework</a>.</p>
+<p>This will lead to <a class="reference internal" href="#sevenreds-player-deliverables">SevenReds Player Deliverables</a>, which enumerates all
+of the deliverables for this chapter.</p>
+<div class="section" id="sevenreds-player-analysis">
+<h2>SevenReds Player Analysis<a class="headerlink" href="#sevenreds-player-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a> player subclass waits for seven red wins in a row before betting
+black. This is a subclass of the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class. We can create a
+subclass of our main <a class="reference internal" href="control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class to use this new <a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a>
+instance.</p>
+<p>We note that the <a class="reference internal" href="roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a> class betting
+is stateless: this class places the same bets over and over until they are
+cleaned out or their playing session ends.</p>
+<p>The <a class="reference internal" href="player.html#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> player’s betting, however, is stateful.  This player changes the
+bet based on wins and losses.  The state is a loss counter than resets
+to zero on each win, and increments on each loss.</p>
+<p>Our <a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a>  player will have two states: waiting and betting. In the waiting state, they
+are simply counting the number of reds. In the betting state, they have
+seen seven reds and are now playing the Martingale system on black. We
+will defer serious analysis of this stateful betting until
+some of the more sophisticated subclasses of the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class. For
+now, we will simply use an integer to count the number of reds.</p>
+<div class="section" id="game-changer">
+<h3>Game Changer<a class="headerlink" href="#game-changer" title="Permalink to this headline">¶</a></h3>
+<p>Currently, the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object is not informed of the final outcome unless they
+place a bet. We designed the :class: <cite>Game</cite> object to evaluate the <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>
+instances and notify the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object of just their <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances
+that were wins or losses. We will need to add a method to the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class
+to be given the overall list of winning <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances even when the
+<a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object has not placed a bet.</p>
+<p>Once we have updated the design of :class: <cite>Game</cite> class to notify the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> object,
+we can add the feature to the new <a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a> class. Note that we intend
+introduce each new betting strategy via creation of new subclasses. A
+relatively straightforward update to our simulation main program allows
+us to use these new subclasses. The previously working subclasses are
+left in place, allowing graceful evolution by adding features with
+minimal rework of existing classes.</p>
+<p>In addition to waiting for the wheel to spin seven reds, we will also
+follow the Martingale betting system to track our wins and losses,
+assuring that a single win will recoup all of our losses. This makes the <a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a> class
+a further specialization of the <a class="reference internal" href="player.html#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> class. We will be using
+the basic features of the <a class="reference internal" href="player.html#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> class, but doing additional
+processing to determine if we should place a bet or not.</p>
+<p>Introducing a new subclass should be done by upgrading the main program. See
+<a class="reference internal" href="#soapbox-composition"><span class="std std-ref">Soapbox on Composition</span></a> for comments on the ideal structure for a
+main program. Additionally, see the <a class="reference internal" href="solution.html#roul-ov-qanda-main"><span class="std std-ref">Roulette Solution Questions and Answers</span></a> FAQ entry.</p>
+</div>
+<div class="section" id="table-changes">
+<h3>Table Changes<a class="headerlink" href="#table-changes" title="Permalink to this headline">¶</a></h3>
+<p>When we designed the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class, we included a notion of a valid betting state.
+We required the sum of all bets placed by a <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> to be below
+some limit. We also required that there be a table minimum present.</p>
+<p>A casino has a table minimum for a variety of reasons. Most notably, it
+serves to distinguish casual players at low-stakes tables from “high rollers”
+who might prefer to play with other people who wager larger amounts.</p>
+<p>In the rare event that a player is the only person at a roulette wheel,
+the croupier won’t spin the wheel until a bet is placed. This is an odd
+thing. It’s also very rare. Pragmatically, there are almost always other
+players, and the wheel is likely to be spun even if a given player is not betting.</p>
+<p>Our design for a table really should <strong>not</strong> have any check for a minimum
+bet. It’s a rule that doesn’t make sense for the kind of simulation we’re doing.
+The simulated results can be scaled by the minimum betting amount, so it’s
+easiest to think of the bets as multiples of the minimum and use simple integer
+bet amounts.</p>
+</div>
+</div>
+<div class="section" id="soapbox-on-composition">
+<span id="soapbox-composition"></span><h2>Soapbox on Composition<a class="headerlink" href="#soapbox-on-composition" title="Permalink to this headline">¶</a></h2>
+<p>Generally, a solution is composed of a number of objects.
+However, the consequences of this can be misunderstood. Since
+the solution is a composition of objects, it falls on the main
+method to do create the composition and do nothing more.</p>
+<p>Our ideal main program creates and composes the working set of
+objects, then start the processing.
+In some cases, environment variables, command-line arguments and options,
+and configuration files may tailor what is built.
+For these simple exercises, however, we’re omitting the parsing of
+command-line parameters, and simply creating the necessary
+objects directly.</p>
+<p>A main program should, therefore, look something like the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">wheel</span> <span class="o">=</span> <span class="n">Wheel</span><span class="p">()</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+<span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="n">wheel</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
+<span class="n">player</span> <span class="o">=</span> <span class="n">SevenReds</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span><span class="n">game</span><span class="p">,</span> <span class="n">player</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">gather</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We created an instance of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> class to contain the bins and outcomes.
+We created an instance of the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class as a place to put the bets.
+We’ve combined these two objects into an instance of the :class: <cite>Game</cite> object.</p>
+<p>When we created the <a class="reference internal" href="roulette_game.html#player" title="player"><code class="xref py py-obj docutils literal notranslate"><span class="pre">player</span></code></a> object, we could have used the <a class="reference internal" href="player.html#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> class
+or the <a class="reference internal" href="roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a> class.
+The player object can use the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>  object to get the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance. This
+<a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance provides the outcomes used to build bets.</p>
+<p>The real work is done by <code class="xref py py-meth docutils literal notranslate"><span class="pre">Simulater.gather()</span></code>. This relies on the game, table,
+and player to create the data we can analyze.</p>
+<p>In some instances, the construction of objects is not done
+directly by the main method. Instead, the main method will
+use <strong>Builders</strong> to create the various objects. The idea is
+to avoid mentioning the class definitions directly. We can
+upgrade or replace a class, and also upgrade the <strong>Builder</strong>
+to use that class appropriately. This isolates change to
+the class hierarchy and a builder function.</p>
+</div>
+<div class="section" id="sevenreds-design">
+<h2>SevenReds Design<a class="headerlink" href="#sevenreds-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="SevenReds">
+<em class="property">class </em><code class="sig-name descname">SevenReds</code><a class="headerlink" href="#SevenReds" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a> is a <a class="reference internal" href="player.html#Martingale" title="Martingale"><code class="xref py py-class docutils literal notranslate"><span class="pre">Martingale</span></code></a> player who places
+bets in Roulette. This player waits until the wheel has spun red seven
+times in a row before betting black.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt id="SevenReds.redCount">
+<code class="sig-prename descclassname">SevenReds.</code><code class="sig-name descname">redCount</code><a class="headerlink" href="#SevenReds.redCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of reds yet to go. This starts at <code class="docutils literal notranslate"><span class="pre">7</span></code> , is reset to
+<code class="docutils literal notranslate"><span class="pre">7</span></code> on each non-red outcome, and decrements by <code class="docutils literal notranslate"><span class="pre">1</span></code>
+on each red outcome.</p>
+</dd></dl>
+
+<p>Note that this class inherits <code class="xref py py-obj docutils literal notranslate"><span class="pre">betMultiple</span></code>. This is initially <code class="docutils literal notranslate"><span class="pre">1</span></code>,
+doubles with each loss and is reset to one on each win.</p>
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="SevenReds.placeBets">
+<code class="sig-prename descclassname">SevenReds.</code><code class="sig-name descname">placeBets</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#SevenReds.placeBets" title="Permalink to this definition">¶</a></dt>
+<dd><p>If <a class="reference internal" href="#SevenReds.redCount" title="SevenReds.redCount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redCount</span></code></a>
+is zero, this places a bet on black, using the bet multiplier.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SevenReds.winners">
+<code class="sig-prename descclassname">SevenReds.</code><code class="sig-name descname">winners</code><span class="sig-paren">(</span><em class="sig-param">self, outcomes: Set[Outcome]</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#SevenReds.winners" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcomes</strong> (Set of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances) – The <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> set from a <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>.</p>
+</dd>
+</dl>
+<p>This is notification from the :class: <cite>Game</cite>
+of all the winning outcomes. If this vector includes red, <a class="reference internal" href="#SevenReds.redCount" title="SevenReds.redCount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redCount</span></code></a>
+is decremented. Otherwise, <a class="reference internal" href="#SevenReds.redCount" title="SevenReds.redCount"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redCount</span></code></a> is reset to <code class="docutils literal notranslate"><span class="pre">7</span></code>.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="player-rework">
+<h2>Player Rework<a class="headerlink" href="#player-rework" title="Permalink to this headline">¶</a></h2>
+<p>We’ll need to revise the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class to add the following method.
+The superclass version doesn’t do anything with this information.
+Some subclasses, however, will process this.</p>
+<dl class="method">
+<dt id="Player.winners">
+<code class="sig-prename descclassname">Player.</code><code class="sig-name descname">winners</code><span class="sig-paren">(</span><em class="sig-param">self, outcomes: Set[Outcome]</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#Player.winners" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outcomes</strong> (Set of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances) – The set of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances that are part of the
+current win.</p>
+</dd>
+</dl>
+<p>The game will notify a player of each spin using this method.
+This will be invoked even if the player places no bets.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="game-rework">
+<h2>Game Rework<a class="headerlink" href="#game-rework" title="Permalink to this headline">¶</a></h2>
+<p>We’ll need to revise the :class: <cite>Game</cite> class to extend the cycle method.
+This method must provide the winning bin’s <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> set.</p>
+</div>
+<div class="section" id="table-rework">
+<h2>Table Rework<a class="headerlink" href="#table-rework" title="Permalink to this headline">¶</a></h2>
+<p>We’ll need to revise the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class to remove any minimum
+bet rule. If there are no bets, the game should still proceed.</p>
+</div>
+<div class="section" id="sevenreds-player-deliverables">
+<h2>SevenReds Player Deliverables<a class="headerlink" href="#sevenreds-player-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are six deliverables from this exercise. The new classes will
+require complete Python docstrings.</p>
+<ul class="simple">
+<li><p>A revision to the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class to add the <a class="reference internal" href="#Player.winners" title="Player.winners"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Player.winners()</span></code></a>  method.
+The superclass version doesn’t do anything with this information.
+Some subclasses, however, will process this.</p></li>
+<li><p>A revision to the <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> unit tests.</p></li>
+<li><p>A revision to the :class: <cite>Game</cite> class. This will call the <code class="xref py py-meth docutils literal notranslate"><span class="pre">winners()</span></code>
+with the winning <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instance before paying off the bets.</p></li>
+<li><p>A revision to the <a class="reference internal" href="roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> class. This will allow
+a table with zero bets to be considered valid for the purposes
+of letting the game continue.</p></li>
+<li><p>The <a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a> subclass of <a class="reference internal" href="player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> class.</p></li>
+<li><p>A unit test of the <a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a> class. This test should
+synthesize a fixed list of <a class="reference internal" href="outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances
+and the call a <a class="reference internal" href="#SevenReds" title="SevenReds"><code class="xref py py-class docutils literal notranslate"><span class="pre">SevenReds</span></code></a> instance with various
+sequences of reds and blacks. One test cases can assure that no bet
+is placed until 7 reds have been seen. Another test case can assure
+that the bets double (following the Martingale betting strategy) on
+each loss.</p></li>
+<li><p>A main application function that creates the necessary objects, runs the
+<a class="reference internal" href="control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a>’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">gather()</span></code> method, and writes
+the available outputs to <code class="xref py py-obj docutils literal notranslate"><span class="pre">sys.stdout</span></code></p></li>
+</ul>
+<p>For this initial demonstration program, it should simply
+print the list of maxima, and the list of session lengths. This raw
+data can be redirected to a file, loaded into a spreadsheet and analyzed.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>We now have a few players to compare. It’s time to look at some basic statistics
+to compare the performance of the various betting strategies. In the next
+section we’ll look at some simple statistical processing techniques.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">SevenReds Player Class</a><ul>
+<li><a class="reference internal" href="#sevenreds-player-analysis">SevenReds Player Analysis</a><ul>
+<li><a class="reference internal" href="#game-changer">Game Changer</a></li>
+<li><a class="reference internal" href="#table-changes">Table Changes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#soapbox-on-composition">Soapbox on Composition</a></li>
+<li><a class="reference internal" href="#sevenreds-design">SevenReds Design</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#player-rework">Player Rework</a></li>
+<li><a class="reference internal" href="#game-rework">Game Rework</a></li>
+<li><a class="reference internal" href="#table-rework">Table Rework</a></li>
+<li><a class="reference internal" href="#sevenreds-player-deliverables">SevenReds Player Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="control.html" title="previous chapter">Overall Simulation Control</a></li>
+      <li>Next: <a href="statistics.html" title="next chapter">Statistical Measures</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

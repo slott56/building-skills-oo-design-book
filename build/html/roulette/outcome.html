@@ -1,0 +1,704 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Outcome Class &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Bin Class" href="bin.html" />
+    <link rel="prev" title="Roulette Solution Overview" href="solution.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="outcome-class">
+<span id="roul-outcome"></span><h1>Outcome Class<a class="headerlink" href="#outcome-class" title="Permalink to this headline">¶</a></h1>
+<p>In <a class="reference internal" href="#outcome-analysis">Outcome Analysis</a> we’ll look at the responsibilities and collaborators
+of Outcome objects.</p>
+<p>In <a class="reference internal" href="#design-decision-object-identity">Design Decision – Object Identity</a> we’ll look at how we can implement
+the notion of object identity and object equality. This is important because
+we will be matching Outcome objects based on bets and spinning the Roulette
+wheel.</p>
+<p>We’ll look forward to some other use cases in <a class="reference internal" href="#looking-forward">Looking Forward</a>. Specifically,
+we know that players, games, and tables will all share references to
+single outcome objects. How do we do this properly?</p>
+<p>In <a class="reference internal" href="#outcome-design-complex">Outcome Design – Complex</a> we’ll detail the design for this class.
+In <a class="reference internal" href="#outcome-design-simple">Outcome Design – Simple</a> we’ll detail a simpler design using
+<code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> definitions from the standard library.</p>
+<p>In <a class="reference internal" href="#outcome-deliverables">Outcome Deliverables</a> we’ll provide a list of classes and tests to be built.</p>
+<p>We’ll look at a Python programming topic in <a class="reference internal" href="#message-formatting">Message Formatting</a>. This
+is a kind of appendix for beginning programmers.</p>
+<div class="section" id="outcome-analysis">
+<h2>Outcome Analysis<a class="headerlink" href="#outcome-analysis" title="Permalink to this headline">¶</a></h2>
+<p>There will be several hundred instances of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects on a given
+Roulette table. The bins on the wheel, similarly, collect various <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances
+together. The minimum set of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances we will
+need are the 38 numbers, Red, and Black. The other instances will add details
+to our simulation.</p>
+<p>In Roulette, the amount won is a simple multiplication of the amount bet
+and the odds. In other games, however, there may be a more complex
+calculation because the house keeps 5% of the winnings, called the “rake”.
+While it is not part of Roulette, it is good to have our <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+class designed to cope with these more complex payout rules.</p>
+<p>Also, we know that other casino games, like Craps, are stateful. An <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+may change the game state. We can foresee reworking this class to add in
+the necessary features to change the state of the game.</p>
+<p>While we are also aware that some odds are not stated as <img class="math" src="../_images/math/a6f34524f53778de3e572d855fa672f5064e7a9d.png" alt="x:1"/>,
+we won’t include these other kinds of odds in this initial design.
+Since all Roulette odds are <img class="math" src="../_images/math/a6f34524f53778de3e572d855fa672f5064e7a9d.png" alt="x:1"/>, we’ll simply assume that
+the denominator is always 1. We can foresee reworking this class to
+handle more complex odds, but we don’t need to handle the other cases yet.</p>
+<p>The fundamental consideration here is comparing two instances
+of a <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>. One will be part of a <a class="reference internal" href="bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a>,
+the other instance will be part of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a>.  We need
+to know if the bet’s <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> matches the wheel’s <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.</p>
+<p>How does all object comparison work in Python?</p>
+<p>Hint: The default rules aren’t helpful.</p>
+<p>The rules reveal the foundations of object state and identity. While
+this class is seemingly insignificantly trivial, it exposes central
+Python concepts.</p>
+</div>
+<div class="section" id="design-decision-object-identity">
+<span id="roul-outcome-identity"></span><h2>Design Decision – Object Identity<a class="headerlink" href="#design-decision-object-identity" title="Permalink to this headline">¶</a></h2>
+<p>Our design must match <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects.  We’ll be testing objects
+for equality.</p>
+<p>The player will be
+placing bets that contain <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances; the table will be
+holding bets.  The wheel will select the winning <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances. We need a
+simple test to see if two objects of the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class are the same.</p>
+<p>Was the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> for a bet equal to the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+contained in a spin of the wheel?</p>
+<p>It turns out that this comparison between objects has some subtlety to it.</p>
+<p>Here’s the naïve approach to class definition that doesn’t
+include any provision for equality tests.</p>
+<p class="rubric">Naïve Class Definition</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Outcome</span><span class="p">:</span>
+<span class="gp">... </span>   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">odds</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="gp">... </span>       <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="gp">... </span>       <span class="bp">self</span><span class="o">.</span><span class="n">odds</span> <span class="o">=</span> <span class="n">odds</span>
+</pre></div>
+</div>
+<p>This seems elegant enough. Sadly, it doesn’t work out when we
+need to make equality tests.</p>
+<p>In Python, if we do nothing special, the default
+special method, <code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code>, will simply compare
+the internal object id values.  These object id values are unique to each distinct object,
+irrespective of the attribute values.</p>
+<p>This default behavior of objects is shown by the following example:</p>
+<p class="rubric">Equality Test Failure</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Any Craps&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc2</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Any Craps&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span> <span class="o">==</span> <span class="n">oc2</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">id</span><span class="p">(</span><span class="n">oc1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">id</span><span class="p">(</span><span class="n">oc2</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">oc1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="n">oc2</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span> <span class="ow">is</span> <span class="n">oc2</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>This example shows that  we can have two objects that appear equal, but don’t compare
+as equal. While we can see they have the same attribute values,
+The <code class="docutils literal notranslate"><span class="pre">is</span></code> test shows they are distinct objects.
+This makes them not equal according to the default methods inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>.
+However, we would like to have two of these objects test as equal.</p>
+<p>Actually, we want more than simple equality. We need to have them behave identically
+when used in sets and dictionaries.</p>
+<div class="section" id="more-than-equal">
+<h3>More than equal<a class="headerlink" href="#more-than-equal" title="Permalink to this headline">¶</a></h3>
+<p>We’ll be creating collections of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects, and we may need to create
+sets or maps where hash codes are used in addition to the simple equality tests.</p>
+<p>Hash Codes?</p>
+<p>Every object has a hash code.  The hash code is simply an integer.
+It is a summary of the bits that make up the object.
+Python computes hash codes and uses these as a quick test for set membership and dictionary keys.</p>
+<p>If two hash codes don’t match, the objects can’t possibly be equal.
+Further comparisons aren’t necessary. If two hash codes do match,
+there’s a possibility the two objects are equal.</p>
+<p>The rare case of equal hash values for unequal objects is called a “hash collision.”
+It’s a consequence of digesting large and complex objects into small
+numeric values.</p>
+<p>As we look forward, the Python <code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code> and
+<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code> depend on a <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> method and an
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code> method of each object in the collection.</p>
+<p class="rubric">Hash Code Failure</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">oc1</span><span class="p">)</span>
+<span class="go">270386794</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">oc2</span><span class="p">)</span>
+<span class="go">270392959</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Exact ID values will vary.</p>
+</div>
+<p>This shows that two objects that look the same to us can have distinct hash codes.
+Clearly, this is unacceptable, since we want to be able to create a set of
+<a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects without having things that look like repeats.</p>
+</div>
+<div class="section" id="layers-of-meaning">
+<h3>Layers of Meaning<a class="headerlink" href="#layers-of-meaning" title="Permalink to this headline">¶</a></h3>
+<p>The lesson here is there are three distinct layers of meaning for comparing objects
+to see if they are “equal”. Here are the layers:</p>
+<ul>
+<li><p>Objects have the same hash code.  We can call this “hash equality”.</p>
+<p>We need the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> method for several objects that represent the same
+<a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> to have the same hash code. When we put an object into a
+set or a dictionary, Python uses the <code class="xref py py-func docutils literal notranslate"><span class="pre">hash()</span></code> function, implemented
+by the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> method.</p>
+<p>Sometimes the hash codes are equal, but the object attributes aren’t actually
+equal. This is called a hash collision, and it’s rare but not
+unexpected.</p>
+<p>If we don’t implement <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code>, each instance is considered distinct
+making equality tests and set membership awkwardly wrong.</p>
+</li>
+<li><p>Objects compare as equal.  We can call this “attribute equality”.</p>
+<p>This means that the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code> method returns <code class="docutils literal notranslate"><span class="pre">True</span></code>.
+When we use the <strong class="command">==</strong> operator,
+this is evaluated by using the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code> method.
+This must be overridden by a class to implement attribute equality.</p>
+<p>If we don’t implement this, the default implementation of this method isn’t too useful
+for our <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects.</p>
+</li>
+<li><p>Variables are two references to the same underlying object.  We can call this “identity”.</p>
+<p>We can test that two objects are the same by using the <strong class="command">is</strong> comparison
+operator. This uses the internal Python identifier for each
+object. The identifier is revealed by the <code class="xref py py-func docutils literal notranslate"><span class="pre">id()</span></code> function.</p>
+<p>When we use the <strong class="command">is</strong> comparison, we’re asserting that the two variables are
+references to the same underlying object. This is most often used when comparing
+an object against the <code class="docutils literal notranslate"><span class="pre">None</span></code> object. In that exceptional case,
+we often use <code class="code docutils literal notranslate"><span class="pre">x</span> <span class="pre">is</span> <span class="pre">None</span></code>.</p>
+</li>
+</ul>
+<p>How can we get the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code> implemented properly?
+We have several choices. We’ll start by looking at the <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.NamedTuple</span></code> class.</p>
+<div class="section" id="named-tuples">
+<h4>Named Tuples<a class="headerlink" href="#named-tuples" title="Permalink to this headline">¶</a></h4>
+<p>The naïve class definition shown above didn’t work out well. A significant improvement
+is to use the built-in <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code> class. This can bind put a name and a
+payoff amount together.
+Look at the following example; this shows behavior we would like to see:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Any Craps&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc2</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Any Craps&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span> <span class="o">==</span> <span class="n">oc2</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">id</span><span class="p">(</span><span class="n">oc1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">id</span><span class="p">(</span><span class="n">oc2</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">oc1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="n">oc2</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span> <span class="ow">is</span> <span class="n">oc2</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>This is the behavior we want. Two distinct instances of an outcome compare
+as equal when all of their individual attribute values are equal.</p>
+<p>We can leverage the <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.NamedTuple</span></code> to provide this equality
+test for our unique classes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span>
+
+<span class="k">class</span> <span class="nc">Outcome</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">odds</span><span class="p">:</span> <span class="nb">int</span>
+</pre></div>
+</div>
+<p>This definition provides us with a minimal definition of an outcome with
+all of the right behaviors.</p>
+<p>The type hints in this class definition allow us to use <strong>mypy</strong> to confirm
+our design is likely to work. This is an important part of static analysis
+to be sure that the code is likely to work reliably and consistently.</p>
+<p>This isn’t the only available solution to building <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code>
+methods. We can also use a <code class="xref py py-class docutils literal notranslate"><span class="pre">dataclasses.dataclass</span></code>.</p>
+</div>
+<div class="section" id="frozen-dataclasses">
+<h4>Frozen Dataclasses<a class="headerlink" href="#frozen-dataclasses" title="Permalink to this headline">¶</a></h4>
+<p>We can leverage the <code class="xref py py-class docutils literal notranslate"><span class="pre">dataclasses.dataclass</span></code> to provide an equality
+test that’s similar to the features of a <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.NamedTuple</span></code>.
+This gives us a useful equality test for our unique classes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Outcome_d</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">odds</span><span class="p">:</span> <span class="nb">int</span>
+</pre></div>
+</div>
+<p>This definition provides us with a minimal definition of an outcome with
+all of the right behaviors.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Any Craps&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc2</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Any Craps&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span> <span class="o">==</span> <span class="n">oc2</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">id</span><span class="p">(</span><span class="n">oc1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">id</span><span class="p">(</span><span class="n">oc2</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">oc1</span><span class="p">)</span> <span class="o">==</span> <span class="nb">hash</span><span class="p">(</span><span class="n">oc2</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oc1</span>
+<span class="go">Outcome(name=&#39;Any Craps&#39;, odds=8)</span>
+</pre></div>
+</div>
+<p>For the purposes we have in mind, both a <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.NamedTuple</span></code> and a
+frozen <code class="xref py py-class docutils literal notranslate"><span class="pre">dataclasses.dataclass</span></code> have similar behaviors. There
+are differences, of course, but they don’t impact anything we’re going to
+do.</p>
+<p>We’ll use the dataclasses in a number of later exercises. For
+that reason, we’ll start with a frozen dataclass as a way to
+define the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class with useful equality comparisons.</p>
+</div>
+</div>
+<div class="section" id="special-method-implementation">
+<h3>Special Method Implementation<a class="headerlink" href="#special-method-implementation" title="Permalink to this headline">¶</a></h3>
+<p>Instead of using the available standard library
+class definitions, we can implement a few special methods that will
+provide useful equality tests. This is more complex than using
+one of the built-in library classes, but can be helpful for understanding
+how Python works.</p>
+<p>We note that each instance of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> has a distinct <code class="xref py py-attr docutils literal notranslate"><span class="pre">Outcome.name</span></code> value,
+it seems simple enough to compare names.  This is one sense of “equal” that
+seems to be appropriate.</p>
+<p>We can define the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">__ne__()</span></code> special methods to provide
+useful equality tests:</p>
+<ul class="simple">
+<li><p>When comparing with a string value, compare the <code class="xref py py-attr docutils literal notranslate"><span class="pre">self.name</span></code> attribute.</p></li>
+<li><p>When comparing with an <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance, compare <code class="docutils literal notranslate"><span class="pre">self.name</span></code> and <code class="docutils literal notranslate"><span class="pre">other.name</span></code>.</p></li>
+</ul>
+<p>Similarly, we can compute the value of the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> method to use only the string name,
+and not the odds. This seems elegantly simple to return the hash of the string name
+rather than compute a hash.</p>
+<p>The definition for <code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code> in section 3.3.1 of the <em>Language Reference Manual</em>
+tells us to
+do the calculation using a modulus based on <code class="samp docutils literal notranslate"><span class="pre">sys.hash_info.width</span></code>.
+This is the number of bits, the actual value we want to use is
+We’d use <code class="code docutils literal notranslate"><span class="pre">sys.hash_info.modulus</span></code>.</p>
+</div>
+</div>
+<div class="section" id="additional-outcome-design-thoughts">
+<span id="roul-outcome-factory"></span><h2>Additional Outcome Design Thoughts<a class="headerlink" href="#additional-outcome-design-thoughts" title="Permalink to this headline">¶</a></h2>
+<p>We’ll be looking at <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects in several contexts.</p>
+<ul class="simple">
+<li><p>We’ll have them in bins of a wheel as winning outcomes from each spin of the wheel.</p></li>
+<li><p>We’ll have them in bets that have been placed on the table.</p></li>
+<li><p>The player will have a set of outcomes they can bet on.</p></li>
+</ul>
+<p>All these uses of  <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects forces us to consider an interesting
+question:</p>
+<blockquote>
+<div><p><strong>How do we implement Don’t Repeat Yourself (DRY) when creating</strong> <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> <strong>objects?</strong></p>
+</div></blockquote>
+<p>If a player always bets on black,
+we don’t want to include the odds when the player names the “black” <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.
+Repeating the odds violates the DRY principle.</p>
+<p>What are some alternatives?</p>
+<ul class="simple">
+<li><p><strong>Global Outcome Objects</strong>.  We can declare global variables for the various outcomes
+and use those global objects as needed.
+Generally, globals <em>variables</em> are often undesirable because
+changes to those variables can have unexpected consequences in a large
+application.
+Global <em>constants</em> are no problem at all.  A pool of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+instances are proper constant values used to create bins and bets.
+There would be a lot of them, and they would all be assigned to
+distinct variables.
+Because of the way Python module imports work, we can define all
+of these in a single module and share the pool throughout the
+application.</p></li>
+<li><p><strong>Outcome Factory</strong>.  We can create an object which
+is a <strong>Factory</strong> for individual <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects.
+When some part of the application – for example, the player –
+needs an <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> object,
+the factory provides the object. The <strong>Factory</strong> can create
+use the unique name to locate the complete <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.
+This allows a player to request the “Black” <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.
+If we identify <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances by their names, we can
+avoid repeating the payout odds.
+When we look at the Roulette Wheel, this seems to be the perfect factory
+for <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances.  A player can request the domain
+of all <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances from the wheel.</p></li>
+<li><p><strong>Singleton Outcome Class</strong>.  A <strong>Singleton</strong> class creates and maintains a single instance
+of itself.  This involves some unpleasant meta-programming to change
+the way object creation works. It’s not particularly difficult, but
+it seems needless when the other alternatives appear to be simpler.
+This has the profound disadvantage that each distinct outcome would need to be
+a distinct subclass of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>.  This is an unappealing level of complexity.
+Further, it doesn’t solve the DRY problem of repeating the details of each Outcome.</p></li>
+</ul>
+<p>A <strong>Factory</strong> seems like a good way to proceed. It can maintain a collection,
+and provide values from that collection. We can use class strings to identify
+<a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects. We don’t have to repeat the odds.</p>
+<p>We’ll look forward to this in later chapters. For now, we’ll
+start with the basic class.</p>
+<p>In the next section we’ll look at a complete and detailed definition of
+the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class.</p>
+</div>
+<div class="section" id="outcome-design-complex">
+<h2>Outcome Design – Complex<a class="headerlink" href="#outcome-design-complex" title="Permalink to this headline">¶</a></h2>
+<p>This is the design for an <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class separate from
+any dataclass definition. This is rather complex.
+The simpler approach is described below under <a class="reference internal" href="#outcome-design-simple">Outcome Design – Simple</a>.</p>
+<dl class="class">
+<dt id="Outcome">
+<em class="property">class </em><code class="sig-name descname">Outcome</code><a class="headerlink" href="#Outcome" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> contains a single outcome on which a bet can be
+placed.</p>
+<p>In Roulette, each spin of the wheel has a number of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects
+with bets that will be paid off.
+For example, the “1” bin has the following winning <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances:
+“1”, “Red”, “Odd”, “Low”,
+“Column 1”, “Dozen 1-12”, “Split 1-2”,
+“Split 1-4”, “Street 1-2-3”, “Corner 1-2-4-5”,
+“Five Bet”, “Line 1-2-3-4-5-6”, “00-0-1-2-3”,
+“Dozen 1”, “Low” and “Column 1”.</p>
+<p>All of thee above-named bets will pay off if the wheel spins a “1”. This makes
+a Wheel and a Bin fairly complex containers of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects.</p>
+</dd></dl>
+
+<div class="section" id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h3>
+<dl class="attribute">
+<dt>
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">name</code></dt>
+<dd><p>Holds the name of the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>. Examples include <code class="docutils literal notranslate"><span class="pre">&quot;1&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;Red&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="Outcome.odds">
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">odds</code><a class="headerlink" href="#Outcome.odds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Holds the payout odds for this <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>. Most odds are
+stated as 1:1 or 17:1, we only keep the numerator (17) and assume
+the denominator is 1.</p>
+</dd></dl>
+
+<p>We can use <code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code> to as the basis for computing hash codes  and doing equality tests.</p>
+</div>
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name: str</em>, <em class="sig-param">odds: int</em><span class="sig-paren">)</span> &#x2192; None</dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – The name of this outcome</p></li>
+<li><p><strong>odds</strong> (<em>int</em>) – The payout odds of this outcome.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Sets the instance name and odds from the parameter name and odds.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<p>For now, we’ll assume that we’re going to have global instances of each
+<a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>. Later we’ll introduce some kind of <strong>Factory</strong>.</p>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">winAmount</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">amount: float</em><span class="sig-paren">)</span> &#x2192; float</dt>
+<dd><p>Multiply this <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>’s
+odds by the given amount. The product is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>amount</strong> (<em>float</em>) – amount being bet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Outcome.__eq__">
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#Outcome.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare the <code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code> attributes of <code class="xref py py-obj docutils literal notranslate"><span class="pre">self</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">other</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#Outcome" title="Outcome"><em>Outcome</em></a>) – Another <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> to compare against.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if this name matches the other name.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Outcome.__ne__">
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__ne__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#Outcome.__ne__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare the <code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code> attributes of <code class="xref py py-obj docutils literal notranslate"><span class="pre">self</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">other</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#Outcome" title="Outcome"><em>Outcome</em></a>) – Another <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> to compare against.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if this name does not match the other name.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Outcome.__hash__">
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__hash__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#Outcome.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hash value for this outcome.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The hash value of the name, <code class="samp docutils literal notranslate"><span class="pre">hash(self.name)</span></code>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+<p>A hash calculation must include all of the
+attributes of an object that are essential to it’s distinct identity.</p>
+<p>In this case, we can return <code class="code docutils literal notranslate"><span class="pre">hash(self.name)</span></code> because the odds
+aren’t really part of what makes an outcome distinct. Each
+outcome is an abstraction and a string name is all that identifies them.</p>
+<p>The definition for <a class="reference internal" href="#Outcome.__hash__" title="Outcome.__hash__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__hash__()</span></code></a> in section 3.3.1 of the <em>Language Reference Manual</em>
+tells us to
+do the calculation using a modulus based on <code class="samp docutils literal notranslate"><span class="pre">sys.hash_info.width</span></code>.
+That value is the number of bits, the actual value we want to use is
+<code class="code docutils literal notranslate"><span class="pre">sys.hash_info.modulus</span></code>, which is based on the width.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__str__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str</dt>
+<dd><p>Easy-to-read representation of this outcome.
+See <a class="reference internal" href="#tip-formatting"><span class="std std-ref">Message Formatting</span></a>.</p>
+<p>This easy-to-read String output method is essential. This should
+return a <code class="xref py py-class docutils literal notranslate"><span class="pre">String</span></code> representation of the name and the odds. A
+form that looks like <code class="docutils literal notranslate"><span class="pre">1-2</span> <span class="pre">Split</span> <span class="pre">(17:1)</span></code> works nicely.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>String of the form <code class="samp docutils literal notranslate"><em><span class="pre">name</span></em> <span class="pre">(</span><em><span class="pre">odds</span></em><span class="pre">:1)</span></code>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Outcome.__repr__">
+<code class="sig-prename descclassname">Outcome.</code><code class="sig-name descname">__repr__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#Outcome.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detailed representation of this outcome.
+See <a class="reference internal" href="#tip-formatting"><span class="std std-ref">Message Formatting</span></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>String of the form <code class="samp docutils literal notranslate"><span class="pre">Outcome(name=</span><em><span class="pre">name</span></em><span class="pre">,</span> <span class="pre">odds=</span><em><span class="pre">odds</span></em><span class="pre">)</span></code>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="outcome-design-simple">
+<h2>Outcome Design – Simple<a class="headerlink" href="#outcome-design-simple" title="Permalink to this headline">¶</a></h2>
+<p>A simpler variation on the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class can be
+based on <code class="docutils literal notranslate"><span class="pre">&#64;dataclass(frozen=True)</span></code>.</p>
+<p>See above, in the  <a class="reference internal" href="#fields">fields</a> section, the two fields required.</p>
+<p>The default methods created by the <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator should work perfectly.</p>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">__str__()</span></code> method will have to be written based on the description above,
+under <a class="reference internal" href="#methods">methods</a>.</p>
+<p>This should pass all of the unit tests described in the <a class="reference internal" href="#outcome-deliverables">Outcome Deliverables</a> section.</p>
+</div>
+<div class="section" id="example-unit-test-case">
+<h2>Example Unit Test Case<a class="headerlink" href="#example-unit-test-case" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class doesn’t have too many features.
+The unit tests should reflect the core simplicity.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_outcome</span><span class="p">():</span>
+    <span class="n">o1</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Red&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">o2</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Red&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">o3</span> <span class="o">=</span> <span class="n">Outcome</span><span class="p">(</span><span class="s2">&quot;Black&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">o1</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Red 1:1&quot;</span>
+    <span class="k">assert</span> <span class="nb">repr</span><span class="p">(</span><span class="n">o2</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Outcome(name=&#39;Red&#39;, odds=1)&quot;</span>
+    <span class="k">assert</span> <span class="n">o1</span> <span class="o">==</span> <span class="n">o2</span>
+    <span class="k">assert</span> <span class="n">o1</span><span class="o">.</span><span class="n">odds</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">o1</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Red&quot;</span>
+    <span class="k">assert</span> <span class="n">o1</span> <span class="o">!=</span> <span class="n">o3</span>
+    <span class="k">assert</span> <span class="n">o2</span> <span class="o">!=</span> <span class="n">o3</span>
+</pre></div>
+</div>
+<p>This seems to cover almost everything imaginable with respect to the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>
+class.</p>
+</div>
+<div class="section" id="outcome-deliverables">
+<h2>Outcome Deliverables<a class="headerlink" href="#outcome-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are two deliverables for this exercise. Both will have Python docstrings.</p>
+<ul>
+<li><p>The <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class. This can be put into a <code class="file docutils literal notranslate"><span class="pre">roulette.py</span></code> file.
+A single file can include all of the class definitions.</p></li>
+<li><p>Unit tests of the <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> class. This can be doctest
+strings inside the class itself, or it can be a separate
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">test_outcome.py</span></code> module.</p>
+<p>The unit test should create a three instances of <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a>,
+two of which have the same name. It should use a number of
+individual tests to establish that two <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> with the
+same name will test true for equality, have the same hash code, and
+establish that the <code class="xref py py-meth docutils literal notranslate"><span class="pre">winAmount()</span></code> method works correctly.</p>
+<p>We’ve provided an example as part of this section, to clarify
+what the test case should include.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="message-formatting">
+<span id="tip-formatting"></span><h2>Message Formatting<a class="headerlink" href="#message-formatting" title="Permalink to this headline">¶</a></h2>
+<p>For the very-new-to-Python, there are few variations on creating a
+formatted message string. The <code class="xref py py-func docutils literal notranslate"><span class="pre">str()</span></code> function makes use of a class
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__str__()</span></code> method to provide the class-unique string.
+The <code class="xref py py-func docutils literal notranslate"><span class="pre">repr()</span></code> function makes use of the class <code class="xref py py-meth docutils literal notranslate"><span class="pre">__repr__()</span></code> method
+to provide the class unit representation.</p>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">str()</span></code> function is intended to produce easy-to-read strings.
+The <code class="xref py py-func docutils literal notranslate"><span class="pre">repr()</span></code> function is intended to provide detailed strings,
+often in Python syntax.</p>
+<p>Generally, we simply use something like this.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{self.name:s} ({self.odds:d}:1)&quot;</span>
+</pre></div>
+</div>
+<p>The format f-string uses <code class="docutils literal notranslate"><span class="pre">:s</span></code> and <code class="docutils literal notranslate"><span class="pre">:d</span></code> as detailed specifications
+for the values to interpolate into the string. There’s a lot
+of flexibility in how numbers are formatted.</p>
+<p>There’s another variation that can be handy.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+    <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;{self.__class__.__name__:s}(name={self.name!r}, odds={self.odds!r})&quot;</span>
+</pre></div>
+</div>
+<p>This exposes the class name as well as the attribute values.</p>
+<p>We’ve used the <code class="docutils literal notranslate"><span class="pre">!r</span></code> specification to request the internal representation
+for each attribute values. For a string, it means it will be explicitly
+quoted.</p>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>In the next chapter, we’ll combine <a class="reference internal" href="#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances into <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a>
+collections. These <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> objects will become part of the Roulette
+<a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> collection.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Outcome Class</a><ul>
+<li><a class="reference internal" href="#outcome-analysis">Outcome Analysis</a></li>
+<li><a class="reference internal" href="#design-decision-object-identity">Design Decision – Object Identity</a><ul>
+<li><a class="reference internal" href="#more-than-equal">More than equal</a></li>
+<li><a class="reference internal" href="#layers-of-meaning">Layers of Meaning</a><ul>
+<li><a class="reference internal" href="#named-tuples">Named Tuples</a></li>
+<li><a class="reference internal" href="#frozen-dataclasses">Frozen Dataclasses</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#special-method-implementation">Special Method Implementation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additional-outcome-design-thoughts">Additional Outcome Design Thoughts</a></li>
+<li><a class="reference internal" href="#outcome-design-complex">Outcome Design – Complex</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#outcome-design-simple">Outcome Design – Simple</a></li>
+<li><a class="reference internal" href="#example-unit-test-case">Example Unit Test Case</a></li>
+<li><a class="reference internal" href="#outcome-deliverables">Outcome Deliverables</a></li>
+<li><a class="reference internal" href="#message-formatting">Message Formatting</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="solution.html" title="previous chapter">Roulette Solution Overview</a></li>
+      <li>Next: <a href="bin.html" title="next chapter">Bin Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

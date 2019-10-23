@@ -1,0 +1,354 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Command-Line Interface (CLI) &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reword and Management Hand-Wringing – A Post-Script" href="management_handwringing.html" />
+    <link rel="prev" title="Quality Assurance" href="test_automation.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="command-line-interface-cli">
+<h1>Command-Line Interface (CLI)<a class="headerlink" href="#command-line-interface-cli" title="Permalink to this headline">¶</a></h1>
+<p>In <a class="reference internal" href="../roulette/control.html#roul-control"><span class="std std-ref">Overall Simulation Control</span></a> we talked about the overall <code class="xref py py-class docutils literal notranslate"><span class="pre">Simulation</span></code> class –
+the component that ran the entire application, creating objects, running
+the simulation, gathering the data, writing a log, and saving files with
+the interesting, useful results.</p>
+<p>We suggested a class definition, but never followed through to the OS-level
+interface for the application as a whole. There are several ways an application
+like this can be packaged, we’ll look at how to make a final command-line
+interface (CLI) for this simulation application.</p>
+<p>In <a class="reference internal" href="#cli-analysis">CLI Analysis</a>, we’ll look at the general problem of the CLI, to
+decide what it should do and how it supports the rest of the application.</p>
+<p>There will be a few design decisions. In <a class="reference internal" href="#design-decision-cli-library">Design Decision – CLI Library</a> we’ll
+address the choice of libraries. In <a class="reference internal" href="#design-decision-class-vs-function">Design Decision – Class vs. Function</a>
+we’ll decide if this should be a kind of :strong:<strong>Singleton</strong> class or
+a simpler collection of functions.</p>
+<p>In <a class="reference internal" href="#cli-design">CLI Design</a> we’ll describe the final design of the CLI. In <a class="reference internal" href="#cli-deliverables">CLI Deliverables</a>
+we’ll enumerate the components to be built and tested.</p>
+<div class="section" id="cli-analysis">
+<h2>CLI Analysis<a class="headerlink" href="#cli-analysis" title="Permalink to this headline">¶</a></h2>
+<p>The CLI will be part of the overall user story described in <a class="reference internal" href="../starting/foundation.html#found"><span class="std std-ref">Foundations</span></a>.
+In <a class="reference internal" href="../starting/foundation.html#found-solution"><span class="std std-ref">Our Simulation Application</span></a> we described a hypothetical command for
+running the simulation:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3 -m casino.craps --Dplayer.name<span class="o">=</span><span class="s2">&quot;Player1326&quot;</span> &gt;details.log
+</pre></div>
+</div>
+<p>This shows a number of features that drive the design:</p>
+<ul class="simple">
+<li><p>The app runs from the OS terminal prompt.
+It uses POSIX command-line arguments. (It’s possible to use the
+Python CLI libraries to create Windows-like commands, also.)</p></li>
+<li><p>The app is a package, <code class="xref py py-mod docutils literal notranslate"><span class="pre">casino</span></code>, with a sub-package, <code class="xref py py-mod docutils literal notranslate"><span class="pre">craps</span></code>,
+that contains a <code class="xref py py-mod docutils literal notranslate"><span class="pre">main</span></code> function that does the real work.</p></li>
+<li><p>The detailed output was written to standard output. A shell redirect
+(<code class="docutils literal notranslate"><span class="pre">&gt;details.log</span></code>) was used to capture the output into a file for further
+analysis.</p></li>
+</ul>
+<p>This concept has some room for improvement, but it points to a number of
+detailed responsibilities we can use to drive the design.</p>
+<p>We can pull out three diffient kinds of responsibilities, shown below:</p>
+<ul class="simple">
+<li><p>Parse command line options and arguments. This is something we’ll
+delegate to a separate library. We have two choices and <a class="reference internal" href="#design-decision-cli-library">Design Decision – CLI Library</a>
+will address the library choice.</p></li>
+<li><p>Write to standard output and standard error. This is a built-in
+feature of the <code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code> function. In the long run, however, we
+need to move away from the simple use of <code class="xref py py-func docutils literal notranslate"><span class="pre">print()</span></code> and separate
+output into two parts: a log to summarize what work is being
+done, and the final output files in CSV format, created as
+part of the statistical summary of the <a class="reference internal" href="../roulette/control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class.</p></li>
+<li><p>Have a structure that permits easy access via the <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span></code> command.</p></li>
+</ul>
+</div>
+<div class="section" id="design-decision-cli-library">
+<h2>Design Decision – CLI Library<a class="headerlink" href="#design-decision-cli-library" title="Permalink to this headline">¶</a></h2>
+<p>There are several popular packages for building CLI’s.</p>
+<p><strong>Problem</strong>. Which CLI library should we use? Two of the popular
+packages are the <code class="xref py py-mod docutils literal notranslate"><span class="pre">argparse</span></code> package, which
+is part of the Python standard library, and the <code class="xref py py-mod docutils literal notranslate"><span class="pre">click</span></code> library,
+which must be installed separately.</p>
+<p><strong>Forces</strong>. Both packages solve the core problems
+of parsing command-line options.</p>
+<p>When we look at simplicity or convenience, the <code class="xref py py-mod docutils literal notranslate"><span class="pre">argparse</span></code> package
+is part of the Python standard library. This makes it very handy.</p>
+<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">click</span></code> library must be installed separately. It offers a number
+of handy features, and seems slightly easier to work with than <code class="xref py py-mod docutils literal notranslate"><span class="pre">argparse</span></code>.</p>
+<p>In particular, the <code class="xref py py-mod docutils literal notranslate"><span class="pre">click</span></code> library works as a collection of decorators,
+slightly reducing the overall complexity of the main application.</p>
+<p><strong>Solution</strong>.
+We’ll recommend using <code class="xref py py-mod docutils literal notranslate"><span class="pre">click</span></code>  to build CLI’s for command-line applications.</p>
+<p><strong>Consequences</strong>.
+We’ll need to install <code class="docutils literal notranslate"><span class="pre">click</span></code> and add it to the project’s <code class="file docutils literal notranslate"><span class="pre">requirements.txt</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">click</span>
+</pre></div>
+</div>
+<p>The core use case for <code class="xref py py-mod docutils literal notranslate"><span class="pre">click</span></code> looks a little bit like this example:</p>
+<p class="rubric">Example CLI module</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Mastering Object Oriented Design, 4ed.</span>
+
+<span class="sd">A demo of the CLI.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">click</span>
+
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;--player&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;Simple&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Player Class&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">player</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Player set to </span><span class="si">{player}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function here needs to build the instance of the <a class="reference internal" href="../roulette/control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a>
+with the proper game, players, and casino-specific table subclass.</p>
+<p>Because each game is quite different, it’s sensible to create three separate
+packages, one for each game.</p>
+</div>
+<div class="section" id="design-decision-class-vs-function">
+<h2>Design Decision – Class vs. Function<a class="headerlink" href="#design-decision-class-vs-function" title="Permalink to this headline">¶</a></h2>
+<p>In Python, the top level of an application doesn’t have to stick
+closely to object-oriented programming techniques. The top-level features
+are often better described by separate functions.</p>
+<p><strong>Problem</strong>.
+How do we implement the OS interface? A <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function, or a class
+that must be instantiated, or a class with a <code class="docutils literal notranslate"><span class="pre">&#64;staticmethod</span></code> that
+can be used to do the work?</p>
+<p><strong>Forces</strong>.
+There are a number of alternatives for structuring the top-level main program.</p>
+<ul>
+<li><p>A simple script of statements. This is very, very difficult to unit test.
+We discourage the use of flat script-like Python modules.</p></li>
+<li><p>A <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function. Often called <code class="docutils literal notranslate"><span class="pre">main()</span></code>. In order to be part of
+a top-level program, there must <strong>also</strong> be a script present in the module.
+This leads to a module with an overall layout like the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imports</span>
+<span class="k">class</span> <span class="nc">definitions</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">the</span> <span class="n">real</span> <span class="n">work</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span>
+</pre></div>
+</div>
+</li>
+<li><p>A class with that must be instantiated. This is nearly identical to the function
+example shown above. The following example shows this variation. It’s not clear
+that this is advantageous.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imports</span>
+<span class="k">class</span> <span class="nc">definitions</span>
+
+<span class="k">class</span> <span class="nc">Main</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">the</span> <span class="n">real</span> <span class="n">work</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">Main</span><span class="p">()</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span>
+</pre></div>
+</div>
+</li>
+<li><p>A class with a <code class="docutils literal notranslate"><span class="pre">&#64;staticmethod</span></code>. This paralles the Java concept of a static
+<code class="docutils literal notranslate"><span class="pre">main</span></code> function that’s required by the JVM. This would lead to a module
+with the following kind of organization.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imports</span>
+<span class="k">class</span> <span class="nc">definitions</span>
+
+<span class="k">class</span> <span class="nc">Main</span><span class="p">:</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+        <span class="n">the</span> <span class="n">real</span> <span class="n">work</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">Main</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>The two class-based alternatives don’t seem to offer material advantages.
+The script only creates a single instance of the class, or uses the
+class directly. Any class with only a single instance can be viewed
+as a <strong>Big Hammer</strong> solution.</p>
+<p><strong>Solution</strong>.
+The conventional approach in most Python code is a top-level function,
+often with a name like <code class="docutils literal notranslate"><span class="pre">main()</span></code>. We can apply the <code class="xref py py-mod docutils literal notranslate"><span class="pre">click</span></code> decorations
+to this function easily and use it to define the main application.</p>
+<p><strong>Consequences</strong>.
+We’ll need to create proper unit tests for the top-level <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function.
+This will require using the <code class="xref py py-mod docutils literal notranslate"><span class="pre">click</span></code> unit testing features to
+invoke the command with appropriate arguments.</p>
+</div>
+<div class="section" id="cli-design">
+<h2>CLI Design<a class="headerlink" href="#cli-design" title="Permalink to this headline">¶</a></h2>
+<p>We’ve (intentionally) provied little guidance on the structure of
+the modules and packages in this application. The following organization
+may require rework to restructure the classes into the four modules
+within the <code class="xref py py-mod docutils literal notranslate"><span class="pre">casino</span></code> package.</p>
+<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">casino</span></code> package is the top-level package for the entire
+suite of simulation components. The top-level package has no
+components, since its purposes is to act as a namespace for the
+various simulators. The package is implemented as a directory
+named <code class="file docutils literal notranslate"><span class="pre">casino</span></code> with an empty <code class="file docutils literal notranslate"><span class="pre">__init__.py</span></code> file.</p>
+<p>A <code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.common</span></code> module will have the abstract superclasses for the other modules.
+This module is implemented as the <code class="file docutils literal notranslate"><span class="pre">common.py</span></code> file in the <code class="file docutils literal notranslate"><span class="pre">casino</span></code> directory.
+The remaining modules are similarly a simple <code class="file docutils literal notranslate"><span class="pre">.py</span></code> file filled with class definitions,
+and a top-level <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> function.</p>
+<p>The <a class="reference internal" href="#module-casino.craps" title="casino.craps"><code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.craps</span></code></a> module with the complete definition for
+Craps. The module will import
+common definitions from the <code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.common</span></code> module.</p>
+<p>The <a class="reference internal" href="#module-casino.roulette" title="casino.roulette"><code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.roulette</span></code></a> module with the complete definition for
+Roulette. The module will import
+common definitions from the <code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.common</span></code> module.</p>
+<p>Similar to the above modules, a <a class="reference internal" href="#module-casino.blackjack" title="casino.blackjack"><code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.blackjack</span></code></a> module
+will have the complete Blackjack simulation.</p>
+<span class="target" id="module-casino.craps"></span><dl class="function">
+<dt id="casino.craps.casino.craps.main">
+<code class="sig-prename descclassname">casino.craps.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#casino.craps.casino.craps.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main function for the Craps simulation. This will have
+<code class="docutils literal notranslate"><span class="pre">&#64;click.command()</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;click.option</span></code> decorators to define
+the various options</p>
+</dd></dl>
+
+<span class="target" id="module-casino.roulette"></span><dl class="function">
+<dt id="casino.roulette.casino.roulette.main">
+<code class="sig-prename descclassname">casino.roulette.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#casino.roulette.casino.roulette.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main function for the Roulette simulation. This will have
+<code class="docutils literal notranslate"><span class="pre">&#64;click.command()</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;click.option</span></code> decorators to define
+the various options</p>
+</dd></dl>
+
+<span class="target" id="module-casino.blackjack"></span><dl class="function">
+<dt id="casino.blackjack.casino.blackjack.main">
+<code class="sig-prename descclassname">casino.blackjack.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#casino.blackjack.casino.blackjack.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>The main function for the Blackjack simulation. This will have
+<code class="docutils literal notranslate"><span class="pre">&#64;click.command()</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;click.option</span></code> decorators to define
+the various options</p>
+</dd></dl>
+
+</div>
+<div class="section" id="cli-deliverables">
+<h2>CLI Deliverables<a class="headerlink" href="#cli-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>The following components will be built:</p>
+<ul class="simple">
+<li><p>The top-level <code class="xref py py-mod docutils literal notranslate"><span class="pre">casino</span></code> module.</p></li>
+<li><p>The lower-level modules:</p>
+<ul>
+<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.common</span></code></p></li>
+<li><p><a class="reference internal" href="#module-casino.craps" title="casino.craps"><code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.craps</span></code></a></p></li>
+<li><p><a class="reference internal" href="#module-casino.roulette" title="casino.roulette"><code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.roulette</span></code></a></p></li>
+<li><p><a class="reference internal" href="#module-casino.blackjack" title="casino.blackjack"><code class="xref py py-mod docutils literal notranslate"><span class="pre">casino.blackjack</span></code></a></p></li>
+</ul>
+</li>
+<li><p>Any revisions to the unit tests required to reflect the new organization.</p></li>
+<li><p>Unit tests for the three <code class="xref py py-func docutils literal notranslate"><span class="pre">main()</span></code> functions.</p></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Command-Line Interface (CLI)</a><ul>
+<li><a class="reference internal" href="#cli-analysis">CLI Analysis</a></li>
+<li><a class="reference internal" href="#design-decision-cli-library">Design Decision – CLI Library</a></li>
+<li><a class="reference internal" href="#design-decision-class-vs-function">Design Decision – Class vs. Function</a></li>
+<li><a class="reference internal" href="#cli-design">CLI Design</a></li>
+<li><a class="reference internal" href="#cli-deliverables">CLI Deliverables</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="test_automation.html" title="previous chapter">Quality Assurance</a></li>
+      <li>Next: <a href="management_handwringing.html" title="next chapter">Reword and Management Hand-Wringing – A Post-Script</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,395 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Statistical Measures &#8212; Building Skills in Object-Oriented Design 4.1910 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Random Player Class" href="random.html" />
+    <link rel="prev" title="SevenReds Player Class" href="sevenreds.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="statistical-measures">
+<h1>Statistical Measures<a class="headerlink" href="#statistical-measures" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference internal" href="control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class collects two <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> instances
+with raw data.
+One list has the length of a session, the other list has the maximum stake
+during a session. We need to create some descriptive statistics to
+summarize these stakes and session lengths.</p>
+<p>This section presents two ordinary statistical algorithms: mean and
+standard deviation.  Python 3 introduces the <code class="xref py py-class docutils literal notranslate"><span class="pre">statistics</span></code> module,
+which simplifies some of the programming required for
+this chapter. We’ll present the details of how to compute these two statistics for those
+who are interested in programming fundamentals.</p>
+<p>In <a class="reference internal" href="#statistical-analysis">Statistical Analysis</a> we’ll address the overall goal of gathering
+and analyzing statistics.</p>
+<p>In <a class="reference internal" href="#some-foundations">Some Foundations</a> we’ll look at the <img class="math" src="../_images/math/6edc5c119344e25a06e6ac4cb56f2d5e2f09a2f1.png" alt="\Sigma"/> operator which
+is widely used for statistical calculation. We’ll see how to implement this
+in Python.</p>
+<p>In <a class="reference internal" href="#statistical-algorithms">Statistical Algorithms</a> we’ll look specifically at mean and standard deviation.</p>
+<p>Since we’re apply statistical calculation to a list of integer values, we’ll
+look at how we can extend the <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> in <a class="reference internal" href="#integerstatistics-design">IntegerStatistics Design</a>.</p>
+<p>We’ll enumerate the deliverables for this chapter in <a class="reference internal" href="#statistics-deliverables">Statistics Deliverables</a>.</p>
+<div class="sidebar">
+<p class="sidebar-title">On Statistics</p>
+<p>Our goal is to build a small
+set of descriptive statistics. We will average two metrics: the peak
+stake for a session and the duration of the session. Both of these
+values have some statistical problems. The peak stake, for instance,
+is already a summary number. We have to be cautious in summarizing
+summaries, since we have lost any sense of the frequency
+with which the peaks occurred. For example, a player may last 250
+cycles of play, with a peak stake of 130. We don’t know if that peak
+occurred once or 100 times out of that 250. Additionally, the length
+of the session has an upper bound on the number of cycles. This
+forces the distribution of values to be skewed away from normal.</p>
+</div>
+<div class="section" id="statistical-analysis">
+<h2>Statistical Analysis<a class="headerlink" href="#statistical-analysis" title="Permalink to this headline">¶</a></h2>
+<p>We will design a class with responsibility to
+retain and summarize a list of numbers and produce the average (also
+known as the mean) and standard deviation. The <a class="reference internal" href="control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> class
+can then use this this <a class="reference internal" href="#IntegerStatistics" title="IntegerStatistics"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntegerStatistics</span></code></a> class to get an average
+of the maximum stakes from the list of session-level measures. The <a class="reference internal" href="control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a>
+can also apply this <a class="reference internal" href="#IntegerStatistics" title="IntegerStatistics"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntegerStatistics</span></code></a> class to the list of session
+durations to see an average length of game play before going broke.</p>
+<p>We have three design approaches for encapsulating processing:</p>
+<ul class="simple">
+<li><p>We can extend an existing class, or</p></li>
+<li><p>We can wrap an existing class, creating a whole new kind of thing, or</p></li>
+<li><p>We can  delegate the statistical work to a separate function.
+This is how thing currently stand in Python. We have a build-in
+list class and a separate <code class="xref py py-mod docutils literal notranslate"><span class="pre">statistics</span></code> module.</p></li>
+</ul>
+<p>A good approach is to extend the built-in <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> class with statistical summary features.
+Given this new class, we can replace the original <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> objects of sample
+values with a <a class="reference internal" href="#IntegerStatistics" title="IntegerStatistics"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntegerStatistics</span></code></a> instance that both saves the values
+and computes descriptive statistics.</p>
+<p>This design allows us the freedom to switch <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>
+implementation classes without making any other changes.</p>
+<p>The detailed algorithms for mean and standard deviation are provided in <a class="reference internal" href="#roul-stats-algorithms"><span class="std std-ref">Statistical Algorithms</span></a>.</p>
+</div>
+<div class="section" id="some-foundations">
+<h2>Some Foundations<a class="headerlink" href="#some-foundations" title="Permalink to this headline">¶</a></h2>
+<p>For those programmers new to statistics, this section covers the Sigma
+operator, <img class="math" src="../_images/math/6edc5c119344e25a06e6ac4cb56f2d5e2f09a2f1.png" alt="\Sigma"/>.</p>
+<div class="math">
+<p><img src="../_images/math/26c7ca29ead44ff0f813f787afdf78f98675cd6b.png" alt="\displaystyle\sum_{i=0}^{n} f(i)"/></p>
+</div><p>The <img class="math" src="../_images/math/6edc5c119344e25a06e6ac4cb56f2d5e2f09a2f1.png" alt="\Sigma"/> operator has three parts to it. Below it is a bound variable, <em>i</em>,
+and the starting value for the range, written as <img class="math" src="../_images/math/f6d39b14f041ebc78e636a3b88b0915d12946c07.png" alt="i=0"/>. Above
+it is the ending value for the range, usually something like <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>.
+To the right is some function to execute for each value of the bound
+variable. In this case, a generic function, <img class="math" src="../_images/math/c73ecc2dd9e48a94801d258a2362cdf75e33a088.png" alt="f(i)"/> is shown.
+This is read as “sum <img class="math" src="../_images/math/c73ecc2dd9e48a94801d258a2362cdf75e33a088.png" alt="f(i)"/> for <img class="math" src="../_images/math/5aa339d4daf45a810dda332e3c80a0698e526e04.png" alt="i"/> in the range 0 to <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/>”.</p>
+<p>One common definition of <img class="math" src="../_images/math/6edc5c119344e25a06e6ac4cb56f2d5e2f09a2f1.png" alt="\Sigma"/> uses a closed range, including the end values
+of 0 and <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/> . However, since this is not a helpful definition
+for Python, we will define <img class="math" src="../_images/math/6edc5c119344e25a06e6ac4cb56f2d5e2f09a2f1.png" alt="\Sigma"/> to use a half-open interval. It has exactly
+<img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/> elements, including 0 and <img class="math" src="../_images/math/a44c09dc69d687fd66b7a1a12197c0299aa5db1c.png" alt="n-1"/>; mathematically, <img class="math" src="../_images/math/6f0c066804d8393916a7f8d98387139d95ee2f4e.png" alt="0 \leq i &lt; n"/>.
+This is how the <code class="xref py py-func docutils literal notranslate"><span class="pre">range()</span></code> function works, so there are a lot of advantages
+to using a half-open interval</p>
+<p>We prefer the following notation. Since statistical and mathematical texts often used 1-based
+indexing, some care is required when translating formulae to programming
+languages that use 0-based indexing.</p>
+<div class="math">
+<p><img src="../_images/math/e3e91e3f718d5464b0a3cf9b85f965dd127c9655.png" alt="\displaystyle\sum_{0 \leq i &lt; n} f(i)"/></p>
+</div><p>Our two statistical algorithms have a form more like the following
+function. In this we are applying some function, <img class="math" src="../_images/math/5b7752c757e0b691a80ab8227eadb8a8389dc58a.png" alt="f"/>, to
+each value, <img class="math" src="../_images/math/c67734af70861b2bd4dedf5c41c9aad231466f84.png" alt="x_i"/>, of a list, <img class="math" src="../_images/math/888f7c323ac0341871e867220ae2d76467d74d6e.png" alt="x"/>.</p>
+<p>When computing the
+mean, as a special case, there is no function applied to the values in the list.
+When computing standard deviation, the function involves subtracting and multiplying.</p>
+</div>
+<div class="section" id="python-coding">
+<h2>Python Coding<a class="headerlink" href="#python-coding" title="Permalink to this headline">¶</a></h2>
+<p>Consider we look at the following summation:</p>
+<div class="math">
+<p><img src="../_images/math/0a59c3601c37ef8df7a12295ea3e4db382e4e3ae.png" alt="\displaystyle\sum_{0 \leq i &lt; n} f( x_i )"/></p>
+</div><p>We can transform this definition directly into a <code class="docutils literal notranslate"><span class="pre">for</span></code> statement that sets the
+bound variable to all of the values in the range, and does some
+processing on each value of the list of integers, <img class="math" src="../_images/math/888f7c323ac0341871e867220ae2d76467d74d6e.png" alt="x"/>.</p>
+<p>This is the Python
+implementation of Sigma. This computes two values, the sum, <code class="xref py py-obj docutils literal notranslate"><span class="pre">s</span></code>
+and the number of elements, <code class="xref py py-obj docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">theList</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">theList</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When computing the standard deviation, we do something that has the following overall
+pattern:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">theList</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">theList</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Where the <img class="math" src="../_images/math/95aabe3d9002fe03d54b9b9d9fbfc27c0eaeb56f.png" alt="f(x)"/> calculation computes the measure of
+deviation from the average.</p>
+</div>
+<div class="section" id="statistical-algorithms">
+<span id="roul-stats-algorithms"></span><h2>Statistical Algorithms<a class="headerlink" href="#statistical-algorithms" title="Permalink to this headline">¶</a></h2>
+<p>We’ll look at two important algorithms:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#mean">mean</a>, and</p></li>
+<li><p><a class="reference internal" href="#standard-deviation">standard deviation</a>.</p></li>
+</ul>
+<div class="section" id="mean">
+<h3>Mean<a class="headerlink" href="#mean" title="Permalink to this headline">¶</a></h3>
+<p>Computing the mean of a list of values, x, is relatively simple. The mean is
+the sum of the values divided by the number of values in the list. Here’s
+the formal definition of the mean, <img class="math" src="../_images/math/4a3598141469c2555591e66606a1b86d4ec6dca9.png" alt="\mu"/>, of a list of values, <img class="math" src="../_images/math/888f7c323ac0341871e867220ae2d76467d74d6e.png" alt="x"/>.
+There are <img class="math" src="../_images/math/5a939c5280da7202ca4531f175a7780ad5e1f80a.png" alt="n"/> items in the list, <img class="math" src="../_images/math/0b23b57e3c62392219d429d23ddbe19f7f637595.png" alt="x = x_0, x_1, x_2, \dots, x_{n-1}"/>.</p>
+<div class="math">
+<p><img src="../_images/math/9e513e00a0fd2247d51563421c1c151c22d6380f.png" alt="\mu_x = \dfrac{\displaystyle\sum_{0 \leq i &lt; n}x_i}{n}"/></p>
+</div><p>The definition of the <img class="math" src="../_images/math/6edc5c119344e25a06e6ac4cb56f2d5e2f09a2f1.png" alt="\Sigma"/> mathematical operator leads us to the following
+method for computing the mean:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This matches the mathematical definition nicely.</p>
+</div>
+<div class="section" id="standard-deviation">
+<h3>Standard Deviation<a class="headerlink" href="#standard-deviation" title="Permalink to this headline">¶</a></h3>
+<p>The standard deviation can be done a few ways.  We’ll use the formula
+shown below. This computes a deviation measurement as the square of the
+difference between each sample and the mean.</p>
+<p>The sum of these
+measurements is then divided by the number of values times the number of
+degrees of freedom to get a standardized deviation measurement.</p>
+<p>Again, the formula summarizes the <code class="docutils literal notranslate"><span class="pre">for</span></code> statement, so we’ll show the formula followed by
+an overview of the code.</p>
+<div class="math">
+<p><img src="../_images/math/e34b23ea45c5eb618944f7167c683cde4d2e5660.png" alt="\sigma_x = \sqrt{ \frac{\displaystyle\sum_{0 \leq i &lt; n}(x_i - \mu_x)^2}{n-1} }"/></p>
+</div><p>The definition of the <img class="math" src="../_images/math/6edc5c119344e25a06e6ac4cb56f2d5e2f09a2f1.png" alt="\Sigma"/> mathematical operator leads us to the following
+method for computing the standard deviation:</p>
+<p>We can use a generator expression to compute the squares of the deviations
+from the mean. The expression <code class="docutils literal notranslate"><span class="pre">(x-m)**2</span> <span class="pre">for</span> <span class="pre">x</span> <span class="pre">in</span> <span class="pre">self</span></code> is a sequence of
+values. The <code class="xref py py-func docutils literal notranslate"><span class="pre">sum()</span></code> function can sum this sequence.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">m</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This seems to match the mathematical definition nicely.</p>
+</div>
+</div>
+<div class="section" id="integerstatistics-design">
+<h2>IntegerStatistics Design<a class="headerlink" href="#integerstatistics-design" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="IntegerStatistics">
+<em class="property">class </em><code class="sig-name descname">IntegerStatistics</code><span class="sig-paren">(</span><em class="sig-param">list</em><span class="sig-paren">)</span><a class="headerlink" href="#IntegerStatistics" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#IntegerStatistics" title="IntegerStatistics"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntegerStatistics</span></code></a> computes several simple descriptive
+statistics of <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> values in a <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>.</p>
+<p>This extends <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> with some additional methods.</p>
+</dd></dl>
+
+<div class="section" id="constructors">
+<h3>Constructors<a class="headerlink" href="#constructors" title="Permalink to this headline">¶</a></h3>
+<p>Since this class extends the built-in list, we’ll leverage
+the existing constructor.</p>
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<dl class="method">
+<dt id="IntegerStatistics.mean">
+<code class="sig-prename descclassname">IntegerStatistics.</code><code class="sig-name descname">mean</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#IntegerStatistics.mean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the
+mean of the <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code> of values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="IntegerStatistics.stdev">
+<code class="sig-prename descclassname">IntegerStatistics.</code><code class="sig-name descname">stdev</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#IntegerStatistics.stdev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the
+standard deviation of the <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>  values.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="statistics-deliverables">
+<h2>Statistics Deliverables<a class="headerlink" href="#statistics-deliverables" title="Permalink to this headline">¶</a></h2>
+<p>There are three deliverables for this exercise. These classes will
+include the complete Python docstring.</p>
+<ul>
+<li><p>The <a class="reference internal" href="#IntegerStatistics" title="IntegerStatistics"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntegerStatistics</span></code></a> class.</p></li>
+<li><p>A unit test of the <a class="reference internal" href="#IntegerStatistics" title="IntegerStatistics"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntegerStatistics</span></code></a> class.</p>
+<p>Prepare some simple list (or tuple) of test data.</p>
+<p>The results can be checked with a spreadsheet</p>
+</li>
+<li><p>An update to the overall <a class="reference internal" href="control.html#Simulator" title="Simulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Simulator</span></code></a> instance to use an <a class="reference internal" href="#IntegerStatistics" title="IntegerStatistics"><code class="xref py py-class docutils literal notranslate"><span class="pre">IntegerStatistics</span></code></a>
+object to compute the mean and standard deviation of the peak stake.
+It also computes the mean and standard deviation of the length of
+each session of play.</p></li>
+</ul>
+<p>Here is some standard deviation unit test data.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Sample Value</p></td>
+</tr>
+<tr class="row-even"><td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+</tr>
+<tr class="row-even"><td><p>11</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+</tr>
+<tr class="row-even"><td><p>12</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+</tr>
+</tbody>
+</table>
+<p>Here are some intermediate
+results and the correct answers given to 6 significant digits. Your
+answers should be the same to the precision shown.</p>
+<dl class="field-list simple">
+<dt class="field-odd">sum</dt>
+<dd class="field-odd"><p>99</p>
+</dd>
+<dt class="field-even">count</dt>
+<dd class="field-even"><p>11</p>
+</dd>
+<dt class="field-odd">mean</dt>
+<dd class="field-odd"><p>9.0</p>
+</dd>
+<dt class="field-even">sum (x-m)**2</dt>
+<dd class="field-even"><p>110.0</p>
+</dd>
+<dt class="field-odd">stdev</dt>
+<dd class="field-odd"><p>3.317</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="looking-forward">
+<h2>Looking Forward<a class="headerlink" href="#looking-forward" title="Permalink to this headline">¶</a></h2>
+<p>The key feature of this simulator is introducing different kinds of betting
+strategies. Let’s look at a player that bets at random. It’s important
+to compare random betting against the persistent better of the <a class="reference internal" href="roulette_game.html#Passenger57" title="Passenger57"><code class="xref py py-class docutils literal notranslate"><span class="pre">Passenger57</span></code></a> class.
+The house edge is the same and the performance of the two strategies should
+be very similar.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/cover_art.png" alt="Logo"/>
+    
+    <h1 class="logo logo-name">Building Skills in Object-Oriented Design</h1>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Statistical Measures</a><ul>
+<li><a class="reference internal" href="#statistical-analysis">Statistical Analysis</a></li>
+<li><a class="reference internal" href="#some-foundations">Some Foundations</a></li>
+<li><a class="reference internal" href="#python-coding">Python Coding</a></li>
+<li><a class="reference internal" href="#statistical-algorithms">Statistical Algorithms</a><ul>
+<li><a class="reference internal" href="#mean">Mean</a></li>
+<li><a class="reference internal" href="#standard-deviation">Standard Deviation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#integerstatistics-design">IntegerStatistics Design</a><ul>
+<li><a class="reference internal" href="#constructors">Constructors</a></li>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#statistics-deliverables">Statistics Deliverables</a></li>
+<li><a class="reference internal" href="#looking-forward">Looking Forward</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="sevenreds.html" title="previous chapter">SevenReds Player Class</a></li>
+      <li>Next: <a href="random.html" title="next chapter">Random Player Class</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Steven F. Lott.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
