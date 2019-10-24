@@ -3,8 +3,8 @@
 Rework and Management Hand-Wringing: A Post-Script
 ----------------------------------------------------
 
-A great deal of this book involves rework. This is done,
-knowing it is very difficult to justify design rework in an enterprise
+A great deal of this book involves rework. This is in spite of it
+often being difficult to justify design rework in an enterprise
 development environment. Some managers have an amazingly large
 blind-spot covering the amount of evidence
 required to justify rework. The conversations have the following form.

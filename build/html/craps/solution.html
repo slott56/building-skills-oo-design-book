@@ -83,7 +83,7 @@ line odds bets have odds that depend on a point value.</p>
 <p><strong>Collaborators</strong></p>
 <p>Collected
 by a <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object into the available bets for the
-<a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>; used by <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance to compute the amount
+<a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>; used by <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> instance to compute the amount
 won from the amount that was bet.</p>
 </dd>
 <dt class="field-even">Dice</dt>
@@ -92,9 +92,9 @@ won from the amount that was bet.</p>
 propositions as well as next state of the game.</p>
 <p><strong>Collaborators</strong></p>
 <p>Used by the
-overall <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance to get a next set of winning
+overall <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> instance to get a next set of winning
 <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances, as well as change the state of the
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance.</p>
+<a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> instance.</p>
 </dd>
 <dt class="field-odd">Table</dt>
 <dd class="field-odd"><p><strong>Responsibilities</strong></p>
@@ -106,7 +106,7 @@ elements of the game.</p>
 <p><strong>Collaborators</strong></p>
 <p>Collects the <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances; used
 by <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> to place a bet amount on a specific
-<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects; used by <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance to compute the amount
+<a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> objects; used by <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> instance to compute the amount
 won from the amount that was bet.</p>
 </dd>
 <dt class="field-even">Player</dt>
@@ -121,7 +121,7 @@ of the application.</p>
 <p><strong>Collaborators</strong></p>
 <p>Uses <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object to place
 <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> instances on preferred <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instances; used by
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> object to record wins and losses.</p>
+<a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> object to record wins and losses.</p>
 </dd>
 <dt class="field-odd">Game</dt>
 <dd class="field-odd"><p><strong>Responsibilities</strong></p>
@@ -146,27 +146,27 @@ design details for each class. It will also provide some insight into
 classes that may be missing from this overview. A good way to structure
 this task is to do a CRC walk-through. For more information on
 this technique see <a class="reference internal" href="../roulette/solution.html#roul-solution-walkthrough"><span class="std std-ref">A Walk-Through of Roulette</span></a>.</p>
-<p>The basic processing outline is the responsibility of the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code>
-class. To start, locate the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> card.</p>
+<p>The basic processing outline is the responsibility of the <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a>
+class. To start, locate the <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> card.</p>
 <ol class="arabic simple">
 <li><p>Our preliminary note was that this class “Runs the game.” The
 responsibilities section has a summary of five steps involved in
 running the game.</p></li>
 <li><p>The first step is “gets bets from <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a>.” Find the
 <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> card.</p></li>
-<li><p>Does a <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance collaborate with a <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance to
+<li><p>Does a <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance collaborate with a <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> instance to
 place bets? Note that the game state influences the allowed bets. Does
-<code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance collaborate with <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance to provide
+<a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> instance collaborate with <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance to provide
 the state information? If not, add this information to one or both cards.</p></li>
-<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> object’s second step is to throw the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> objects.
+<li><p>The <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> object’s second step is to throw the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> objects.
 Is this collaboration on the <a class="reference internal" href="dice.html#Dice" title="Dice"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dice</span></code></a> card?</p></li>
-<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> object’s third step is to update the state of the
-game. While the state appears to be internal to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> class,
+<li><p>The <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> object’s third step is to update the state of the
+game. While the state appears to be internal to the <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> class,
 requiring no collaboration, we note that the <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance
-needs to know the state, and therefore should collaborate with the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> class.
+needs to know the state, and therefore should collaborate with the <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> class.
 Be sure this collaboration is documented.</p></li>
-<li><p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> object’s fourth and fifth steps are to pay winning
-bets and collect losing bets. Does the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance collaborate
+<li><p>The <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> object’s fourth and fifth steps are to pay winning
+bets and collect losing bets. Does the <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> instance collaborate
 with the <a class="reference internal" href="../roulette/roulette_table.html#Table" title="Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> object to get the working bets? If not, update
 the collaborations.</p></li>
 </ol>
@@ -183,7 +183,7 @@ the game state, and resolve game bets. It is not a simple <a class="reference in
 the Come Line to the numbered spaces. In effect, the bet is changed from a generic
 <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance to a more specific <a class="reference internal" href="../roulette/outcome.html#Outcome" title="Outcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">Outcome</span></code></a> instance.
 This means that a <a class="reference internal" href="../roulette/bet.html#Bet" title="Bet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bet</span></code></a> object has a kind of state change.
-The parallels the the <code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code> instance’s
+The parallels the the <a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a> instance’s
 state change and any possible <a class="reference internal" href="../roulette/player.html#Player" title="Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a> instance state change.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>

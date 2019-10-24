@@ -389,7 +389,7 @@ Example Sphinx Automodule
 
 This shows how the documentation looks when ``.. automodule::`` is used.
 
-..  automodule:: code.blackjack_doc
+..  automodule:: blackjack_doc
     :members:
     :special-members:
 

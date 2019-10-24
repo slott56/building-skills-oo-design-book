@@ -83,7 +83,7 @@ class Card:
     def __eq__(self, other: Any) -> bool:
         """Compare cards, ignoring suit.
 
-        >>> from code.blackjack_doc import Card, Suit
+        >>> from blackjack_doc import Card, Suit
         >>> Card(2, Suit.Diamonds) == Card(2, Suit.Spades)
         True
         >>> Card(2, Suit.Diamonds) == Card(10, Suit.Spades)
@@ -94,7 +94,7 @@ class Card:
     def __lt__(self, other: Any) -> bool:
         """Compare cards, ignoring suit.
 
-        >>> from code.blackjack_doc import Card, Suit
+        >>> from blackjack_doc import Card, Suit
         >>> Card(2, Suit.Diamonds) < Card(3, Suit.Spades)
         True
         >>> Card(10, Suit.Diamonds) < Card(10, Suit.Spades)
@@ -113,7 +113,7 @@ class Card:
 
     def __str__(self) -> str:
         """
-        >>> from code.blackjack_doc import Card, Suit
+        >>> from blackjack_doc import Card, Suit
         >>> str(Card(2, Suit.Diamonds))
         ' 2♢'
         """
@@ -121,7 +121,7 @@ class Card:
 
     def __repr__(self) -> str:
         """
-        >>> from code.blackjack_doc import Card, Suit
+        >>> from blackjack_doc import Card, Suit
         >>> repr(Card(2, Suit.Diamonds))
         "Card(rank=2, suit=<Suit.Diamonds: '♢'>)"
         """

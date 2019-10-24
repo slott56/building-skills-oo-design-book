@@ -22,12 +22,13 @@ as many retries in each game as you need.
 
 Thank you for your interest.
 
-Setup and Validation
-=====================
+Rebuilding the document is done with
 
 ::
 
-    pip install tox
+    PYTHONPATH=code:demo make html
+
+Testing the examples is done with
 
 ::
 

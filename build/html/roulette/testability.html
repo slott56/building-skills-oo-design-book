@@ -123,7 +123,7 @@ However, for testing purposes, the random number generator needs to be a configu
 of the <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance.</p>
 <p>One approach to making something more visible is to provide
 default values in the constructor for the object. The following example
-provides an <code class="xref py py-obj docutils literal notranslate"><span class="pre">rng</span></code> parameter to permit inserting a mocked random
+provides an <a class="reference internal" href="../blackjack/card_deck_shoe.html#rng" title="rng"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rng</span></code></a> parameter to permit inserting a mocked random
 number generator.</p>
 <p class="rubric">Wheel with Complex Initialization</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Wheel_RNG</span><span class="p">:</span>
@@ -177,7 +177,7 @@ the same value.</p>
 <p>The test case builds a number of mocked <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> instances. In this
 case, we don’t even use the <a class="reference internal" href="bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> class definition, we can use
 a simple string object.</p>
-<p>The <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance is built from the mocked bins. The <code class="xref py py-obj docutils literal notranslate"><span class="pre">rng</span></code>
+<p>The <a class="reference internal" href="wheel.html#Wheel" title="Wheel"><code class="xref py py-class docutils literal notranslate"><span class="pre">Wheel</span></code></a> instance is built from the mocked bins. The <a class="reference internal" href="../blackjack/card_deck_shoe.html#rng" title="rng"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rng</span></code></a>
 attribute is then patched to use the mocked random number generator.
 After the patch is applied, we can exercise the <a class="reference internal" href="wheel.html#Wheel.choose" title="Wheel.choose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Wheel.choose()</span></code></a> method
 to confirm that it properly uses the random number generator’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">choice()</span></code>

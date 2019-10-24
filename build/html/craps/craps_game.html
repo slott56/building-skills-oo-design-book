@@ -922,7 +922,7 @@ over the active <a class="reference internal" href="../roulette/bet.html#Bet" ti
 <code class="sig-prename descclassname">CrapsGameState.</code><code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">game: Game</em><span class="sig-paren">)</span> &#x2192; None<a class="headerlink" href="#CrapsGameState.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>game</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code>) – The game to which this state applies</p>
+<dd class="field-odd"><p><strong>game</strong> (<a class="reference internal" href="../roulette/roulette_game.html#Game" title="Game"><code class="xref py py-class docutils literal notranslate"><span class="pre">Game</span></code></a>) – The game to which this state applies</p>
 </dd>
 </dl>
 <p>Saves the overall <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> object to which this state applies.</p>
@@ -1550,7 +1550,7 @@ object and cycles a few times. Note that we will need to configure the
 <p>We could, with some care, refactor our design to create some common
 superclasses between Roulette and Craps to extract features of <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> class
 so they can be shared by the <a class="reference internal" href="throw.html#Throw" title="Throw"><code class="xref py py-class docutils literal notranslate"><span class="pre">Throw</span></code></a> and <a class="reference internal" href="../roulette/bin.html#Bin" title="Bin"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bin</span></code></a> classes.
-Similarly, there may be more common features between the <a class="reference internal" href="../roulette/roulette_game.html#RouletteGame" title="RouletteGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">RouletteGame</span></code></a>
+Similarly, there may be more common features between the <code class="xref py py-class docutils literal notranslate"><span class="pre">RouletteGame</span></code>
 and <a class="reference internal" href="#CrapsGame" title="CrapsGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrapsGame</span></code></a> classes. We’ll leave that as an exercise for more
 advanced students.</p>
 </div>

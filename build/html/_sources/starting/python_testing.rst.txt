@@ -414,7 +414,7 @@ Once we have the class, we need to exercise it using interactive Python.
 Here's what we saw.
 
 
-..  code-block::
+::
 
     MacBookPro-SLott:OODesign-3.1 slott$ python3
     Python 3.7.4 (default, Aug 13 2019, 15:17:50)
