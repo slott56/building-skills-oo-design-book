@@ -166,7 +166,7 @@ at in :ref:`documentation`.
 To see how things will work in general, we'll create a file in the ``src`` directory
 and execute it.
 
-1.  Edit a file, :file:'hw.py` in the :file:`src` directory with the following content:
+1.  Edit a file, :file:`hw.py` in the :file:`src` directory with the following content:
 
     ::
 

@@ -206,7 +206,7 @@ Named Tuples
 ^^^^^^^^^^^^
 
 The naïve class definition shown above didn't work out well. A significant improvement
-is to use the built-in :class:`tuple` class. This can bind put a name and a
+is to use the built-in :class:`tuple` class. This can bind a name and a
 payoff amount together.
 Look at the following example; this shows behavior we would like to see:
 
