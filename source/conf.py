@@ -23,7 +23,7 @@ author = 'Steven F. Lott'
 
 # The full version, including alpha/beta/rc tags
 version = '4'
-release = '4.1910'
+release = '4.2003'
 
 
 # -- General configuration ---------------------------------------------------
