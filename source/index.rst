@@ -8,9 +8,9 @@
 :subtitle:
     Step-by-Step Construction of A Complete Application
 :edition:
-    version 4.1910
+    version 4.2003
 :pubdate:
-    2019-10-10
+    2020-03-04
 :author:
     Steven F. Lott
 :copyright:
