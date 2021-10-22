@@ -89,7 +89,7 @@ Constructors
     This uses the :meth:`super` construct to invoke the superclass
     constructor using the :class:`Table` class.
 
-    :param table: The :class:`Table` object which will accept the bests.
+    :param table: The :class:`Table` object which will accept the bets.
     :type table: :class:`Table`
 
     This will create a :class:`random.Random` random number generator.

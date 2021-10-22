@@ -509,7 +509,7 @@ Constructors
     Initializes the state and the outcome. The :obj:`state` is set
     to the initial state of an instance of :class:`Player1326NoWins` class.
 
-    :param table: The :class:`Table` object which will accept the bests.
+    :param table: The :class:`Table` object which will accept the bets.
     :type table: :class:`Table`
 
     The :obj:`outcome` is set to some even money proposition, for example

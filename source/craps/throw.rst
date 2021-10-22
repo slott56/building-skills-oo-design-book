@@ -81,7 +81,7 @@ possible conditions for a given throw:
 This tells us that a :class:`Throw` object may be more than a simple collection of winning
 :class:`Outcome` instances.
 
-It seems sensible for a :class:`Throw` object must also contain a list of losing
+It seems sensible for a :class:`Throw` object to also contain a list of losing
 :class:`Outcome` instances. For example, any of the two easy 8 rolls (6-2 or
 5-3) would contain winning :class:`Outcome` instances for the place-8 bet
 and buy-8 bet, as well as a losing :class:`Outcome` instances for a hardways-8
@@ -584,7 +584,7 @@ There are eleven deliverables for this exercise.
     correct behavior of the game.
 
 -   The :class:`Throw` superclass, and the four subclasses: :class:`CrapsThrow`,
-    :class:`NaturalThrow`, :class:`ElvenThrow`, :class:`PointThrow`.
+    :class:`NaturalThrow`, :class:`ElevenThrow`, :class:`PointThrow`.
 
 -   Five classes which perform unit tests on the various classes of the :class:`Throw`
     class hierarchy.

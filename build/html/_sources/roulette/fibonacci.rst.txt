@@ -86,7 +86,7 @@ Constructors
 
     Initialize the Fibonacci player.
 
-    :param table: The :class:`Table` object which will accept the bests.
+    :param table: The :class:`Table` object which will accept the bets.
     :type table: :class:`Table`
 
 Methods

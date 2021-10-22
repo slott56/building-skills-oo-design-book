@@ -38,13 +38,13 @@ Here's an example of the Fibonacci system.
 
 #.  Bet 1. A win.
 
-#.  Bet 1. A loss.  The next value in the sequence is 1.
+#.  Bet 1. A loss. The next value in the sequence is 1.
 
 #.  Bet 1. A loss. The next value in the sequence is 2.
 
-#.  Bet 2. A loss. The next value in the sequence will be 3
+#.  Bet 2. A loss. The next value in the sequence will be 3.
 
-#.  Bet 3.  In the event of a loss, the next bet is 5.  Otherwise, the bet is 1.
+#.  Bet 3. In the event of a loss, the next bet is 5.  Otherwise, the bet is 1.
 
 **State**.
 In order to compute the Fibonacci sequence, we need to retain the two
@@ -86,7 +86,7 @@ Constructors
 
     Initialize the Fibonacci player.
 
-    :param table: The :class:`Table` object which will accept the bests.
+    :param table: The :class:`Table` object which will accept the bets.
     :type table: :class:`Table`
 
 Methods

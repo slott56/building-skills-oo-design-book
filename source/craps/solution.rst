@@ -201,7 +201,7 @@ We also note that the house moves Come Line (and Don't Come) bets from
 the Come Line to the numbered spaces. In effect, the bet is changed from a generic
 :class:`Outcome` instance to a more specific :class:`Outcome` instance.
 This means that a :class:`Bet` object has a kind of state change.
-The parallels the the :class:`Game` instance's
+This parallels the :class:`Game` instance's
 state change and any possible :class:`Player` instance state change.
 
 
@@ -234,7 +234,7 @@ instance of the :class:`Outcome` class is merely a number from 2 to 12.
 
     We have complex interdependency between the dice, the game states,
     the bets and outcomes. An outcome has different meanings in different
-    game states: sometimes a 7 is an immediate winner, other times it as an
+    game states: sometimes a 7 is an immediate winner, other times it is an
     immediate loser. Clearly, we need to isolate these various rules into
     separate objects to be sure that we have captured them accurately
     without any confusion, gaps or conflicts.

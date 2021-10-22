@@ -160,6 +160,6 @@ this subtlety is at the fringe of over-engineering, as no bet in Roulette has a 
 Looking Forward
 ----------------
 
-As with Roulett, once we have the :class:`Dice` and the :class:`Bet` we will
+As with Roulette, once we have the :class:`Dice` and the :class:`Bet` we will
 build the :class:`CrapsTable` to make use of these two classes. In the next
 chapter we'll build this new class.

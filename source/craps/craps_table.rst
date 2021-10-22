@@ -158,14 +158,14 @@ this responsibility.
 
 #.  :class:`CrapsGame`. This class could invoke a
     method of :class:`CrapsTable` that changes a single :class:`Outcome`'s
-    state to makt it inactive. This information is then used by the :class:`CrapsTable`
+    state to make it inactive. This information is then used by the :class:`CrapsTable`
     to validate individual :class:`Bet` instances.
 
     A feature of this choice is to have the :meth:`validBet`
     method of :class:`CrapsTable` depend on :class:`CrapsGame` to determine which bets are allowed
     or denied. In this case, :class:`CrapsGame` has the
     responsibility to respond to requests from either :class:`CrapsTable`
-    or :class:`Player` regarding a specific :class:`Outcome` instances.
+    or :class:`Player` regarding a specific :class:`Outcome` instance.
 
 **Solution**
 We need to place a validation method in the :class:`CrapsTable`; but the Table simply
@@ -233,7 +233,7 @@ The sequence of events that can lead to this condition is as follows.
 2.  The player creates an additional odds bet placed behind
     this come point bet.
 
-3.  A dice roll makes the main game point is a winner.
+3.  A dice roll makes the main game point a winner,
     changing the game state so the next roll is a come out roll.
     In this state, any additional odds behind a come point bet will
     be a non-working bets on the subsequent come-out roll.
@@ -302,8 +302,8 @@ Methods
 
     Determines if the :class:`Outcome` is
     allowed in the current state of the game. When the :obj:`point`
-    is zero, it is the come out roll, and only Pass, Don't Pass, Come
-    and Don't Come bets are allowed. Otherwise, all bets are allowed.
+    is zero, it is the come out roll, and only Pass and Don't Pass
+    bets are allowed. Otherwise, all bets are allowed.
 
 
 
