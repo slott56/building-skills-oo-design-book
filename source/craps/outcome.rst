@@ -55,7 +55,7 @@ them so that we can confirm the responsibilities for this class.
     the point, not the outcome itself. We'll have to look at these more
     closely, also.
 
--   **The Placed Number Bets**. These have odds are based on the number placed.
+-   **The Placed Number Bets**. These have odds based on the number placed.
     These outcomes have fixed odds. Once the bet is placed, these bets
     are resolved when the number is rolled or when a game-losing seven
     is rolled.
@@ -76,7 +76,7 @@ placed in this box, also.
 This leaves us with the Pass Line and Don't Pass Line odds bet, which
 also depend on the point rolled. In this case, the bets are effectively
 moved to a specific numbered box. In a casino, a large, white, "on"
-token in placed in the box. The effect is that same as if the house had
+token in placed in the box. The effect is the same as if the house had
 moved all the Pass Line bets. The odds bet, while physically behind the
 Pass Line, is effectively in the box identified by the point. Again, the
 bet is moved from the 1:1 Pass Line to one of the six numbered boxes;
@@ -86,7 +86,7 @@ fixed odds.
 In this case, the existing :class:`Outcome` class still serves many
 of our needs. Looking forward, we will have to rework the :class:`Bet` class
 to provide a method that will change to a different :class:`Outcome` class.
-This will move a line bets to one of the six numbered point boxes.
+This will move a line bet to one of the six numbered point boxes.
 
 More Complex Odds
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -314,7 +314,7 @@ Methods
 Returns the product of this :class:`Outcome` object's odds by the given amount.
 The result can be a :class:`fractions.Fraction` object, which will work nicely.
 
-Note that this change will lead to a ripply of changes as **mypy** tries
+Note that this change will lead to a ripple of changes as **mypy** tries
 to confirm that all bet-related processing properly uses fractions.
 
 

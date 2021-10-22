@@ -117,7 +117,7 @@ Constructors
     sequence of numbers used to establish the bet amount. This also
     picks a suitable even money :class:`Outcome`, for example, black.
 
-    :param table: The :class:`Table` object which will accept the bests.
+    :param table: The :class:`Table` object which will accept the bets.
     :type table: :class:`Table`
 
 Methods
@@ -160,7 +160,7 @@ Methods
 
     Uses the superclass method to update the
     stake with an amount lost. It then appends the sum of the first and
-    list elements of :obj:`sequence` to the end of :obj:`sequence`
+    last elements of :obj:`sequence` to the end of :obj:`sequence`
     as a new value.
 
 

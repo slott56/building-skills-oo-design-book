@@ -77,7 +77,7 @@ that tell us what to do next. The following table summarizes the states,
 the bets and the transition rules.
 
 ..  csv-table:: 1-3-2-6 Betting States
-    :header: "Current State", "Bet Amount", "On loss, change to:", "On win, change to:"
+    :header: "Current State", "Bet Amount", "On win, change to:", "On loss, change to:"
 
     "No Wins", "1", "One Win", "No Wins"
     "One Win", "3", "Two Wins", "No Wins"
@@ -150,10 +150,10 @@ by the presence of attributes and methods.
 Additionally, Python relies on the principle that it's better to
 seek forgiveness than ask permission.
 
-This translates to  an approach where an object's methods
-are simply invoked.  If the object implements the methods, then
+This translates to an approach where an object's methods
+are simply invoked. If the object implements the methods, then
 it walked like a duck and -- for all practical purposes -- actually :emphasis:`was`
-a duck.  If the method is not implemented, the application has a serious
+a duck. If the method is not implemented, the application has a serious
 design problem and needs to crash.
 
 We find the :func:`isinstance` function is sometimes used by
@@ -183,7 +183,7 @@ case out of the collaborating class.  There will be three changes as part of the
     the :func:`isinstance` function.
     In the above example, the special case is moved to the :class:`AClass` class.
 
-2.  We will usually have to  add default processing to the superclass of :class:`AClass` so that
+2.  We will usually have to add default processing to the superclass of :class:`AClass` so that
     all other sibling classes of the :class:`AClass` class will have an implementation of the special-case feature.
 
 3.  We simply call the refactored method from the client class.
@@ -248,7 +248,7 @@ There are two usual follow-up questions: "Aren't all those
 objects a lot of memory overhead?" or "...a lot of processing overhead?"
 
     Since Python removes unused objects, each old state object
-    are removed when no longer required.
+    is removed when no longer required.
 
     Object creation is an overhead that we can control. One common approach
     is to use the **Singleton** design pattern to have only one instance
@@ -386,7 +386,7 @@ Player1326 One Win Design
 ..  class:: Player1326OneWin
 
     :class:`Player1326OneWin` defines the bet and state transition rules
-    in the 1-3-2-6 betting system. When there is one wins, the base bet
+    in the 1-3-2-6 betting system. When there is one win, the base bet
     value of 3 is used.
 
 
@@ -509,7 +509,7 @@ Constructors
     Initializes the state and the outcome. The :obj:`state` is set
     to the initial state of an instance of :class:`Player1326NoWins` class.
 
-    :param table: The :class:`Table` object which will accept the bests.
+    :param table: The :class:`Table` object which will accept the bets.
     :type table: :class:`Table`
 
     The :obj:`outcome` is set to some even money proposition, for example
@@ -596,7 +596,7 @@ multiplier to a value of 1, 3, 2 or 6.
 
 Similarly, we could have the next state after winning defined as
 an instance variable, :obj:`nextStateWin`. We can
-initialized this during construction. Then the :meth:`nextWon`
+initialize this during construction. Then the :meth:`nextWon`
 method could also be refactored into the superclass, and would
 return the value of the :obj:`nextStateWin` instance variable.
 

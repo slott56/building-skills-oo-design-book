@@ -95,7 +95,7 @@ abstract game simulation.
     superclass, some designers will build a :quick and dirty
     design for some of the subclasses, and use this to establish the
     features that belong in the superclass. We find that a more
-    successful superclass design comes from have more than one
+    successful superclass design comes from having more than one
     working subclasses and a clear understanding of the kinds of
     extensions that are likely to emerge from the problem domain.
 
@@ -106,7 +106,7 @@ abstract game simulation.
     seems to stem from the project management mythology that
     once something passes unit tests it is done for ever and can be
     checked off as completed. We feel that it is very important to
-    recognized that nothing is every truly done. At some point,
+    recognize that nothing is ever truly done. At some point,
     the pace of evolution slows, but it never really stops changing.
 
 
@@ -226,7 +226,7 @@ collections of :class:`Bin` or :class:`Throw` objects.
 Our second design decision, then, is to create a :class:`RandomEventFactory` class
 out of the :class:`Dice` and :class:`Wheel` classes.
 Each subclass provides an initialization
-method that constructs the the :class:`RandomEvent` instances.
+method that constructs the :class:`RandomEvent` instances.
 
 
 When we move on to tackle cards, we'll have to create a subclass that
@@ -283,7 +283,7 @@ Refactoring Player and CrapsPlayer
 Before we can finally refactor the :class:`Game` class,
 we need to be sure that we have sorted out a proper relationship
 between our various players. In this case, we have a large hierarchy,
-which will we hope to make even larger as we explore different betting
+which we will hope to make even larger as we explore different betting
 alternatives. Indeed, the central feature of this simulation is to
 expand the hierarchy of players as needed to explore betting strategies.
 Therefore, time spent organizing the :class:`Player` class hierarchy is
@@ -313,9 +313,9 @@ We'd like to have the following hierarchy.
         -   CrapsMartingale.
 
 
-Looking forward to Blackjack, see see that there is much richer player
+Looking forward to Blackjack, we see that there is much richer player
 interaction, because there are player decisions that are not related to
-betting. This class hierarchy doesn't seems to enable an expansion
+betting. This class hierarchy doesn't seem to enable an expansion
 to separate play decisions from betting decisions. In the case of craps,
 there seem to be two kinds of betting decisions -- outcome choice vs. amount --
 that isn't handled very well.
@@ -336,7 +336,7 @@ In the case of Python, we have two approaches for implementation:
 
 
 In Roulette there are no game choices.
-However, in Craps, we made a separated
+However, in Craps, we separated
 the Pass Line bet, where the payout doesn't match the actual odds very
 well, from the Pass Line Odds bet, where the payout does match the
 odds. This means that a Martingale Craps player really has two
@@ -464,7 +464,7 @@ Methods
 ~~~~~~~
 
 
-..  method:: RandomEventFactory.initialize(self)
+..  method:: RandomEventFactory.initialize(self) -> None
 
 
     Create a collection of :class:`RandomEvent` objects with the pool of possible
@@ -791,7 +791,7 @@ games, including Roulette, Craps and Blackjack. Individual subclasses
 implement the detailed playing cycles of the games. This superclass has
 methods for notifying the :class:`Player` instance to place bets, getting a
 new :class:`RandomEvent` instance
-and resolving the :class:`Bet` objectss actually present on the :class:`Table` instance.
+and resolving the :class:`Bet` objects actually present on the :class:`Table` instance.
 
 
 Fields
@@ -806,7 +806,7 @@ Fields
 
 ..  attribute:: Game.table
 
-    Contains a :class:`CrapsTable` or :class:`RouletteTable` instance which
+    Contains a :class:`Table` instance which
     holds all the :class:`Bet` instances placed by the :class:`Player` object.
 
 ..  attribute:: Game.player
@@ -847,7 +847,7 @@ Methods
 
     This will
     execute a single cycle of play with a given :class:`Player`.
-    For Roulette is is a single spin of the wheel. For Craps, it is a
+    For Roulette it is a single spin of the wheel. For Craps, it is a
     single throw of the dice, which is only one part of a complete game.
     This method will call :meth:`player.placeBets`
     to get bets. It will call :meth:`eventFactory.next`

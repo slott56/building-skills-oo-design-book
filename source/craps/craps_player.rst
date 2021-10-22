@@ -133,7 +133,7 @@ Fields
     simulation control to the maximum number of rounds to play. In
     Roulette, this is spins. In Craps, this is the number of throws of
     the dice, which may be a large number of quick games or a small
-    number of long-running games. In Craps, this is the number of cards
+    number of long-running games. In Blackjack, this is the number of cards
     played, which may be large number of hands or small number of
     multi-card hands.
 
@@ -256,7 +256,7 @@ Fields
 
 ..  attribute:: CrapsPlayer.betMultiple
 
-    The the bet multiplier, based on the number of losses. This starts
+    The bet multiplier, based on the number of losses. This starts
     at 1, and is reset to 1 on each win. It is doubled in each loss.
     This is always set so that :math:`betMultiple = 2^{lossCount}`.
 

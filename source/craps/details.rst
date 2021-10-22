@@ -392,7 +392,7 @@ The Don't Pass, Don't Come and Laying Odds are all "wrong".
 
 Right betting involves odds that provide a large reward for a
 small wager. The odds on a Pass Line bet for the number 4 are
-:math:`2:1`: they player can win double the bet if the point is made.
+:math:`2:1`: the player can win double the bet if the point is made.
 The bet is to put 10 at risk to make 20.
 
 Wrong betting involves odds that provide a small reward for a

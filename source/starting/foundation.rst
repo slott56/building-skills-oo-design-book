@@ -6,7 +6,7 @@ Foundations
 This section starts with a `Problem Statement`_.
 This attempts to define the context in which the problem arises, the
 problem to be solved and any forces that
-influence the choice of solution. Given  this,
+influence the choice of solution. Given this,
 it can propose a solution and some consequences of the
 chosen solution.
 
@@ -50,7 +50,7 @@ these casino games.
 
 Questions include "How well does the
 Cancellation strategy work?" "How well does the
-Martingale strategy works for the Come Line odds bet in Craps?"
+Martingale strategy work for the Come Line odds bet in Craps?"
 "How well does this Blackjack strategy I found on the Internet
 compare with the strategy card I bought in the gift
 shop?"
@@ -118,8 +118,8 @@ Here's the scenario we're imagining.
     Responds with output from running unit tests.
 
 #.  **Actor**:
-    Runs the simulator with selection of
-    game and strategy.
+    Runs the simulator with a selection of
+    games and strategies.
 
 #.  **Simulator**:
     Responds with statistical results.

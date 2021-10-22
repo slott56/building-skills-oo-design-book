@@ -27,7 +27,7 @@ We'll look at four topics:
     pattern and how it applies here.
 
 -   In `Resolving Bets`_ we'll look at how game, table, and player collaborate
-    to resolved bets.
+    to resolve bets.
 
 -   In `Movable Bets`_ we'll look at how the game collaborates with
     bets like the Pass Line bet which have an outcome that moves.
@@ -286,7 +286,7 @@ which to collaborate with a :class:`Throw` object to update the
 state of the current :class:`CrapsGame` instance.
 
 **Changing Game State**. We have identified two game states: point-off
-(also know as the come out roll) and point-on. We have also set aside
+(also known as the come out roll) and point-on. We have also set aside
 four methods that the various :class:`Throw` objects will use to
 change the game state. The interaction between the :class:`CrapsGame` class,
 the four kinds of :class:`Throw` subclasses and the two subclasses of :class:`CrapsGameState` instances works as follows:
@@ -403,7 +403,7 @@ some detail before making any final design decisions.
     -   We can make each kind of resolution into a **Command** class.  Each
         subclass of :class:`BetResolution` would perform the "pay a winner",
         "collect a loser" or "leave unresolved" procedure based on the :class:`Throw` instance
-        or class:`CrapsGameState` object.
+        or :class:`CrapsGameState` object.
 
 
 Movable Bets
@@ -419,7 +419,7 @@ placed on the line. If a point is established, a large white "On" token shows
 the numbered box where, in effect, the behind the line odds chips belong.
 
 Note that the net effect of both bets is identical.  The pass line and behind-the-line odds bets
-have a payout that depends on the "On" token.  The come line bets are moved and odds a place in a
+have a payout that depends on the "On" token.  The come line bets are moved and odds are placed in a
 box on which the payout depends.
 
 One of the things the :class:`CrapsGame` class does is change the :class:`Outcome` instance
@@ -428,7 +428,7 @@ is a point number (4, 5, 6, 8, 9, or 10), the bet is not resolved on the first
 throw; it is moved to one of the six point number :class:`Outcome` instances.
 
 When designing the :class:`Bet` class, in the
-Craps Bet section (:ref:`craps.bet.ov`,) we recognized the need to change the :class:`Outcome` instance
+Craps Bet section (:ref:`craps.bet.ov`), we recognized the need to change the :class:`Outcome` instance
 from a generic "Pass Line Odds" to a specific point with specific
 odds of :math:`2:1`, :math:`3:2`, or :math:`6:5`.
 
@@ -515,7 +515,7 @@ Each `GameState` would also need to respond with appropriate codes.
 
 This will require the :class:`CrapsGame` to make one pass through the
 :class:`Bet` instances, passing each
-each bet to the :class:`GameState` resolution method.  Based on the
+bet to the :class:`GameState` resolution method.  Based on the
 code returned, the :class:`CrapsGame` would then have an if-statement to decide
 to provide bets to the :meth:`Player.win` or :meth:`Player.lose` method.
 
@@ -630,7 +630,7 @@ lists of losing bets as well as winning bets.
 
         **Field?** For :emphasis:`s` in 4, 9 and 10 we include the field :class:`Outcome` object
         as a winner. Otherwise the field :class:`Outcome` object is a loser.
-        Note that 2, 3, and 12 Field outcomes where handled above under **Craps**.
+        Note that 2, 3, and 12 Field outcomes were handled above under **Craps**.
 
         **Losing Propositions**. Other one-roll :class:`Outcome` instances, including
         2, 3, 7, 11, 12, Horn and Any Craps :class:`Outcome` instances are all losers.
@@ -696,7 +696,7 @@ We'll address each of these separately.
 Throw Rework
 ------------
 
-The :class:`Throw` cass is the superclass for the various throws of the dice.
+The :class:`Throw` class is the superclass for the various throws of the dice.
 A :class:`Throw` instance identifies two sets of :class:`Outcome` instances:
 immediate winners and immediate losers. Each subclass is a different
 grouping of the numbers, based on the state-change rules for Craps.
@@ -749,8 +749,8 @@ Constructors
     :param winners: All the outcomes which will be paid as winners for this Throw.
     :type winners: Optional[Set[:class:`Outcome`]]
 
-    :param losers: All the outcomes which will be collected as winners for this Throw.
-    :type winners: Optional[Set[:class:`Outcome`]]
+    :param losers: All the outcomes which will be collected as losers for this Throw.
+    :type losers: Optional[Set[:class:`Outcome`]]
 
 
     Creates this throw, and associates the two given sets of :class:`Outcome`
@@ -766,8 +766,8 @@ Methods
     :param winners: All the outcomes which will be paid as winners for this Throw.
     :type winners: Set[:class:`Outcome`]
 
-    :param losers: All the outcomes which will be collected as winners for this Throw.
-    :type winners: Set[:class:`Outcome`]
+    :param losers: All the outcomes which will be collected as losers for this Throw.
+    :type losers: Set[:class:`Outcome`]
 
 
     Adds outcomes to the one-roll winners and
@@ -780,8 +780,8 @@ Methods
     :param winners: All the outcomes which will be paid as winners for this Throw.
     :type winners: Set[:class:`Outcome`]
 
-    :param losers: All the outcomes which will be collected as winners for this Throw.
-    :type winners: Set[:class:`Outcome`]
+    :param losers: All the outcomes which will be collected as losers for this Throw.
+    :type losers: Set[:class:`Outcome`]
 
 
     Adds outcomes to the hardways winners and hardways losers Sets.
@@ -811,7 +811,7 @@ Methods
 
 
 
-..  method:: Throw.resolveOneRoll(self, bet: Bet) -> None
+..  method:: Throw.resolveOneRoll(self, bet: Bet) -> bool
 
     :param bet: The bet to to be resolved
     :type bet: :class:`Bet`
@@ -830,7 +830,7 @@ Methods
     the table.
 
 
-..  method:: Throw.resolveHardways(self, bet: Bet) -> None
+..  method:: Throw.resolveHardways(self, bet: Bet) -> bool
 
     :param bet: The bet to to be resolved
     :type bet: :class:`Bet`
@@ -874,7 +874,7 @@ Methods
 
 ..  method:: ThrowBuilder.buildThrows(self, dice: Dice) -> None
 
-    :para dice: The Dice to initialize
+    :param dice: The Dice to initialize
     :type dice: :class:`Dice`
 
 
@@ -933,8 +933,10 @@ Constructors
 CrapsPlayer Class Stub
 -----------------------
 
-The :class:`CrapsPlayer` class constructs a :class:`Bet` instance based on the :class:`Outcome` instance
-named :literal:`"Pass Line"`. This is a very persistent player.
+..  class:: CrapsPlayer
+
+    The :class:`CrapsPlayer` class constructs a :class:`Bet` instance based on the :class:`Outcome` instance
+    named :literal:`"Pass Line"`. This is a very persistent player.
 
 
 Fields
@@ -983,7 +985,7 @@ Methods
 ~~~~~~~
 
 
-..  method::CrapsPlayer.placeBets(self) -> None
+..  method:: CrapsPlayer.placeBets(self) -> None
 
 
     If :obj:`workingBet` is :literal:`None`, create a new Pass Line :class:`Bet`, and use
@@ -994,7 +996,7 @@ Methods
     working. Do not place any more bets.
 
 
-..  method::CrapsPlayer.win(self, bet: Bet) -> None
+..  method:: CrapsPlayer.win(self, bet: Bet) -> None
 
     :param bet: The bet that was a winner
     :type bet: :class:`Bet`
@@ -1006,7 +1008,7 @@ Methods
 
 
 
-..  method::CrapsPlayer.lose(self, bet: Bet) -> None
+..  method:: CrapsPlayer.lose(self, bet: Bet) -> None
 
     :param bet: The bet that was a loser
     :type bet: :class:`Bet`
@@ -1163,11 +1165,11 @@ Methods
 
     Moves a Come Line or Don't Come Line bet
     to a new :class:`Outcome` instance based on the current :class:`Throw` instance.
-    If the value of the :obj:`theThrow` instance is 4, 5, 6, 8, 9 or 10, this delegates
+    If the value of the :obj:`throw` instance is 4, 5, 6, 8, 9 or 10, this delegates
     the move to the current :class:`CrapsGameState` object. For
     values of 4 and 10, the odds are 2:1. For values of 5 and 9, the
     odds are 3:2. For values of 6 and 8, the odds are 6:5. For other
-    values of the :obj:`theThrow` object, this method does nothing.
+    values of the :obj:`throw` object, this method does nothing.
 
 
 
@@ -1253,7 +1255,7 @@ Methods
     loser. The Pass Line :class:`Outcome` is a loser. If the :class:`Throw`
     value is 12, a Don't Pass Line :class:`Outcome` is a push,
     otherwise the Don't Pass Line :class:`Outcome` is a winner. The
-    next state is the same as this state, and the method should return :literal:`this`.
+    next state is the same as this state, and the method should return :literal:`self`.
 
 
 
@@ -1266,7 +1268,7 @@ Methods
     When the point is off, 7 means the game is an immediate
     winner. The Pass Line :class:`Outcome` is a winner, the Don't
     Pass Line :class:`Outcome` is a loser. The next state is the
-    same as this state, and the method should return :literal:`this`.
+    same as this state, and the method should return :literal:`self`.
 
 
 
@@ -1279,7 +1281,7 @@ Methods
     When the point is off, 11 means the game is an immediate winner. The
     Pass Line :class:`Outcome` is a winner, the Don't Pass Line :class:`Outcome`
     is a loser. The next state is the same as this state, and the method
-    should return :literal:`this`.
+    should return :literal:`self`.
 
 
 
@@ -1292,7 +1294,7 @@ Methods
     When the point
     is off, a new point is established. This method should return a new
     instance of :class:`CrapsGamePointOn` created with the given :class:`Throw`'s value.
-    Note that any Come Point bets or Don't Come Point bets
+    Note that any Come Point bets or Don't Come Point bets (and odds bets)
     that may be on this point are pushed to player: they can't be legal
     bets in the next game state.
 
@@ -1304,7 +1306,7 @@ Methods
     Returns the :class:`Outcome` based on the current point. This is
     used to create Pass Line Odds or Don't Pass Odds bets. This
     delegates the real work to the current :class:`CrapsGameState`
-    object. Since no point has been established, this returns :literal:`null`.
+    object. Since no point has been established, this returns :literal:`None`.
 
 
 
@@ -1339,13 +1341,13 @@ Constructors
 
 
 
-..  method:: CrapsGamePointOff.__init__(self, point: Outcome, game: CrapsGame) -> None
+..  method:: CrapsGamePointOn.__init__(self, point: Outcome, game: CrapsGame) -> None
 
 
     Saves the given     point value.
     Uses the superclass constructor to save the overall :class:`CrapsGame` object.
 
-    :param point: the outcome which defines the point set but the current :class:`Throw` instance.
+    :param point: the outcome which defines the point set by the current :class:`Throw` instance.
     :type point: :class: `Outcome`
 
     :param game: the current CrapsGame instance
@@ -1356,7 +1358,7 @@ Methods
 ~~~~~~~~
 
 
-..  method:: CrapsGamePointOff.isValid(self, outcome: Outcome) -> bool
+..  method:: CrapsGamePointOn.isValid(self, outcome: Outcome) -> bool
 
     :param outcome: The outcome to be tested for validity
     :type outcome: :class:`Outcome`
@@ -1365,12 +1367,13 @@ Methods
     It is
     invalid to Buy or Lay the :class:`Outcome` instances that match the
     point. If the point is 6, for example, it is invalid to buy the
-    "Come Point 6" :class:`Outcome`. All other :class:`Outcome` instances
+    "Come Point 6" :class:`Outcome`. It is also invalid to create Pass Line and Don't
+    Pass Line bets when the point is on. All other :class:`Outcome` instances
     are valid.
 
 
 
-..  method:: CrapsGamePointOff.isWorking(self, outcome: Outcome) -> bool
+..  method:: CrapsGamePointOn.isWorking(self, outcome: Outcome) -> bool
 
     :param outcome: The outcome to be tested to see if it's working
     :type outcome: :class:`Outcome`
@@ -1381,7 +1384,7 @@ Methods
 
 
 
-..  method:: CrapsGamePointOff.craps(self, throw: Outcome) -> None
+..  method:: CrapsGamePointOn.craps(self, throw: Outcome) -> None
 
     :param throw: The throw that is associated with craps.
     :type throw: :class:`Throw`
@@ -1391,12 +1394,12 @@ Methods
     point is on, 2, 3 and 12 do not change the game state. The Come Line :class:`Outcome`
     is a loser, the Don't Come Line :class:`Outcome` is a winner.
     The next state is the same as this state, and the method should return
-    :literal:`this`.
+    :literal:`self`.
 
 
 
 
-..  method:: CrapsGamePointOff.natural(self, outcome: Outcome) -> None
+..  method:: CrapsGamePointOn.natural(self, outcome: Outcome) -> None
 
     :param throw: The throw that is associated with a natural seven.
     :type throw: :class:`Throw`
@@ -1421,7 +1424,7 @@ Methods
 
 
 
-..  method:: CrapsGamePointOff.eleven(self, throw: Throw) -> None
+..  method:: CrapsGamePointOn.eleven(self, throw: Throw) -> None
 
     :param throw: The throw that is associated an eleven.
     :type throw: :class:`Throw`
@@ -1430,12 +1433,12 @@ Methods
     When the point is on, 11 does not change the game state. The Come Line
     :class:`Outcome` is a winner, and the Don't Come Line :class:`Outcome`
     is a loser. The next state is the same as this state, and the method
-    should return :literal:`this`.
+    should return :literal:`self`.
 
 
 
 
-..  method:: CrapsGamePointOff.point(self, throw: Throw) -> None
+..  method:: CrapsGamePointOn.point(self, throw: Throw) -> None
 
     :param throw: The throw that is associated with a point number.
     :type throw: :class:`Throw`
@@ -1451,7 +1454,7 @@ Methods
     For example, a throw of 6 moves the :class:`Outcome` of the Come Line
     :class:`Bet` to Come Point 6. Don't Come Line bets are moved to
     be Don't Come number :class:`Outcome` instances. The method should return
-    :literal:`this`.
+    :literal:`self`.
 
 
     When the point is on and the value of :obj:`throw` matches :obj:`point`,
@@ -1465,7 +1468,7 @@ Methods
 
 
 
-..  method:: CrapsGamePointOff.pointOutcome(self) -> Outcome
+..  method:: CrapsGamePointOn.pointOutcome(self) -> Outcome
 
 
     Returns the :class:`Outcome` based on the current point. This is
@@ -1478,11 +1481,11 @@ Methods
 
 
 
-..  method:: CrapsGamePointOff.__str__(self) -> str
+..  method:: CrapsGamePointOn.__str__(self) -> str
 
 
-    The point-off state should simply report that the point is off, or
-    that this is the come out roll.
+    The point-on state should simply state what the point is. A form that looks
+    like :literal:`The point is 6` works nicely.
 
 
 CrapsGame Design
@@ -1516,6 +1519,10 @@ Fields
 ..  attribute:: CrapsGame.player
 
     The :class:`CrapsPlayer` instance to place bets on the :class:`CrapsTable` instance.
+
+.. attribute:: CrapsGame.state
+
+    The :class:`CrapsGameState` instance representing the current state of the game.
 
 
 Constructors
@@ -1554,7 +1561,7 @@ Methods
 ~~~~~~~~~~
 
 
-..  method:: CrapsGame.__init__(self, player: CrapsPlayer) -> None
+..  method:: CrapsGame.cycle(self, player: CrapsPlayer) -> None
 
     :param player: The player who will place bets on this game
     :type player: :class:`CrapsPlayer`

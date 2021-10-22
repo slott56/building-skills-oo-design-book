@@ -36,7 +36,7 @@ the event that all the numbers are cancelled, the player has doubled their
 money, and can retire from the table happy.
 
 For each loss, however, the player adds the amount of the bet to the end of the sequence; this
-is a loss to be recouped. The next bet is designed to recoups the most recent loss
+is a loss to be recouped. The next bet is designed to recoup the most recent loss
 and provide a small gain. Multiple winning bets will recoup multiple
 losses, supplemented with small gains.
 
@@ -67,7 +67,7 @@ collection.
     the betting starts at :math:`7 \times` the table minimum. The numbers
     are smaller when working with a list of smaller numbers.
 
-    Consider a starting list of :math:`[1, 1]`.  The bet is 2. A win cancels both
+    Consider a starting list of :math:`[1, 1]`. The bet is 2. A win cancels both
     numbers and resets the betting.
 
     A loss, however, appends the bet to the sequence, leaving us with :math:`[1, 1, 2]`.
@@ -98,7 +98,7 @@ Fields
 ..  attribute:: PlayerCancellation.sequence
 
     This :class:`List` keeps the bet amounts; wins are removed
-    from this list and losses are appended to this list. THe current bet
+    from this list and losses are appended to this list. The current bet
     is the first value plus the last value.
 
 ..  attribute:: PlayerCancellation.outcome
@@ -117,7 +117,7 @@ Constructors
     sequence of numbers used to establish the bet amount. This also
     picks a suitable even money :class:`Outcome`, for example, black.
 
-    :param table: The :class:`Table` object which will accept the bests.
+    :param table: The :class:`Table` object which will accept the bets.
     :type table: :class:`Table`
 
 Methods
@@ -160,7 +160,7 @@ Methods
 
     Uses the superclass method to update the
     stake with an amount lost. It then appends the sum of the first and
-    list elements of :obj:`sequence` to the end of :obj:`sequence`
+    last elements of :obj:`sequence` to the end of :obj:`sequence`
     as a new value.
 
 
