@@ -145,7 +145,7 @@ cases below, and we'll use a different suffix.
 
 The test module will have two test cases:
 
--   The :class:`TestGreeting` class will tet the :class:`Greeting` class. This is
+-   The :class:`TestGreeting` class will test the :class:`Greeting` class. This is
     is relatively clear because there are no dependencies in the
     :class:`Greeting` class.
 
@@ -241,7 +241,7 @@ using :class:`unittest.TestCase`.
 
 The test module will have two test cases:
 
--   The :func:`test_greeting` function will tet the :class:`Greeting` class.
+-   The :func:`test_greeting` function will test the :class:`Greeting` class.
 
 -   The :class:`test_main` function will test the :func:`main` function. This
     is more complex because the function depends on :class:`Greeting.
